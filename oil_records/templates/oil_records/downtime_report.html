@@ -1,0 +1,396 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}停机报告 - 机械工程系统{% endblock %}
+{% block page_title %}停机报告{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">停机报告</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-form {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .btn-generate {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-size: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-generate:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .report-preview {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .report-preview iframe {
+        width: 100%;
+        height: 800px;
+        border: none;
+    }
+    
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .loading-content {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    
+    .alert-danger {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="report-form">
+            <h4 class="mb-4">生成停机报告</h4>
+            <form id="downtimeReportForm">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">开始日期</label>
+                            <input type="date" class="form-control" id="startDate" name="start_date" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">结束日期</label>
+                            <input type="date" class="form-control" id="endDate" name="end_date" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn-generate" id="generateBtn">
+                                    <i class="bi bi-graph-up"></i> 生成报告
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+            <div id="successMessage" class="alert alert-success" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="reportContainer" style="display: none;">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>报告预览</h4>
+            <div>
+                <button class="btn btn-secondary me-2" onclick="downloadChartReport()">
+                    <i class="bi bi-download"></i> 下载图表报告
+                </button>
+                <button class="btn btn-secondary me-2" onclick="downloadDetail101Report()">
+                    <i class="bi bi-download"></i> 下载101详情
+                </button>
+                <button class="btn btn-secondary" onclick="downloadDetail105Report()">
+                    <i class="bi bi-download"></i> 下载105详情
+                </button>
+            </div>
+        </div>
+        
+        <!-- 图表报告 -->
+        <div class="report-preview mb-4">
+            <h5 class="p-3 bg-light border-bottom">图表报告</h5>
+            <iframe id="reportFrame"></iframe>
+        </div>
+        
+        <!-- 101详情报告 -->
+        <div class="report-preview mb-4">
+            <h5 class="p-3 bg-light border-bottom">101 详细报告</h5>
+            <iframe id="detail101Frame"></iframe>
+        </div>
+        
+        <!-- 105详情报告 -->
+        <div class="report-preview mb-4">
+            <h5 class="p-3 bg-light border-bottom">105 详细报告</h5>
+            <iframe id="detail105Frame"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- 加载遮罩 -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h5>正在生成报告...</h5>
+        <p class="text-muted">请稍候，正在从Splunk获取数据并分析</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 设置默认日期范围（本周）
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        document.getElementById('endDate').value = formatDate(today);
+        document.getElementById('startDate').value = formatDate(lastWeek);
+    });
+    
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // 表单提交
+    document.getElementById('downtimeReportForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        if (!startDate || !endDate) {
+            showError('请选择开始日期和结束日期');
+            return;
+        }
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            showError('开始日期不能晚于结束日期');
+            return;
+        }
+        
+        generateReport(startDate, endDate);
+    });
+    
+    function generateReport(startDate, endDate) {
+        // 显示加载遮罩
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('generateBtn').disabled = true;
+        hideMessages();
+        
+        const formData = new FormData();
+        formData.append('start_date', startDate);
+        formData.append('end_date', endDate);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch('{% url "oil_records:generate_downtime_report" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('generateBtn').disabled = false;
+            
+            if (data.success) {
+                // 显示图表报告
+                const reportFrame = document.getElementById('reportFrame');
+                reportFrame.srcdoc = data.chart_html;
+                
+                // 显示101详情报告
+                const detail101Frame = document.getElementById('detail101Frame');
+                detail101Frame.srcdoc = data.detail_101_html;
+                
+                // 显示105详情报告
+                const detail105Frame = document.getElementById('detail105Frame');
+                detail105Frame.srcdoc = data.detail_105_html;
+                
+                document.getElementById('reportContainer').style.display = 'block';
+                
+                // 滚动到报告区域
+                document.getElementById('reportContainer').scrollIntoView({ behavior: 'smooth' });
+                
+                showSuccess('报告生成成功！');
+                
+                // 保存HTML内容供下载使用
+                window.chartHtmlContent = data.chart_html;
+                window.detail101HtmlContent = data.detail_101_html;
+                window.detail105HtmlContent = data.detail_105_html;
+            } else {
+                showError(data.error || '生成报告失败');
+            }
+        })
+        .catch(error => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('generateBtn').disabled = false;
+            showError('请求失败：' + error.message);
+        });
+    }
+    
+    function downloadChartReport() {
+        if (!window.chartHtmlContent) {
+            showError('没有可下载的报告内容');
+            return;
+        }
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const filename = `downtime_chart_${startDate}_to_${endDate}.html`;
+        
+        const blob = new Blob([window.chartHtmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    function downloadDetail101Report() {
+        if (!window.detail101HtmlContent) {
+            showError('没有可下载的报告内容');
+            return;
+        }
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const filename = `downtime_detail_101_${startDate}_to_${endDate}.html`;
+        
+        const blob = new Blob([window.detail101HtmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    function downloadDetail105Report() {
+        if (!window.detail105HtmlContent) {
+            showError('没有可下载的报告内容');
+            return;
+        }
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const filename = `downtime_detail_105_${startDate}_to_${endDate}.html`;
+        
+        const blob = new Blob([window.detail105HtmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        document.getElementById('successMessage').style.display = 'none';
+    }
+    
+    function showSuccess(message) {
+        const successDiv = document.getElementById('successMessage');
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+        document.getElementById('errorMessage').style.display = 'none';
+    }
+    
+    function hideMessages() {
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'none';
+    }
+</script>
+{% endblock %}

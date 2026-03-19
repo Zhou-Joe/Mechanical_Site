@@ -1,0 +1,276 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}{% if record %}Edit{% else %}Create{% endif %} ECR - RSE Mechanical Engineering{% endblock %}
+{% block page_title %}{% if record %}Edit{% else %}Create New{% endif %} ECR{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'oil_records:me_home' %}">Home</a></li>
+<li class="breadcrumb-item"><a href="{% url 'ecr:ecr_list' %}">ECR Records</a></li>
+<li class="breadcrumb-item active">{% if record %}Edit{% else %}Create{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{% if record %}Edit ECR #{{ record.form_number }}{% else %}Create New ECR Record{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% if record %}{% url 'ecr:ecr_edit' record.pk %}{% else %}{% url 'ecr:ecr_create' %}{% endif %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- 基本信息 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Form Number <span class="text-danger">*</span></label>
+                            <input type="number" name="form_number" class="form-control" value="{{ record.form_number|default:next_form_number }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Progress</label>
+                            <input type="text" name="progress" class="form-control" value="{{ record.progress|default:'In Progress' }}" placeholder="e.g., In Progress, Completed">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Completion Date</label>
+                            <input type="date" name="completion_date" class="form-control" value="{{ record.completion_date|date:'Y-m-d'|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Request Date</label>
+                            <input type="date" name="request_date" class="form-control" value="{{ record.request_date|date:'Y-m-d'|default:today }}">
+                        </div>
+                        
+                        <!-- 请求信息 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Requestor</label>
+                            <input type="text" name="requestor" class="form-control" value="{{ record.requestor|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Contact</label>
+                            <input type="text" name="contact" class="form-control" value="{{ record.contact|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Expected Completion Date</label>
+                            <input type="date" name="expected_completion_date" class="form-control" value="{{ record.expected_completion_date|date:'Y-m-d'|default:default_expected_date }}">
+                        </div>
+                        
+                        <!-- 文档信息 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Doc Number</label>
+                            <input type="text" name="doc_number" class="form-control" value="{{ record.doc_number|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Rev Number</label>
+                            <input type="text" name="rev_number" class="form-control" value="{{ record.rev_number|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Engineering Change Type</label>
+                            <input type="text" name="engineering_change_type" class="form-control" value="{{ record.engineering_change_type|default:'' }}" placeholder="e.g., MM, OM">
+                        </div>
+                        
+                        <!-- 标题和位置 -->
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text" name="title" class="form-control" value="{{ record.title|default:'' }}">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Attraction or Location</label>
+                            <select name="attraction_or_location" class="form-select">
+                                <option value="">-- Select Attraction --</option>
+                                <option value="Alice in Wonderland Maze" {% if record.attraction_or_location == 'Alice in Wonderland Maze' %}selected{% endif %}>Alice in Wonderland Maze</option>
+                                <option value="Baymax Super Exercise Expo" {% if record.attraction_or_location == 'Baymax Super Exercise Expo' %}selected{% endif %}>Baymax Super Exercise Expo</option>
+                                <option value="Become a Presenter at PEP!" {% if record.attraction_or_location == 'Become a Presenter at PEP!' %}selected{% endif %}>Become a Presenter at PEP!</option>
+                                <option value="Buzz Lightyear Planet Rescue" {% if record.attraction_or_location == 'Buzz Lightyear Planet Rescue' %}selected{% endif %}>Buzz Lightyear Planet Rescue</option>
+                                <option value="Camp Discovery - Challenge Trails" {% if record.attraction_or_location == 'Camp Discovery - Challenge Trails' %}selected{% endif %}>Camp Discovery - Challenge Trails</option>
+                                <option value="Dumbo The Flying Elephant" {% if record.attraction_or_location == 'Dumbo The Flying Elephant' %}selected{% endif %}>Dumbo The Flying Elephant</option>
+                                <option value="Fantasia Carousel" {% if record.attraction_or_location == 'Fantasia Carousel' %}selected{% endif %}>Fantasia Carousel</option>
+                                <option value="Hunny Pot Spin" {% if record.attraction_or_location == 'Hunny Pot Spin' %}selected{% endif %}>Hunny Pot Spin</option>
+                                <option value="Junior Explorers Camp" {% if record.attraction_or_location == 'Junior Explorers Camp' %}selected{% endif %}>Junior Explorers Camp</option>
+                                <option value="Jet Pack" {% if record.attraction_or_location == 'Jet Pack' %}selected{% endif %}>Jet Pack</option>
+                                <option value="Once Upon a Time Adventure" {% if record.attraction_or_location == 'Once Upon a Time Adventure' %}selected{% endif %}>Once Upon a Time Adventure</option>
+                                <option value="Peter Pan's Flight" {% if record.attraction_or_location == "Peter Pan's Flight" %}selected{% endif %}>Peter Pan's Flight</option>
+                                <option value="Pirates of Caribbean: Battle for the Sunken Treasure" {% if record.attraction_or_location == 'Pirates of Caribbean: Battle for the Sunken Treasure' %}selected{% endif %}>Pirates of Caribbean: Battle for the Sunken Treasure</option>
+                                <option value="Rex's Racer" {% if record.attraction_or_location == "Rex's Racer" %}selected{% endif %}>Rex's Racer</option>
+                                <option value="Roaring Rapids" {% if record.attraction_or_location == 'Roaring Rapids' %}selected{% endif %}>Roaring Rapids</option>
+                                <option value="Seven Dwarfs Mine Train" {% if record.attraction_or_location == 'Seven Dwarfs Mine Train' %}selected{% endif %}>Seven Dwarfs Mine Train</option>
+                                <option value="Slinky Dog Spin" {% if record.attraction_or_location == 'Slinky Dog Spin' %}selected{% endif %}>Slinky Dog Spin</option>
+                                <option value="Soaring Over the Horizon (Ride A)" {% if record.attraction_or_location == 'Soaring Over the Horizon (Ride A)' %}selected{% endif %}>Soaring Over the Horizon (Ride A)</option>
+                                <option value="Soaring Over the Horizon (Ride B)" {% if record.attraction_or_location == 'Soaring Over the Horizon (Ride B)' %}selected{% endif %}>Soaring Over the Horizon (Ride B)</option>
+                                <option value="Stitch Encounter" {% if record.attraction_or_location == 'Stitch Encounter' %}selected{% endif %}>Stitch Encounter</option>
+                                <option value="The Many Adventures of Winnie the Pooh" {% if record.attraction_or_location == 'The Many Adventures of Winnie the Pooh' %}selected{% endif %}>The Many Adventures of Winnie the Pooh</option>
+                                <option value="Tron Lightcycle Power Run" {% if record.attraction_or_location == 'Tron Lightcycle Power Run' %}selected{% endif %}>Tron Lightcycle Power Run</option>
+                                <option value="Voyage to the Crystal Grotto" {% if record.attraction_or_location == 'Voyage to the Crystal Grotto' %}selected{% endif %}>Voyage to the Crystal Grotto</option>
+                                <option value="Walt Disney Grand Theatre" {% if record.attraction_or_location == 'Walt Disney Grand Theatre' %}selected{% endif %}>Walt Disney Grand Theatre</option>
+                                <option value="Woody's Roundup" {% if record.attraction_or_location == "Woody's Roundup" %}selected{% endif %}>Woody's Roundup</option>
+                                <option value="El Teatro Fandango" {% if record.attraction_or_location == 'El Teatro Fandango' %}selected{% endif %}>El Teatro Fandango</option>
+                                <option value="Tron Realm Chevrolet Challenge" {% if record.attraction_or_location == 'Tron Realm Chevrolet Challenge' %}selected{% endif %}>Tron Realm Chevrolet Challenge</option>
+                                <option value="Zootopia Hot Pursuit" {% if record.attraction_or_location == 'Zootopia Hot Pursuit' %}selected{% endif %}>Zootopia Hot Pursuit</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 详细描述 -->
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Detail Description</label>
+                            <textarea name="detail_description" class="form-control" rows="4">{{ record.detail_description|default:'' }}</textarea>
+                        </div>
+                        
+                        <!-- 变更前后 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Before Change</label>
+                            <textarea name="before_change" class="form-control mb-2" rows="4">{{ record.before_change|default:'' }}</textarea>
+                            <label class="form-label">Before Change Image</label>
+                            <input type="file" name="before_change_image" class="form-control" accept="image/*">
+                            {% if record and record.before_change_image %}
+                            <div class="mt-2">
+                                <small class="text-muted">Current image:</small><br>
+                                <img src="{{ record.before_change_image.url }}" alt="Before Change" style="max-width: 200px; max-height: 150px;" class="img-thumbnail">
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">After Change</label>
+                            <textarea name="after_change" class="form-control mb-2" rows="4">{{ record.after_change|default:'' }}</textarea>
+                            <label class="form-label">After Change Image</label>
+                            <input type="file" name="after_change_image" class="form-control" accept="image/*">
+                            {% if record and record.after_change_image %}
+                            <div class="mt-2">
+                                <small class="text-muted">Current image:</small><br>
+                                <img src="{{ record.after_change_image.url }}" alt="After Change" style="max-width: 200px; max-height: 150px;" class="img-thumbnail">
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 变更理由 -->
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Justification</label>
+                            <textarea name="justification" class="form-control" rows="4">{{ record.justification|default:'' }}</textarea>
+                        </div>
+                        
+                        <!-- 审批信息 -->
+                        <hr class="my-4">
+                        <div class="col-12 mb-3">
+                            <h5 class="text-muted">Approval Information</h5>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- LOB Manager -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-primary h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <strong>LOB Manager</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <label class="form-label">Name</label>
+                                            <input type="text" name="lob_manager_name" class="form-control" value="{{ record.lob_manager_name|default:'' }}">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Approval (Y/N)</label>
+                                            <select name="lob_manager_approval" class="form-select">
+                                                <option value="" {% if not record.lob_manager_approval %}selected{% endif %}>-</option>
+                                                <option value="Y" {% if record.lob_manager_approval == 'Y' %}selected{% endif %}>Yes</option>
+                                                <option value="N" {% if record.lob_manager_approval == 'N' %}selected{% endif %}>No</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Review Date</label>
+                                            <input type="date" name="lob_manager_review_date" class="form-control" value="{{ record.lob_manager_review_date|date:'Y-m-d'|default:'' }}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Comments</label>
+                                            <textarea name="lob_manager_comments" class="form-control" rows="2">{{ record.lob_manager_comments|default:'' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- QE Engineer - 仅管理员可见 -->
+                            {% if user.is_staff or user.is_superuser %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-info h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <strong>QE Engineer</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <label class="form-label">Name</label>
+                                            <input type="text" name="qe_engineer_name" class="form-control" value="{{ record.qe_engineer_name|default:'' }}">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Approval (Y/N)</label>
+                                            <select name="qe_engineer_approval" class="form-select">
+                                                <option value="" {% if not record.qe_engineer_approval %}selected{% endif %}>-</option>
+                                                <option value="Y" {% if record.qe_engineer_approval == 'Y' %}selected{% endif %}>Yes</option>
+                                                <option value="N" {% if record.qe_engineer_approval == 'N' %}selected{% endif %}>No</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Review Date</label>
+                                            <input type="date" name="qe_engineer_review_date" class="form-control" value="{{ record.qe_engineer_review_date|date:'Y-m-d'|default:'' }}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Comments</label>
+                                            <textarea name="qe_engineer_comments" class="form-control" rows="2">{{ record.qe_engineer_comments|default:'' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- ME Engineer - 仅管理员可见 -->
+                            {% if user.is_staff or user.is_superuser %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-success h-100">
+                                    <div class="card-header bg-success text-white">
+                                        <strong>ME Engineer</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <label class="form-label">Name</label>
+                                            <input type="text" name="me_engineer_name" class="form-control" value="{{ record.me_engineer_name|default:'' }}">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Approval (Y/N)</label>
+                                            <select name="me_engineer_approval" class="form-select">
+                                                <option value="" {% if not record.me_engineer_approval %}selected{% endif %}>-</option>
+                                                <option value="Y" {% if record.me_engineer_approval == 'Y' %}selected{% endif %}>Yes</option>
+                                                <option value="N" {% if record.me_engineer_approval == 'N' %}selected{% endif %}>No</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Review Date</label>
+                                            <input type="date" name="me_engineer_review_date" class="form-control" value="{{ record.me_engineer_review_date|date:'Y-m-d'|default:'' }}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Comments</label>
+                                            <textarea name="me_engineer_comments" class="form-control" rows="2">{{ record.me_engineer_comments|default:'' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> {% if record %}Update{% else %}Save{% endif %}
+                        </button>
+                        <a href="{% if record %}{% url 'ecr:ecr_detail' record.pk %}{% else %}{% url 'ecr:ecr_list' %}{% endif %}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

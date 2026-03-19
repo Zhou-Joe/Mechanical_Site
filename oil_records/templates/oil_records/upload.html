@@ -1,0 +1,358 @@
+{% extends 'oil_records/base_me.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Oil Inspection - Upload Report" %}{% endblock %}
+{% block page_title %}{% trans "Upload Oil Report" %}{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'oil_records:dashboard' %}">{% trans "Oil Inspection" %}</a></li>
+    <li class="breadcrumb-item active">{% trans "Upload" %}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 0.375rem;
+        padding: 3rem;
+        text-align: center;
+        transition: all 0.15s ease-in-out;
+        background-color: #f8f9fa;
+    }
+    .upload-area:hover {
+        border-color: #6c757d;
+        background-color: #e9ecef;
+    }
+    .upload-area.dragover {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+    .file-info {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 0.375rem;
+    }
+    .progress {
+        display: none;
+        margin-top: 1rem;
+    }
+    .select2-container--default .select2-selection--single {
+        height: 58px;
+        padding-top: 18px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        padding-left: 12px;
+    }
+    .form-floating > label {
+        padding-left: 12px;
+    }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        padding-left: 12px;
+    }
+    .info-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: none;
+    }
+    .info-card i {
+        color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Upload Form -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Oil Report Information</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            
+            <!-- File Upload Area -->
+            <div class="mb-4">
+                <label class="form-label">Select PDF File <span class="text-danger">*</span></label>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" name="pdf_file" id="pdfFile" accept=".pdf" style="display: none;" required>
+                    <div id="uploadPlaceholder">
+                        <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
+                        <h5 class="mt-3">Drag & Drop PDF here or Click to Select</h5>
+                        <p class="text-muted">PDF format only, max 50MB</p>
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('pdfFile').click()">
+                            <i class="bi bi-folder-open"></i> Select File
+                        </button>
+                    </div>
+                    <div id="fileInfo" style="display: none;">
+                        <i class="bi bi-file-pdf" style="font-size: 3rem; color: #dc3545;"></i>
+                        <h5 class="mt-3" id="fileName"></h5>
+                        <p class="text-muted" id="fileSize"></p>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearFile()">
+                            <i class="bi bi-arrow-counterclockwise"></i> Change File
+                        </button>
+                    </div>
+                </div>
+                <div class="progress" id="uploadProgress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- Basic Information -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <select name="attraction" id="attractionSelect" class="form-select" required>
+                            <option value="">Select Attraction</option>
+                            {% for attraction in attractions %}
+                            <option value="{{ attraction.id }}">{{ attraction.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="attractionSelect">Attraction <span class="text-danger">*</span></label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <select name="equipment" id="equipmentSelect" class="form-select" disabled required>
+                            <option value="">Select Attraction First</option>
+                        </select>
+                        <label for="equipmentSelect">Equipment <span class="text-danger">*</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input type="date" name="report_date" id="reportDate" class="form-control" required>
+                        <label for="reportDate">Report Date <span class="text-danger">*</span></label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input type="date" name="sample_date" id="sampleDate" class="form-control" required>
+                        <label for="sampleDate">Sample Date <span class="text-danger">*</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                        <i class="bi bi-upload"></i> Upload & Process
+                    </button>
+                    <a href="{% url 'oil_records:dashboard' %}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Instructions -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Instructions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-card card h-100">
+                    <div class="card-body">
+                        <h6><i class="bi bi-check-circle me-2"></i>Upload Requirements</h6>
+                        <ul class="mb-0">
+                            <li>PDF format oil inspection reports only</li>
+                            <li>Maximum file size: 50MB</li>
+                            <li>Clear content for better OCR recognition</li>
+                            <li>Ensure accurate equipment info and dates</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-card card h-100">
+                    <div class="card-body">
+                        <h6><i class="bi bi-gear me-2"></i>Processing Flow</h6>
+                        <ul class="mb-0">
+                            <li>System automatically calls OCR service</li>
+                            <li>Extracts oil inspection data from report</li>
+                            <li>Automatically checks if values are in range</li>
+                            <li>View trends on dashboard after processing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize Select2
+        $('#attractionSelect, #equipmentSelect').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+
+        // Set default dates
+        const today = new Date().toISOString().split('T')[0];
+        $('#reportDate').val(today);
+        $('#sampleDate').val(today);
+
+        // Load equipment when attraction changes
+        $('#attractionSelect').on('change', function() {
+            const attractionId = $(this).val();
+            const equipmentSelect = $('#equipmentSelect');
+            
+            equipmentSelect.prop('disabled', true);
+            equipmentSelect.html('<option value="">Loading...</option>');
+            
+            if (attractionId) {
+                $.get('{% url "oil_records:get_equipment_api" %}', {attraction_id: attractionId}, function(data) {
+                    equipmentSelect.html('<option value="">Select Equipment</option>');
+                    data.equipment.forEach(function(eq) {
+                        equipmentSelect.append(`<option value="${eq.id}">${eq.name} - ${eq.location}</option>`);
+                    });
+                    equipmentSelect.prop('disabled', false);
+                });
+            } else {
+                equipmentSelect.html('<option value="">Select Attraction First</option>');
+            }
+        });
+
+        // File selection
+        $('#pdfFile').on('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.type !== 'application/pdf') {
+                    alert('Please select PDF format files only');
+                    clearFile();
+                    return;
+                }
+                if (file.size > 50 * 1024 * 1024) {
+                    alert('File size cannot exceed 50MB');
+                    clearFile();
+                    return;
+                }
+                showFileInfo(file);
+            }
+        });
+
+        // Drag & drop
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type !== 'application/pdf') {
+                    alert('Please select PDF format files only');
+                    return;
+                }
+                if (file.size > 50 * 1024 * 1024) {
+                    alert('File size cannot exceed 50MB');
+                    return;
+                }
+                
+                document.getElementById('pdfFile').files = files;
+                showFileInfo(file);
+            }
+        });
+
+        // Form submit
+        $('#uploadForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            $('#uploadProgress').show();
+            $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
+            
+            this.submit();
+        });
+
+        function showFileInfo(file) {
+            $('#uploadPlaceholder').hide();
+            $('#fileInfo').show();
+            $('#fileName').text(file.name);
+            $('#fileSize').text(formatFileSize(file.size));
+        }
+
+        function clearFile() {
+            $('#pdfFile').val('');
+            $('#uploadPlaceholder').show();
+            $('#fileInfo').hide();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function validateForm() {
+            const pdfFile = $('#pdfFile').val();
+            const attraction = $('#attractionSelect').val();
+            const equipment = $('#equipmentSelect').val();
+            const reportDate = $('#reportDate').val();
+            const sampleDate = $('#sampleDate').val();
+
+            if (!pdfFile) {
+                alert('Please select a PDF file');
+                return false;
+            }
+            if (!attraction) {
+                alert('Please select attraction');
+                return false;
+            }
+            if (!equipment) {
+                alert('Please select equipment');
+                return false;
+            }
+            if (!reportDate) {
+                alert('Please select report date');
+                return false;
+            }
+            if (!sampleDate) {
+                alert('Please select sample date');
+                return false;
+            }
+
+            return true;
+        }
+    });
+</script>
+{% endblock %}

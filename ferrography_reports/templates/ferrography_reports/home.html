@@ -1,0 +1,80 @@
+{% extends 'ferrography_reports/base.html' %}
+
+{% block title %}铁谱分析 - 首页{% endblock %}
+{% block ferrography_breadcrumb %}
+    <li class="breadcrumb-item active">首页</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>铁谱分析概览</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h4 class="card-title">{{ report_count }}</h4>
+                                <p class="card-text">铁谱报告总数</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{% url 'ferrography_reports:upload' %}" class="btn btn-success btn-lg w-100">
+                            <i class="bi bi-upload me-2"></i>上传铁谱报告
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{% url 'ferrography_reports:list' %}" class="btn btn-info btn-lg w-100">
+                            <i class="bi bi-list me-2"></i>查看报告列表
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>最近上传的报告</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_reports %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>设备</th>
+                            <th>景点</th>
+                            <th>报告日期</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in recent_reports %}
+                        <tr>
+                            <td>{{ report.equipment.name }}</td>
+                            <td>{{ report.equipment.attraction.name }}</td>
+                            <td>{{ report.report_date }}</td>
+                            <td>
+                                <a href="{% url 'ferrography_reports:detail' report.id %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> 查看
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">暂无报告</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

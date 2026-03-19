@@ -1,0 +1,856 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}油品检测 - 上传报告{% endblock %}
+{% block page_title %}上传油品报告{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'oil_records:dashboard' %}">油品检测</a></li>
+    <li class="breadcrumb-item active">上传报告</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 0.375rem;
+        padding: 3rem;
+        text-align: center;
+        transition: all 0.15s ease-in-out;
+        background-color: #f8f9fa;
+    }
+    .upload-area:hover {
+        border-color: #6c757d;
+        background-color: #e9ecef;
+    }
+    .upload-area.dragover {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+    .upload-area.success {
+        border-color: #198754;
+        background-color: #e8f5e9;
+    }
+    .file-info {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 0.375rem;
+    }
+    .progress {
+        display: none;
+        margin-top: 1rem;
+    }
+    .mode-card {
+        border: 2px solid transparent;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    .mode-card:hover {
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+    }
+    .mode-card.active {
+        border-color: #0d6efd;
+        background-color: #f8f9ff;
+    }
+    .file-list-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 0.25rem;
+        margin-bottom: 0.5rem;
+    }
+    .file-list-item i {
+        color: #dc3545;
+        margin-right: 0.5rem;
+    }
+    .status-item {
+        padding: 0.75rem 1rem;
+        border-left: 4px solid transparent;
+    }
+    .status-item.processing {
+        border-left-color: #0d6efd;
+        background-color: #f8f9ff;
+    }
+    .status-item.success {
+        border-left-color: #198754;
+        background-color: #e8f5e9;
+    }
+    .status-item.skipped {
+        border-left-color: #ffc107;
+        background-color: #fff8e1;
+    }
+    .status-item.error {
+        border-left-color: #dc3545;
+        background-color: #fce4e4;
+    }
+    .status-item .filename {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .status-item .message {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    .status-item .error-detail {
+        font-size: 0.8rem;
+        color: #dc3545;
+        margin-top: 0.25rem;
+        padding: 0.5rem;
+        background: #f8d7da;
+        border-radius: 0.25rem;
+    }
+    .status-item .skipped-dates {
+        font-size: 0.8rem;
+        color: #856404;
+        margin-top: 0.25rem;
+        padding: 0.5rem;
+        background: #fff3cd;
+        border-radius: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Upload Mode Selection -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-gear me-2"></i>上传模式</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mode-card card h-100 {% if request.POST.upload_mode != 'batch' %}active{% endif %}" onclick="selectMode('single')">
+                    <div class="card-body text-center">
+                        <input type="radio" class="btn-check" name="uploadMode" id="singleMode" value="single" checked>
+                        <i class="bi bi-file-pdf" style="font-size: 2.5rem; color: #dc3545;"></i>
+                        <h5 class="mt-3">单文件上传</h5>
+                        <p class="text-muted mb-0">上传单个PDF文件，支持预览和手动审核</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mode-card card h-100 {% if request.POST.upload_mode == 'batch' %}active{% endif %}" onclick="selectMode('batch')">
+                    <div class="card-body text-center">
+                        <input type="radio" class="btn-check" name="uploadMode" id="batchMode" value="batch">
+                        <i class="bi bi-folder2-open" style="font-size: 2.5rem; color: #198754;"></i>
+                        <h5 class="mt-3">批量上传</h5>
+                        <p class="text-muted mb-0">上传多个PDF文件，自动处理</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Single File Upload -->
+<div class="card" id="singleUploadCard">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-pdf me-2"></i>单文件上传</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label">选择PDF文件 <span class="text-danger">*</span></label>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" name="pdf_file" id="pdfFile" accept=".pdf" style="display: none;" required>
+                    <div id="uploadPlaceholder">
+                        <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
+                        <h5 class="mt-3">拖拽PDF文件到此处或点击选择</h5>
+                        <p class="text-muted">仅支持PDF格式，最大50MB</p>
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('pdfFile').click()">
+                            <i class="bi bi-folder-open"></i> 选择文件
+                        </button>
+                    </div>
+                    <div id="fileInfo" style="display: none;">
+                        <i class="bi bi-file-pdf" style="font-size: 3rem; color: #dc3545;"></i>
+                        <h5 class="mt-3" id="fileName"></h5>
+                        <p class="text-muted" id="fileSize"></p>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearFile()">
+                            <i class="bi bi-arrow-counterclockwise"></i> 更换文件
+                        </button>
+                    </div>
+                </div>
+                <div class="progress" id="uploadProgress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                        <i class="bi bi-upload"></i> 上传并OCR预览
+                    </button>
+                    <a href="{% url 'oil_records:dashboard' %}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i> 取消
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Batch Upload -->
+<div class="card" id="batchUploadCard" style="display: none;">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-folder-plus me-2"></i>批量上传</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="batchUploadForm">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label class="form-label">选择多个PDF文件 <span class="text-danger">*</span></label>
+                <div class="upload-area success" id="batchUploadArea">
+                    <input type="file" name="pdf_files" id="pdfFiles" accept=".pdf" multiple style="display: none;" required>
+                    <div id="batchUploadPlaceholder">
+                        <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #198754;"></i>
+                        <h5 class="mt-3">拖拽多个PDF文件到此处或点击选择</h5>
+                        <p class="text-muted">仅支持PDF格式，单个文件最大50MB</p>
+                        <button type="button" class="btn btn-outline-success" onclick="document.getElementById('pdfFiles').click()">
+                            <i class="bi bi-folder-open"></i> 选择文件
+                        </button>
+                    </div>
+                    <div id="batchFileInfo" style="display: none;">
+                        <i class="bi bi-files" style="font-size: 3rem; color: #198754;"></i>
+                        <h5 class="mt-3"><span id="fileCount">0</span> 个文件已选择</h5>
+                        <div id="fileList" class="mt-3 text-start"></div>
+                        <button type="button" class="btn btn-outline-secondary mt-3" onclick="clearBatchFiles()">
+                            <i class="bi bi-arrow-counterclockwise"></i> 清除全部
+                        </button>
+                    </div>
+                </div>
+                <div class="progress" id="batchUploadProgress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
+                </div>
+                
+                <!-- Real-time Status Display -->
+                <div id="batchStatusDisplay" style="display: none; margin-top: 1rem;">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="bi bi-list-check me-2"></i>上传状态</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="batchStatusList" class="list-group list-group-flush">
+                                <!-- Status items will be added here dynamically -->
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <small class="text-muted">总计</small>
+                                    <div id="statusTotal" class="fw-bold">0</div>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-success">成功</small>
+                                    <div id="statusSuccess" class="fw-bold text-success">0</div>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-warning">跳过</small>
+                                    <div id="statusSkipped" class="fw-bold text-warning">0</div>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-danger">错误</small>
+                                    <div id="statusError" class="fw-bold text-danger">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success btn-lg" id="batchSubmitBtn">
+                        <i class="bi bi-upload"></i> 批量上传并自动保存
+                    </button>
+                    <a href="{% url 'oil_records:dashboard' %}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i> 取消
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Mode selection
+        $('input[name="uploadMode"]').on('change', function() {
+            toggleMode($(this).val());
+        });
+
+        // File selection - single
+        $('#pdfFile').on('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.type !== 'application/pdf') {
+                    alert('请选择PDF格式的文件');
+                    clearFile();
+                    return;
+                }
+                if (file.size > 50 * 1024 * 1024) {
+                    alert('文件大小不能超过50MB');
+                    clearFile();
+                    return;
+                }
+                showFileInfo(file);
+            }
+        });
+
+        // File selection - batch
+        $('#pdfFiles').on('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                let validFiles = [];
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.type !== 'application/pdf') {
+                        alert(`文件 ${file.name} 不是PDF格式`);
+                        return;
+                    }
+                    if (file.size > 50 * 1024 * 1024) {
+                        alert(`文件 ${file.name} 超过50MB`);
+                        return;
+                    }
+                    validFiles.push(file);
+                }
+                if (validFiles.length > 0) {
+                    showBatchFileInfo(validFiles);
+                }
+            }
+        });
+
+        // Drag & drop - single
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type !== 'application/pdf') {
+                    alert('请选择PDF格式的文件');
+                    return;
+                }
+                if (file.size > 50 * 1024 * 1024) {
+                    alert('文件大小不能超过50MB');
+                    return;
+                }
+                document.getElementById('pdfFile').files = files;
+                showFileInfo(file);
+            }
+        });
+
+        // Drag & drop - batch
+        const batchUploadArea = document.getElementById('batchUploadArea');
+        batchUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            batchUploadArea.classList.add('dragover');
+        });
+        batchUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            batchUploadArea.classList.remove('dragover');
+        });
+        batchUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            batchUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                let validFiles = [];
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.type !== 'application/pdf') {
+                        alert(`文件 ${file.name} 不是PDF格式`);
+                        return;
+                    }
+                    if (file.size > 50 * 1024 * 1024) {
+                        alert(`文件 ${file.name} 超过50MB`);
+                        return;
+                    }
+                    validFiles.push(file);
+                }
+                if (validFiles.length > 0) {
+                    const dt = new DataTransfer();
+                    validFiles.forEach(f => dt.items.add(f));
+                    document.getElementById('pdfFiles').files = dt.files;
+                    showBatchFileInfo(validFiles);
+                }
+            }
+        });
+
+        // Form submit - single
+        $('#uploadForm').on('submit', function(e) {
+            e.preventDefault();
+            if (!validateForm()) return;
+            
+            $('#uploadProgress').show();
+            $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>处理中...');
+            
+            var formData = new FormData(this);
+            
+            $.ajax({
+                url: '{% url "oil_records:upload_report_simple" %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = response.redirect;
+                    } else {
+                        alert(response.error || '处理失败');
+                        $('#uploadProgress').hide();
+                        $('#submitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 上传并OCR预览');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('上传失败: ' + (xhr.responseJSON?.error || error));
+                    $('#uploadProgress').hide();
+                    $('#submitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 上传并OCR预览');
+                }
+            });
+        });
+
+        // Form submit - batch with SSE real-time updates
+        $('#batchUploadForm').on('submit', function(e) {
+            e.preventDefault();
+            if (!validateBatchForm()) return;
+            
+            $('#batchUploadProgress').show();
+            $('#batchStatusDisplay').show();
+            $('#batchSubmitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>处理中...');
+            
+            // Initialize status display
+            initializeStatusDisplay();
+            
+            var formData = new FormData(this);
+            
+            // Step 1: Start async batch upload task
+            $.ajax({
+                url: '{% url "oil_records:batch_upload_async" %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener('progress', function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = (evt.loaded / evt.total) * 100;
+                            $('#batchUploadProgress .progress-bar').css('width', percentComplete + '%');
+                        }
+                    }, false);
+                    return xhr;
+                },
+                success: function(response) {
+                    if (response.success && response.task_id) {
+                        // Step 2: Connect to SSE stream for real-time updates
+                        connectToEventStream(response.task_id);
+                    } else {
+                        alert(response.error || '启动批量上传失败');
+                        $('#batchUploadProgress').hide();
+                        $('#batchStatusDisplay').hide();
+                        $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 批量上传并自动保存');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('上传失败: ' + (xhr.responseJSON?.error || error));
+                    $('#batchUploadProgress').hide();
+                    $('#batchStatusDisplay').hide();
+                    $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 批量上传并自动保存');
+                }
+            });
+        });
+        
+        // Connect to SSE stream for real-time updates
+        function connectToEventStream(taskId) {
+            console.log('Connecting to SSE stream with taskId:', taskId);
+            var eventSource = new EventSource('{% url "oil_records:batch_upload_stream" %}?task_id=' + taskId);
+            var successCount = 0;
+            var skippedCount = 0;
+            var errorCount = 0;
+            var totalCount = 0;
+            
+            eventSource.onopen = function() {
+                console.log('SSE connection opened');
+            };
+            
+            eventSource.onmessage = function(event) {
+                console.log('SSE message received:', event.data);
+                var data = JSON.parse(event.data);
+                
+                switch(data.type) {
+                    case 'start':
+                        totalCount = data.total;
+                        $('#statusTotal').text(totalCount);
+                        // 不添加新项，因为 initializeStatusDisplay 已经创建了
+                        break;
+                        
+                    case 'processing':
+                        // Update current processing file
+                        updateStatusItem(data.index, {
+                            type: 'processing',
+                            filename: data.filename,
+                            message: data.message
+                        });
+                        break;
+                        
+                    case 'file_complete':
+                        // Update with final result
+                        updateStatusItem(data.index, {
+                            type: data.status,
+                            filename: data.filename,
+                            message: data.message,
+                            equipment_name: data.equipment_name,
+                            attraction_name: data.attraction_name,
+                            report_count: data.report_count,
+                            duplicate_dates: data.duplicate_dates,
+                            new_dates: data.new_dates
+                        });
+                        
+                        // Update counters
+                        if (data.status === 'success') {
+                            successCount++;
+                            $('#statusSuccess').text(successCount);
+                        } else if (data.status === 'skipped') {
+                            skippedCount++;
+                            $('#statusSkipped').text(skippedCount);
+                        }
+                        break;
+                        
+                    case 'file_error':
+                        // Update with error
+                        updateStatusItem(data.index, {
+                            type: 'error',
+                            filename: data.filename,
+                            message: data.message
+                        });
+                        errorCount++;
+                        $('#statusError').text(errorCount);
+                        break;
+                        
+                    case 'complete':
+                        // All done
+                        eventSource.close();
+                        $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-check-circle"></i> 上传完成 - 前往仪表板');
+                        $('#batchSubmitBtn').off('click').on('click', function() {
+                            window.location.href = '{% url "oil_records:dashboard" %}';
+                        });
+                        
+                        // 在状态列表最后添加完成总结，不弹出窗口
+                        var summaryItem = `
+                            <div class="status-item bg-light border-success">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-check-all text-success me-2"></i>
+                                    <span class="filename fw-bold">批量上传完成</span>
+                                </div>
+                                <div class="message">
+                                    总计: ${totalCount} | 
+                                    <span class="text-success">成功: ${successCount}</span> | 
+                                    <span class="text-warning">跳过: ${skippedCount}</span> | 
+                                    <span class="text-danger">错误: ${errorCount}</span>
+                                </div>
+                            </div>
+                        `;
+                        $('#batchStatusList').append(summaryItem);
+                        break;
+                        
+                    case 'error':
+                        eventSource.close();
+                        alert('处理出错: ' + data.message);
+                        $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 批量上传并自动保存');
+                        break;
+                        
+                    case 'heartbeat':
+                        // Keep connection alive, do nothing
+                        break;
+                }
+            };
+            
+            eventSource.onerror = function(error) {
+                console.error('SSE Error:', error);
+                console.error('SSE readyState:', eventSource.readyState);
+                eventSource.close();
+                $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 批量上传并自动保存');
+            };
+        }
+        
+        // Update an existing status item or add if not exists
+        function updateStatusItem(index, data) {
+            var statusId = 'status-item-' + index;
+            var statusClass = data.type;
+            var icon = '';
+            var extraInfo = '';
+            
+            switch(data.type) {
+                case 'success':
+                    icon = '<i class="bi bi-check-circle-fill text-success me-2"></i>';
+                    break;
+                case 'skipped':
+                    icon = '<i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="bi bi-x-circle-fill text-danger me-2"></i>';
+                    break;
+                case 'processing':
+                    icon = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>';
+                    break;
+            }
+            
+            // Add attraction name if available
+            if (data.attraction_name) {
+                extraInfo += `<div class="message text-primary"><strong>景点:</strong> ${data.attraction_name}</div>`;
+            }
+            
+            // Add equipment name if available
+            if (data.equipment_name) {
+                extraInfo += `<div class="message text-info"><strong>设备:</strong> ${data.equipment_name}</div>`;
+            }
+            
+            // Add duplicate dates if available
+            if (data.duplicate_dates && data.duplicate_dates.length > 0) {
+                extraInfo += `<div class="skipped-dates"><strong>跳过的日期:</strong> ${data.duplicate_dates.join(', ')}</div>`;
+            }
+            
+            // Add new dates if available
+            if (data.new_dates && data.new_dates.length > 0) {
+                extraInfo += `<div class="message text-success"><strong>新创建的日期:</strong> ${data.new_dates.join(', ')}</div>`;
+            }
+            
+            var statusItem = `
+                <div class="status-item ${statusClass}" id="${statusId}">
+                    <div class="d-flex align-items-center">
+                        ${icon}
+                        <span class="filename">${data.filename}</span>
+                    </div>
+                    <div class="message">${data.message}</div>
+                    ${extraInfo}
+                </div>
+            `;
+            
+            // Check if item exists, update or append
+            var existingItem = $('#' + statusId);
+            if (existingItem.length > 0) {
+                existingItem.replaceWith(statusItem);
+            } else {
+                $('#batchStatusList').append(statusItem);
+            }
+        }
+    });
+
+    function selectMode(mode) {
+        document.getElementById(mode + 'Mode').checked = true;
+        toggleMode(mode);
+    }
+
+    function toggleMode(mode) {
+        if (mode === 'single') {
+            $('#singleUploadCard').show();
+            $('#batchUploadCard').hide();
+            $('.mode-card').removeClass('active');
+            $('#singleMode').closest('.mode-card').addClass('active');
+        } else {
+            $('#singleUploadCard').hide();
+            $('#batchUploadCard').show();
+            $('.mode-card').removeClass('active');
+            $('#batchMode').closest('.mode-card').addClass('active');
+        }
+    }
+
+    function showFileInfo(file) {
+        $('#uploadPlaceholder').hide();
+        $('#fileInfo').show();
+        $('#fileName').text(file.name);
+        $('#fileSize').text(formatFileSize(file.size));
+    }
+
+    function clearFile() {
+        $('#pdfFile').val('');
+        $('#uploadPlaceholder').show();
+        $('#fileInfo').hide();
+    }
+
+    function showBatchFileInfo(files) {
+        $('#batchUploadPlaceholder').hide();
+        $('#batchFileInfo').show();
+        $('#fileCount').text(files.length);
+        
+        var fileList = $('#fileList');
+        fileList.empty();
+        
+        for (var i = 0; i < Math.min(files.length, 5); i++) {
+            fileList.append(
+                '<div class="file-list-item">' +
+                '<i class="bi bi-file-pdf"></i>' +
+                '<span>' + files[i].name + ' (' + formatFileSize(files[i].size) + ')</span>' +
+                '</div>'
+            );
+        }
+        
+        if (files.length > 5) {
+            fileList.append('<div class="text-muted">... 还有 ' + (files.length - 5) + ' 个文件</div>');
+        }
+    }
+
+    function clearBatchFiles() {
+        $('#pdfFiles').val('');
+        $('#batchUploadPlaceholder').show();
+        $('#batchFileInfo').hide();
+        $('#batchUploadProgress .progress-bar').css('width', '0%');
+        $('#batchStatusDisplay').hide();
+        $('#batchStatusList').empty();
+    }
+    
+    // Initialize status display with pending items
+    function initializeStatusDisplay() {
+        const files = $('#pdfFiles')[0].files;
+        const statusList = $('#batchStatusList');
+        statusList.empty();
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const statusItem = `
+                <div class="status-item processing" id="status-item-${i}">
+                    <div class="d-flex align-items-center">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span class="filename">${file.name}</span>
+                    </div>
+                    <div class="message">等待处理...</div>
+                </div>
+            `;
+            statusList.append(statusItem);
+        }
+        
+        // Reset counters
+        $('#statusTotal').text(files.length);
+        $('#statusSuccess').text('0');
+        $('#statusSkipped').text('0');
+        $('#statusError').text('0');
+    }
+    
+    // Display batch processing results
+    function displayBatchResults(results, summary) {
+        const statusList = $('#batchStatusList');
+        statusList.empty();
+        
+        let successCount = 0;
+        let skippedCount = 0;
+        let errorCount = 0;
+        
+        results.forEach((result, index) => {
+            let statusClass = '';
+            let icon = '';
+            let message = '';
+            let extraInfo = '';
+            
+            switch(result.status) {
+                case 'success':
+                    statusClass = 'success';
+                    icon = '<i class="bi bi-check-circle-fill text-success me-2"></i>';
+                    message = result.message || '成功创建报告';
+                    successCount++;
+                    break;
+                case 'skipped':
+                    statusClass = 'skipped';
+                    icon = '<i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>';
+                    message = result.message || '已跳过';
+                    skippedCount++;
+                    break;
+                case 'error':
+                    statusClass = 'error';
+                    icon = '<i class="bi bi-x-circle-fill text-danger me-2"></i>';
+                    message = '处理失败';
+                    extraInfo = `<div class="error-detail">${result.error || '未知错误'}</div>`;
+                    errorCount++;
+                    break;
+                default:
+                    statusClass = 'processing';
+                    icon = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>';
+                    message = '处理中...';
+            }
+            
+            // Add skipped dates info if available
+            if (result.duplicate_dates && result.duplicate_dates.length > 0) {
+                extraInfo += `<div class="skipped-dates">
+                    <strong>跳过的日期:</strong> ${result.duplicate_dates.join(', ')}
+                </div>`;
+            }
+            
+            // Add new dates info if available
+            if (result.new_dates && result.new_dates.length > 0) {
+                extraInfo += `<div class="message text-success">
+                    <strong>新创建的日期:</strong> ${result.new_dates.join(', ')}
+                </div>`;
+            }
+            
+            const statusItem = `
+                <div class="status-item ${statusClass}">
+                    <div class="d-flex align-items-center">
+                        ${icon}
+                        <span class="filename">${result.filename}</span>
+                    </div>
+                    <div class="message">${message}</div>
+                    ${extraInfo}
+                </div>
+            `;
+            statusList.append(statusItem);
+        });
+        
+        // Update counters
+        $('#statusSuccess').text(successCount);
+        $('#statusSkipped').text(skippedCount);
+        $('#statusError').text(errorCount);
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 字节';
+        const k = 1024;
+        const sizes = ['字节', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function validateForm() {
+        if (!$('#pdfFile').val()) {
+            alert('请选择PDF文件');
+            return false;
+        }
+        return true;
+    }
+
+    function validateBatchForm() {
+        if (!$('#pdfFiles').val()) {
+            alert('请至少选择一个PDF文件');
+            return false;
+        }
+        return true;
+    }
+</script>
+{% endblock %}

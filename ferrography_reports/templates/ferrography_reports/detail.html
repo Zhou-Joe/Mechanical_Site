@@ -1,0 +1,127 @@
+{% extends 'ferrography_reports/base.html' %}
+
+{% block title %}铁谱分析 - 报告详情{% endblock %}
+{% block ferrography_breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'ferrography_reports:list' %}">报告列表</a></li>
+    <li class="breadcrumb-item active">报告详情 #{{ report.id }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- 基本信息 -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>基本信息</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="150"><strong>设备：</strong></td>
+                        <td>{{ report.equipment.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>景点：</strong></td>
+                        <td>{{ report.equipment.attraction.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>采样日期：</strong></td>
+                        <td>{{ report.sample_date }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>报告日期：</strong></td>
+                        <td>{{ report.report_date }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>报告编号：</strong></td>
+                        <td>{{ report.report_number|default:"-" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 颗粒分析 -->
+        {% if particles %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-droplet me-2"></i>颗粒分析 ({{ particles|length }}个)</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>颗粒类型</th>
+                            <th>浓度</th>
+                            <th>尺寸范围</th>
+                            <th>严重等级</th>
+                            <th>磨损机理</th>
+                            <th>形貌描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for particle in particles %}
+                        <tr>
+                            <td>{{ particle.particle_type|default:"-" }}</td>
+                            <td>{{ particle.concentration|default:"-" }}</td>
+                            <td>{{ particle.size_range|default:"-" }}</td>
+                            <td>{{ particle.severity_level|default:"-" }}</td>
+                            <td>{{ particle.wear_mechanism|default:"-" }}</td>
+                            <td>{{ particle.morphology|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 诊断结论 -->
+        {% if diagnosis %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>诊断结论</h5>
+            </div>
+            <div class="card-body">
+                <h6>总体评价</h6>
+                <p>{{ diagnosis.overall_assessment|default:"-"|linebreaks }}</p>
+                
+                <h6>磨损状态</h6>
+                <p>{{ diagnosis.wear_status|default:"-" }}</p>
+                
+                <h6>建议措施</h6>
+                <p>{{ diagnosis.recommendations|default:"-"|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <!-- 操作按钮 -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>操作</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'ferrography_reports:list' %}" class="btn btn-secondary w-100 mb-2">
+                    <i class="bi bi-arrow-left"></i> 返回列表
+                </a>
+                <a href="{% url 'ferrography_reports:upload' %}" class="btn btn-success w-100">
+                    <i class="bi bi-plus"></i> 上传新报告
+                </a>
+            </div>
+        </div>
+        
+        <!-- 原始数据 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>OCR原始数据</h5>
+            </div>
+            <div class="card-body">
+                <div style="max-height: 400px; overflow-y: auto; font-size: 0.85rem; background: #f8f9fa; padding: 1rem; border-radius: 0.25rem;">
+                    <pre style="white-space: pre-wrap; margin: 0;">{{ report.md_content|default:"无数据" }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

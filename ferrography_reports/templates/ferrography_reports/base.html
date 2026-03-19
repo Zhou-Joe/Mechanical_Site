@@ -1,0 +1,8 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}铁谱分析{% endblock %}
+{% block page_title %}铁谱分析系统{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'ferrography_reports:home' %}">铁谱分析</a></li>
+    {% block ferrography_breadcrumb %}{% endblock %}
+{% endblock %}

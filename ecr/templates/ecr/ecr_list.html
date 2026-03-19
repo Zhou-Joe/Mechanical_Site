@@ -1,0 +1,112 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}ECR Records - RSE Mechanical Engineering{% endblock %}
+{% block page_title %}ECR Records{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'oil_records:me_home' %}">Home</a></li>
+<li class="breadcrumb-item active">ECR Records</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Engineering Change Request Records</h5>
+                <div class="d-flex gap-2">
+                    <!-- 创建按钮 -->
+                    <a href="{% url 'ecr:ecr_create' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus"></i> Create New
+                    </a>
+                    <!-- 导入按钮 -->
+                    <form method="post" action="{% url 'ecr:ecr_import' %}" enctype="multipart/form-data" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="file" name="excel_file" accept=".xlsx,.xls" class="form-control form-control-sm" required>
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="bi bi-upload"></i> Import
+                        </button>
+                    </form>
+                    <!-- 搜索表单 -->
+                    <form class="d-flex" method="get" action="">
+                        <input type="text" name="q" class="form-control form-control-sm me-2" placeholder="Search..." value="{{ search_query|default:'' }}">
+                        <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Form #</th>
+                                <th>Title</th>
+                                <th>Requestor</th>
+                                <th>Progress</th>
+                                <th>Request Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in page_obj %}
+                            <tr>
+                                <td>{{ record.form_number }}</td>
+                                <td>{{ record.title|default:'-'|truncatechars:50 }}</td>
+                                <td>{{ record.requestor|default:'-' }}</td>
+                                <td>
+                                    {% if record.progress %}
+                                        <span class="badge bg-info">{{ record.progress }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ record.request_date|default:'-' }}</td>
+                                <td>
+                                    <a href="{% url 'ecr:ecr_detail' record.pk %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a href="{% url 'ecr:ecr_export' record.pk %}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-download"></i> Export
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No records found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Previous</a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

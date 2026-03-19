@@ -1,0 +1,596 @@
+# Chinese Simplified Translation
+# Copyright (C) 2026
+# This file is distributed under the same license as the oil_inspection package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-17 20:00+0800\n"
+"PO-Revision-Date: 2026-03-17 20:00+0800\n"
+"Last-Translator: \n"
+"Language-Team: Chinese\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Mechanical Engineering System"
+msgstr "机械工程系统"
+
+msgid "ME System"
+msgstr "机械工程系统"
+
+msgid "Main"
+msgstr "主菜单"
+
+msgid "Dashboard"
+msgstr "仪表板"
+
+msgid "Modules"
+msgstr "功能模块"
+
+msgid "Oil Inspection"
+msgstr "油品检测"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "Upload Report"
+msgstr "上传报告"
+
+msgid "Export Data"
+msgstr "导出数据"
+
+msgid "Maintenance"
+msgstr "维护管理"
+
+msgid "Schedule"
+msgstr "计划安排"
+
+msgid "Work Orders"
+msgstr "工单管理"
+
+msgid "Inventory"
+msgstr "库存管理"
+
+msgid "Stock List"
+msgstr "库存列表"
+
+msgid "Transactions"
+msgstr "交易记录"
+
+msgid "System"
+msgstr "系统"
+
+msgid "Admin"
+msgstr "管理后台"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Home"
+msgstr "首页"
+
+msgid "Mechanical Engineering Dashboard"
+msgstr "机械工程仪表板"
+
+msgid "Oil Reports"
+msgstr "油品报告"
+
+msgid "+12% from last month"
+msgstr "较上月增长 12%"
+
+msgid "Normal Status"
+msgstr "正常状态"
+
+msgid "of total reports"
+msgstr "的报告占比"
+
+msgid "Attention Required"
+msgstr "需要关注"
+
+msgid "Needs inspection"
+msgstr "需要检查"
+
+msgid "Equipment"
+msgstr "设备"
+
+msgid "Across all attractions"
+msgstr "所有游乐设施"
+
+msgid "Quick Actions"
+msgstr "快速操作"
+
+msgid "Upload Oil Report"
+msgstr "上传油品报告"
+
+msgid "View Trends"
+msgstr "查看趋势"
+
+msgid "Function Modules"
+msgstr "功能模块"
+
+msgid "Oil Quality Monitoring"
+msgstr "油品质量监控"
+
+msgid "Reports"
+msgstr "报告"
+
+msgid "Attractions"
+msgstr "游乐设施"
+
+msgid "Active"
+msgstr "运行中"
+
+msgid "Enter"
+msgstr "进入"
+
+msgid "Equipment Maintenance"
+msgstr "设备维护"
+
+msgid "Pending"
+msgstr "待处理"
+
+msgid "Completed"
+msgstr "已完成"
+
+msgid "Overdue"
+msgstr "已逾期"
+
+msgid "Coming Soon"
+msgstr "即将推出"
+
+msgid "Preview"
+msgstr "预览"
+
+msgid "Spare Parts Management"
+msgstr "备件管理"
+
+msgid "Items"
+msgstr "物品"
+
+msgid "Low Stock"
+msgstr "库存不足"
+
+msgid "Value"
+msgstr "价值"
+
+msgid "Documents"
+msgstr "文档"
+
+msgid "Technical Documentation"
+msgstr "技术文档"
+
+msgid "Manuals"
+msgstr "手册"
+
+msgid "Drawings"
+msgstr "图纸"
+
+msgid "Procedures"
+msgstr "程序"
+
+msgid "English"
+msgstr "英文"
+
+msgid "Chinese Simplified"
+msgstr "简体中文"
+
+msgid "Oil Inspection - Overview"
+msgstr "油品检测 - 概览"
+
+msgid "Oil Inspection Overview"
+msgstr "油品检测概览"
+
+msgid "Oil Inspection"
+msgstr "油品检测"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "Upload"
+msgstr "上传"
+
+msgid "OCR Preview"
+msgstr "OCR预览"
+
+msgid "Preview"
+msgstr "预览"
+
+msgid "OCR Result"
+msgstr "OCR结果"
+
+msgid "Upload Oil Report"
+msgstr "上传油品报告"
+
+msgid "Single File Upload"
+msgstr "单文件上传"
+
+msgid "Batch Upload"
+msgstr "批量上传"
+
+msgid "Drag and drop files here or click to browse"
+msgstr "拖拽文件到此处或点击浏览"
+
+msgid "Supported formats: PDF, JPG, PNG"
+msgstr "支持的格式：PDF、JPG、PNG"
+
+msgid "Maximum file size: 50MB"
+msgstr "最大文件大小：50MB"
+
+msgid "Upload Mode"
+msgstr "上传模式"
+
+msgid "Upload and Replace All"
+msgstr "上传并替换全部"
+
+msgid "Upload Non-Duplicate Only"
+msgstr "仅上传不重复数据"
+
+msgid "Processing..."
+msgstr "处理中..."
+
+msgid "Upload"
+msgstr "上传"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Back"
+msgstr "返回"
+
+msgid "Confirm"
+msgstr "确认"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Info"
+msgstr "信息"
+
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "No data available"
+msgstr "暂无数据"
+
+msgid "Search"
+msgstr "搜索"
+
+msgid "Filter"
+msgstr "筛选"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Date Range"
+msgstr "日期范围"
+
+msgid "Equipment"
+msgstr "设备"
+
+msgid "Attraction"
+msgstr "游乐设施"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "All"
+msgstr "全部"
+
+msgid "Normal"
+msgstr "正常"
+
+msgid "Abnormal"
+msgstr "异常"
+
+msgid "Parameter"
+msgstr "参数"
+
+msgid "Value"
+msgstr "数值"
+
+msgid "Unit"
+msgstr "单位"
+
+msgid "Standard"
+msgstr "标准"
+
+msgid "Result"
+msgstr "结果"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "View"
+msgstr "查看"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Download"
+msgstr "下载"
+
+msgid "Print"
+msgstr "打印"
+
+msgid "Export"
+msgstr "导出"
+
+msgid "Import"
+msgstr "导入"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Previous"
+msgstr "上一页"
+
+msgid "Next"
+msgstr "下一页"
+
+msgid "Page"
+msgstr "页"
+
+msgid "of"
+msgstr "共"
+
+msgid "Showing"
+msgstr "显示"
+
+msgid "to"
+msgstr "到"
+
+msgid "entries"
+msgstr "条记录"
+
+msgid "Upload Report"
+msgstr "上传报告"
+
+msgid "Upload one PDF file with preview and manual review"
+msgstr "上传单个PDF文件，支持预览和手动审核"
+
+msgid "Upload multiple PDF files with auto-processing"
+msgstr "上传多个PDF文件，自动处理"
+
+msgid "Select PDF File"
+msgstr "选择PDF文件"
+
+msgid "Drag & Drop PDF here or Click to Select"
+msgstr "拖拽PDF到此处或点击选择"
+
+msgid "PDF format only, max 50MB"
+msgstr "仅支持PDF格式，最大50MB"
+
+msgid "Select File"
+msgstr "选择文件"
+
+msgid "Change File"
+msgstr "更换文件"
+
+msgid "Upload & OCR Preview"
+msgstr "上传并OCR预览"
+
+msgid "Select Multiple PDF Files"
+msgstr "选择多个PDF文件"
+
+msgid "Drag & Drop Multiple PDFs here or Click to Select"
+msgstr "拖拽多个PDF到此处或点击选择"
+
+msgid "PDF format only, max 50MB per file"
+msgstr "仅支持PDF格式，每个文件最大50MB"
+
+msgid "Select Files"
+msgstr "选择文件"
+
+msgid "files selected"
+msgstr "个文件已选择"
+
+msgid "Clear All"
+msgstr "清除全部"
+
+msgid "Batch Upload Options"
+msgstr "批量上传选项"
+
+msgid "Auto-save to database"
+msgstr "自动保存到数据库"
+
+msgid "Skip preview, use smart matching results"
+msgstr "跳过预览，使用智能匹配结果"
+
+msgid "Skip duplicate files"
+msgstr "跳过重复文件"
+
+msgid "Skip if Equipment+Date combination exists"
+msgstr "如果设备+日期组合已存在则跳过"
+
+msgid "Upload non-duplicate dates only"
+msgstr "仅上传不重复的日期"
+
+msgid "For files with multiple dates, only upload new dates"
+msgstr "对于包含多个日期的文件，仅上传新日期"
+
+msgid "Continue on error"
+msgstr "出错时继续"
+
+msgid "Continue processing other files if one fails"
+msgstr "如果一个文件处理失败，继续处理其他文件"
+
+msgid "Batch Upload & Auto Save"
+msgstr "批量上传并自动保存"
+
+msgid "Please select PDF format files only"
+msgstr "请选择PDF格式的文件"
+
+msgid "File size cannot exceed 50MB"
+msgstr "文件大小不能超过50MB"
+
+msgid "File"
+msgstr "文件"
+
+msgid "is not in PDF format"
+msgstr "不是PDF格式"
+
+msgid "exceeds 50MB"
+msgstr "超过50MB"
+
+msgid "Processing failed"
+msgstr "处理失败"
+
+msgid "Upload failed:"
+msgstr "上传失败："
+
+msgid "Batch upload completed!"
+msgstr "批量上传完成！"
+
+msgid "Total:"
+msgstr "总计："
+
+msgid "Success:"
+msgstr "成功："
+
+msgid "Failed:"
+msgstr "失败："
+
+msgid "Batch upload failed"
+msgstr "批量上传失败"
+
+msgid "Bytes"
+msgstr "字节"
+
+msgid "KB"
+msgstr "KB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "Please select a PDF file"
+msgstr "请选择PDF文件"
+
+msgid "Please select at least one PDF file"
+msgstr "请至少选择一个PDF文件"
+
+msgid "Please select attraction"
+msgstr "请选择景点"
+
+msgid "Please select equipment"
+msgstr "请选择设备"
+
+msgid "Saving..."
+msgstr "保存中..."
+
+msgid "Skipped dates:"
+msgstr "跳过的日期："
+
+msgid "Skipped:"
+msgstr "跳过："
+
+msgid "Error:"
+msgstr "错误："
+
+msgid "Reports created:"
+msgstr "创建报告："
+
+msgid "Files with skipped dates:"
+msgstr "有跳过日期的文件："
+
+msgid "skipped"
+msgstr "跳过"
+
+msgid "Fully skipped files:"
+msgstr "完全跳过的文件："
+
+msgid "Failed files:"
+msgstr "失败的文件："
+
+msgid "Upload Status"
+msgstr "上传状态"
+
+msgid "Waiting to process..."
+msgstr "等待处理..."
+
+msgid "Processing..."
+msgstr "处理中..."
+
+msgid "Successfully created reports"
+msgstr "成功创建报告"
+
+msgid "Processing failed"
+msgstr "处理失败"
+
+msgid "Unknown error"
+msgstr "未知错误"
+
+msgid "New dates created:"
+msgstr "新创建的日期："
+
+msgid "Upload Complete - Go to Dashboard"
+msgstr "上传完成 - 前往仪表盘"
+
+msgid "Welcome to Mechanical Engineering System"
+msgstr "欢迎使用机械工程系统"
+
+msgid "Select a module below to get started"
+msgstr "选择下方模块开始使用"
+
+msgid "Manage oil inspection reports and view trends"
+msgstr "管理油品检测报告并查看趋势"
+
+msgid "Confirm Upload"
+msgstr "确认上传"
+
+msgid "Parameter"
+msgstr "参数"
+
+msgid "Standard"
+msgstr "标准"
+
+msgid "Category"
+msgstr "分类"
+
+msgid "Trend"
+msgstr "趋势"
+
+msgid "Metal"
+msgstr "金属"
+
+msgid "Moisture"
+msgstr "水分"
+
+msgid "Viscosity"
+msgstr "粘度"
+
+msgid "Other"
+msgstr "其他"
+
+msgid "Rising"
+msgstr "上升"
+
+msgid "Falling"
+msgstr "下降"
+
+msgid "Stable"
+msgstr "稳定"

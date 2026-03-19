@@ -1,0 +1,70 @@
+{% extends 'ferrography_reports/base.html' %}
+
+{% block title %}铁谱分析 - 报告列表{% endblock %}
+{% block ferrography_breadcrumb %}
+    <li class="breadcrumb-item active">报告列表</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-list me-2"></i>铁谱报告列表</h5>
+    </div>
+    <div class="card-body">
+        <!-- 筛选 -->
+        <form method="get" class="row mb-3">
+            <div class="col-md-4">
+                <select name="attraction" class="form-select" onchange="this.form.submit()">
+                    <option value="">所有景点</option>
+                    {% for attraction in attractions %}
+                    <option value="{{ attraction.id }}" {% if request.GET.attraction == attraction.id|stringformat:"s" %}selected{% endif %}>
+                        {{ attraction.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'ferrography_reports:upload' %}" class="btn btn-success">
+                    <i class="bi bi-plus"></i> 上传新报告
+                </a>
+            </div>
+        </form>
+        
+        <!-- 报告列表 -->
+        {% if reports %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>设备</th>
+                    <th>景点</th>
+                    <th>采样日期</th>
+                    <th>报告日期</th>
+                    <th>上传时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.id }}</td>
+                    <td>{{ report.equipment.name }}</td>
+                    <td>{{ report.equipment.attraction.name }}</td>
+                    <td>{{ report.sample_date }}</td>
+                    <td>{{ report.report_date }}</td>
+                    <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <a href="{% url 'ferrography_reports:detail' report.id %}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> 查看
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted text-center">暂无报告</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

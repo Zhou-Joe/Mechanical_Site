@@ -1,0 +1,245 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}ECR #{{ record.form_number }} - RSE Mechanical Engineering{% endblock %}
+{% block page_title %}ECR Detail #{{ record.form_number }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'oil_records:me_home' %}">Home</a></li>
+<li class="breadcrumb-item"><a href="{% url 'ecr:ecr_list' %}">ECR Records</a></li>
+<li class="breadcrumb-item active">#{{ record.form_number }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ record.title|default:'Untitled' }}</h5>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'ecr:ecr_edit' record.pk %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="{% url 'ecr:ecr_export' record.pk %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-download"></i> Export to Excel
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- 基本信息 -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Basic Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="40%"><strong>Form Number:</strong></td>
+                                <td>{{ record.form_number }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Progress:</strong></td>
+                                <td>{{ record.progress|default:'-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Completion Date:</strong></td>
+                                <td>{{ record.completion_date|default:'-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Requestor:</strong></td>
+                                <td>{{ record.requestor|default:'-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Contact:</strong></td>
+                                <td>{{ record.contact|default:'-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- 文档信息 -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Document Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="40%"><strong>Doc Number:</strong></td>
+                                <td>{{ record.doc_number|default:'-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rev Number:</strong></td>
+                                <td>{{ record.rev_number|default:'-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Request Date:</strong></td>
+                                <td>{{ record.request_date|default:'-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Expected Completion:</strong></td>
+                                <td>{{ record.expected_completion_date|default:'-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Change Type:</strong></td>
+                                <td>{{ record.engineering_change_type|default:'-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- 位置信息 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Location</h6>
+                        <p>{{ record.attraction_or_location|default:'-' }}</p>
+                    </div>
+                </div>
+
+                <!-- 详细描述 -->
+                {% if record.detail_description %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Detail Description</h6>
+                        <div class="p-3 bg-light rounded">
+                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.detail_description }}</pre>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 变更前 -->
+                {% if record.before_change or record.before_change_image %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Before Change</h6>
+                        {% if record.before_change %}
+                        <div class="p-3 bg-light rounded mb-3">
+                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.before_change }}</pre>
+                        </div>
+                        {% endif %}
+                        {% if record.before_change_image %}
+                        <div class="mt-2">
+                            <img src="{{ record.before_change_image.url }}" alt="Before Change" class="img-fluid rounded" style="max-width: 100%; max-height: 500px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 变更后 -->
+                {% if record.after_change or record.after_change_image %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">After Change</h6>
+                        {% if record.after_change %}
+                        <div class="p-3 bg-light rounded mb-3">
+                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.after_change }}</pre>
+                        </div>
+                        {% endif %}
+                        {% if record.after_change_image %}
+                        <div class="mt-2">
+                            <img src="{{ record.after_change_image.url }}" alt="After Change" class="img-fluid rounded" style="max-width: 100%; max-height: 500px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 变更理由 -->
+                {% if record.justification %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Justification</h6>
+                        <div class="p-3 bg-light rounded">
+                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.justification }}</pre>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 审批信息 -->
+                <hr>
+                <h6 class="text-muted mb-3">Approval Information</h6>
+                <div class="row">
+                    <!-- LOB Manager -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <strong>LOB Manager</strong>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Name:</strong> {{ record.lob_manager_name|default:'-' }}</p>
+                                <p class="mb-1"><strong>Approval:</strong> 
+                                    {% if record.lob_manager_approval == 'Y' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif record.lob_manager_approval == 'N' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
+                                </p>
+                                <p class="mb-1"><strong>Review Date:</strong> {{ record.lob_manager_review_date|default:'-' }}</p>
+                                {% if record.lob_manager_comments %}
+                                <p class="mb-0"><strong>Comments:</strong> {{ record.lob_manager_comments }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QE Engineer -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <strong>QE Engineer</strong>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Name:</strong> {{ record.qe_engineer_name|default:'-' }}</p>
+                                <p class="mb-1"><strong>Approval:</strong> 
+                                    {% if record.qe_engineer_approval == 'Y' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif record.qe_engineer_approval == 'N' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
+                                </p>
+                                <p class="mb-1"><strong>Review Date:</strong> {{ record.qe_engineer_review_date|default:'-' }}</p>
+                                {% if record.qe_engineer_comments %}
+                                <p class="mb-0"><strong>Comments:</strong> {{ record.qe_engineer_comments }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ME Engineer -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <strong>ME Engineer</strong>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Name:</strong> {{ record.me_engineer_name|default:'-' }}</p>
+                                <p class="mb-1"><strong>Approval:</strong> 
+                                    {% if record.me_engineer_approval == 'Y' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif record.me_engineer_approval == 'N' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
+                                </p>
+                                <p class="mb-1"><strong>Review Date:</strong> {{ record.me_engineer_review_date|default:'-' }}</p>
+                                {% if record.me_engineer_comments %}
+                                <p class="mb-0"><strong>Comments:</strong> {{ record.me_engineer_comments }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{% url 'ecr:ecr_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
