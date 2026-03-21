@@ -1,0 +1,1489 @@
+{% extends "oil_records/base_me.html" %}
+{% load i18n %}
+
+{% block title %}Acceleration Reader{% endblock %}
+
+{% block extra_css %}
+<style>
+    .plot-container {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .plot-area {
+        width: 100%;
+        height: 500px;
+        position: relative;
+    }
+    .stats-panel {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+    }
+    .file-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+    .file-item:hover {
+        background: #f0f0f0;
+    }
+    .file-item.active {
+        background: #e3f2fd;
+        border-left: 3px solid #2196F3;
+    }
+    .control-panel {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .status-bar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    .analysis-results {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    /* Tab styling */
+    .nav-tabs .nav-link {
+        color: #495057;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+        margin-right: 2px;
+    }
+    .nav-tabs .nav-link.active {
+        background-color: #fff;
+        border-color: #dee2e6 #dee2e6 #fff;
+        font-weight: bold;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: #e9ecef #e9ecef #dee2e6;
+    }
+    .tab-content {
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 0.25rem 0.25rem;
+        padding: 15px;
+        background: #fff;
+    }
+    .sub-tab-content {
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 0.25rem 0.25rem;
+        padding: 15px;
+        background: #f8f9fa;
+    }
+    .sub-nav-tabs .nav-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="status-bar">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Acceleration Data Reader</h4>
+                    <span id="statusText">Ready - Upload a file to begin</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Left Panel - File Upload and Controls -->
+        <div class="col-md-3">
+            <!-- File Upload Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-upload me-2"></i>File Upload</h5>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Data Type</label>
+                            <select class="form-select" id="fileType">
+                                <option value="standard">Standard Format</option>
+                                <option value="raw">Raw (GB+ASTM)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select File</label>
+                            <input type="file" class="form-control" id="fileInput" accept=".txt,.csv,.dat,.sup,.sups">
+                        </div>
+                        <button type="button" class="btn btn-primary w-100" id="uploadBtn">
+                            <i class="bi bi-cloud-upload me-1"></i>Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Loaded Files -->
+            <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-files me-2"></i>Loaded Files</h5>
+                </div>
+                <div class="card-body p-0" id="fileList" style="max-height: 200px; overflow-y: auto;">
+                    <div class="text-muted p-3 text-center">No files loaded</div>
+                </div>
+            </div>
+            
+            <!-- Filter Settings -->
+            <div class="card mb-3" id="filterSettings" style="display:none;">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Filter Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cutoff Frequency: <span id="cutoffValue">{{ default_cutoff }}</span> Hz</label>
+                        <input type="range" class="form-range" id="cutoffSlider" min="1" max="{{ max_cutoff }}" value="{{ default_cutoff }}">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">1 Hz</small>
+                            <small class="text-muted">{{ max_cutoff }} Hz</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-info w-100" id="applyCutoffBtn">
+                        <i class="bi bi-check-circle me-1"></i>Apply Filter
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ASTM Settings -->
+            <div class="card mb-3" id="astmSettings" style="display:none;">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>ASTM Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Restraint Type</label>
+                        <select class="form-select" id="restraintType">
+                            {% for rt in restraint_types %}
+                            <option value="{{ rt }}">{{ rt }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Condition</label>
+                        <select class="form-select" id="conditionType">
+                            {% for ct in condition_types %}
+                            <option value="{{ ct }}">{{ ct }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Height (inches)</label>
+                        <input type="number" class="form-control" id="heightValue" value="0" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Plot Area with Tabs -->
+        <div class="col-md-9">
+            <!-- Control Bar -->
+            <div class="control-panel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" data-type="Standard">Standard</button>
+                            <button type="button" class="btn btn-outline-secondary" data-type="Filter">Filtered</button>
+                            <button type="button" class="btn btn-outline-secondary" data-type="Raw">Raw</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted" id="plotInfo">Select a file to view data</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Tabs -->
+            <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="trend-tab" data-bs-toggle="tab" data-bs-target="#trend" type="button" role="tab">
+                        <i class="bi bi-graph-up me-1"></i>Trend Plot
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="astm-tab" data-bs-toggle="tab" data-bs-target="#astm" type="button" role="tab">
+                        <i class="bi bi-book me-1"></i>ASTM F2291
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="gb-tab" data-bs-toggle="tab" data-bs-target="#gb" type="button" role="tab">
+                        <i class="bi bi-book me-1"></i>GB 8408
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="zone-tab" data-bs-toggle="tab" data-bs-target="#zone" type="button" role="tab">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>Zone Analysis
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reversal-tab" data-bs-toggle="tab" data-bs-target="#reversal" type="button" role="tab">
+                        <i class="bi bi-arrow-left-right me-1"></i>Reversal Analysis
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="mainTabContent">
+                <!-- Trend Plot Tab -->
+                <div class="tab-pane fade show active" id="trend" role="tabpanel">
+                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="trendSubTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-plot-axis="x">X-Axis (Fore/Aft)</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-plot-axis="y">Y-Axis (Lateral)</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-plot-axis="z">Z-Axis (Vertical)</button>
+                        </li>
+                    </ul>
+                    <div class="plot-container">
+                        <div id="trendPlot" class="plot-area"></div>
+                        <div class="loading-overlay" id="trendLoading" style="display:none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ASTM Tab -->
+                <div class="tab-pane fade" id="astm" role="tabpanel">
+                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="astmSubTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-astm-plot="ax">ax vs dt</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-astm-plot="ay">ay vs dt</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-astm-plot="az">az vs dt</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-astm-plot="xy">XY Egg</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-astm-plot="xz">XZ Egg</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-astm-plot="yz">YZ Egg</button>
+                        </li>
+                    </ul>
+                    <div class="plot-container">
+                        <div id="astmPlot" class="plot-area"></div>
+                        <div class="loading-overlay" id="astmLoading" style="display:none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- GB Tab -->
+                <div class="tab-pane fade" id="gb" role="tabpanel">
+                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="gbSubTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-gb-plot="ay">ay vs dt</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-gb-plot="az">az vs dt</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-gb-plot="combined">Combined (ay vs az)</button>
+                        </li>
+                    </ul>
+                    <div class="plot-container">
+                        <div id="gbPlot" class="plot-area"></div>
+                        <div class="loading-overlay" id="gbLoading" style="display:none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zone Analysis Tab -->
+                <div class="tab-pane fade" id="zone" role="tabpanel">
+                    <div class="plot-container">
+                        <div id="zonePlot" class="plot-area"></div>
+                        <div class="loading-overlay" id="zoneLoading" style="display:none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reversal Analysis Tab -->
+                <div class="tab-pane fade" id="reversal" role="tabpanel">
+                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="reversalSubTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-reversal-plot="z">Z-Axis Reversals</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-reversal-plot="xy">XY Reversals</button>
+                        </li>
+                    </ul>
+                    <div class="plot-container">
+                        <div id="reversalPlot" class="plot-area"></div>
+                        <div class="loading-overlay" id="reversalLoading" style="display:none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats and Analysis Panels -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="stats-panel" id="statsPanel">
+                        <h6><i class="bi bi-table me-2"></i>Data Statistics</h6>
+                        <div id="statsContent" class="analysis-results">
+                            <p class="text-muted">Load a file to see statistics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stats-panel" id="analysisPanel">
+                        <h6><i class="bi bi-calculator me-2"></i>Analysis Results</h6>
+                        <div id="analysisContent" class="analysis-results">
+                            <p class="text-muted">Select analysis type to see results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Bootstrap JS for tabs -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Use Plotly.js with WebGL support for better performance -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script>
+// Performance optimization: Use WebGL for large datasets
+const USE_WEBGL = true;
+
+let currentFile = null;
+let currentDataType = 'Standard';
+let cutoff = {{ default_cutoff }};
+let loadedFiles = [];
+
+// Current sub-tab selections
+let currentTrendAxis = 'x';
+let currentASTMPlot = 'ax';
+let currentGBPlot = 'ay';
+let currentReversalPlot = 'z';
+
+// Cached data
+let cachedASTMData = null;
+let cachedGBData = null;
+let cachedZoneData = null;
+let cachedReversalData = null;
+
+// Initialize plots
+document.addEventListener('DOMContentLoaded', function() {
+    initPlots();
+    setupEventListeners();
+});
+
+function initPlots() {
+    // Initialize all plot areas
+    Plotly.newPlot('trendPlot', [], {
+        title: 'Trend Plot',
+        xaxis: { title: 'Time (s)' },
+        yaxis: { title: 'Acceleration (g)' },
+        hovermode: 'x unified',
+        showlegend: true,
+        margin: { t: 50, r: 30, b: 50, l: 60 }
+    });
+    
+    Plotly.newPlot('astmPlot', [], {
+        title: 'ASTM F2291 Analysis',
+        xaxis: { title: 'dt (s)' },
+        yaxis: { title: 'Acceleration (g)' },
+        hovermode: 'x unified',
+        showlegend: true,
+        margin: { t: 50, r: 30, b: 50, l: 60 }
+    });
+    
+    Plotly.newPlot('gbPlot', [], {
+        title: 'GB 8408 Analysis',
+        xaxis: { title: 'dt (s)' },
+        yaxis: { title: 'Acceleration (g)' },
+        hovermode: 'x unified',
+        showlegend: true,
+        margin: { t: 50, r: 30, b: 50, l: 60 }
+    });
+    
+    Plotly.newPlot('zonePlot', [], {
+        title: 'Acceleration Zone Analysis',
+        xaxis: { title: 'Front <=> Back (X, g)', range: [-6, 6] },
+        yaxis: { title: 'Up <=> Down (Z, g)', range: [-4, 4] },
+        hovermode: 'closest',
+        showlegend: true,
+        margin: { t: 50, r: 30, b: 50, l: 60 }
+    });
+    
+    Plotly.newPlot('reversalPlot', [], {
+        title: 'Reversal Analysis',
+        xaxis: { title: 'Time (s)' },
+        yaxis: { title: 'Acceleration (g)' },
+        hovermode: 'x unified',
+        showlegend: true,
+        margin: { t: 50, r: 30, b: 50, l: 60 }
+    });
+}
+
+function setupEventListeners() {
+    // Upload button
+    document.getElementById('uploadBtn').addEventListener('click', handleUpload);
+    
+    // Cutoff slider
+    document.getElementById('cutoffSlider').addEventListener('input', function() {
+        document.getElementById('cutoffValue').textContent = this.value;
+    });
+    
+    // Apply cutoff button
+    document.getElementById('applyCutoffBtn').addEventListener('click', function() {
+        cutoff = parseInt(document.getElementById('cutoffSlider').value);
+        if (currentFile) {
+            refreshAllPlots();
+        }
+    });
+    
+    // Data type buttons
+    document.querySelectorAll('[data-type]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentDataType = this.dataset.type;
+            if (currentFile) {
+                refreshAllPlots();
+            }
+        });
+    });
+    
+    // File input change
+    document.getElementById('fileInput').addEventListener('change', function() {
+        if (this.files.length > 0) {
+            document.getElementById('statusText').textContent = 'Ready to upload: ' + this.files[0].name;
+        }
+    });
+    
+    // ASTM Settings change listeners
+    document.getElementById('restraintType').addEventListener('change', function() {
+        if (currentFile) {
+            loadASTMData();
+        }
+    });
+    
+    document.getElementById('conditionType').addEventListener('change', function() {
+        if (currentFile) {
+            loadASTMData();
+        }
+    });
+    
+    document.getElementById('heightValue').addEventListener('change', function() {
+        if (currentFile) {
+            loadASTMData();
+        }
+    });
+    
+    // Trend sub-tabs
+    document.querySelectorAll('#trendSubTabs .nav-link').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#trendSubTabs .nav-link').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentTrendAxis = this.dataset.plotAxis;
+            renderTrendPlot();
+        });
+    });
+    
+    // ASTM sub-tabs
+    document.querySelectorAll('#astmSubTabs .nav-link').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#astmSubTabs .nav-link').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentASTMPlot = this.dataset.astmPlot;
+            renderASTMPlot();
+        });
+    });
+    
+    // GB sub-tabs
+    document.querySelectorAll('#gbSubTabs .nav-link').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#gbSubTabs .nav-link').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentGBPlot = this.dataset.gbPlot;
+            renderGBPlot();
+        });
+    });
+    
+    // Reversal sub-tabs
+    document.querySelectorAll('#reversalSubTabs .nav-link').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#reversalSubTabs .nav-link').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentReversalPlot = this.dataset.reversalPlot;
+            renderReversalPlot();
+        });
+    });
+    
+    // Main tab change - load data when switching to analysis tabs
+    document.getElementById('astm-tab').addEventListener('shown.bs.tab', function() {
+        if (currentFile) loadASTMData();
+    });
+    
+    document.getElementById('gb-tab').addEventListener('shown.bs.tab', function() {
+        if (currentFile) loadGBData();
+    });
+    
+    document.getElementById('zone-tab').addEventListener('shown.bs.tab', function() {
+        if (currentFile) loadZoneData();
+    });
+    
+    document.getElementById('reversal-tab').addEventListener('shown.bs.tab', function() {
+        if (currentFile) loadReversalData();
+    });
+}
+
+async function handleUpload() {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a file first');
+        return;
+    }
+    
+    showLoading(true);
+    updateStatus('Uploading file...');
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('file_type', document.getElementById('fileType').value);
+    formData.append('cutoff', cutoff);
+    
+    // Get CSRF token from the form's hidden input
+    const csrftoken = document.querySelector('#uploadForm [name=csrfmiddlewaretoken]')?.value;
+    
+    console.log('Uploading file:', fileInput.files[0].name);
+    console.log('CSRF Token:', csrftoken ? 'Found' : 'Not found');
+    
+    try {
+        const response = await fetch('/acceleration/upload/', {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': csrftoken || ''
+            },
+            body: formData
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.success) {
+            loadedFiles = data.files;
+            updateFileList(loadedFiles);
+            document.getElementById('filterSettings').style.display = 'block';
+            document.getElementById('astmSettings').style.display = 'block';
+            updateStatus('File uploaded successfully');
+            
+            // Clear cached data
+            cachedASTMData = null;
+            cachedGBData = null;
+            cachedZoneData = null;
+            cachedReversalData = null;
+            
+            if (loadedFiles.length > 0) {
+                selectFile(loadedFiles[0].name);
+            }
+        } else {
+            alert('Error: ' + data.error);
+            updateStatus('Upload failed');
+        }
+    } catch (err) {
+        console.error('Upload error:', err);
+        alert('Upload failed: ' + err.message);
+        updateStatus('Upload failed');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function updateFileList(files) {
+    const fileList = document.getElementById('fileList');
+    if (files.length === 0) {
+        fileList.innerHTML = '<div class="text-muted p-3 text-center">No files loaded</div>';
+        return;
+    }
+    
+    fileList.innerHTML = files.map((f, i) => `
+        <div class="file-item ${i === 0 ? 'active' : ''}" data-name="${f.name}">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                <div>
+                    <strong>${f.name}</strong>
+                    <br><small class="text-muted">Type: ${f.type}</small>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    document.querySelectorAll('.file-item').forEach(item => {
+        item.addEventListener('click', () => selectFile(item.dataset.name));
+    });
+}
+
+async function selectFile(filename) {
+    currentFile = filename;
+    document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+    document.querySelector(`[data-name="${filename}"]`)?.classList.add('active');
+    updateStatus('Loading: ' + filename);
+    
+    // Clear cached data for new file
+    cachedASTMData = null;
+    cachedGBData = null;
+    cachedZoneData = null;
+    cachedReversalData = null;
+    
+    await loadPlotData();
+}
+
+async function loadPlotData() {
+    if (!currentFile) return;
+    
+    showLoading(true);
+    
+    try {
+        const response = await fetch('/acceleration/plot-data/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                filename: currentFile,
+                plot_type: currentDataType,
+                cutoff: cutoff
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            renderTrendPlot(data.data);
+            updateStats(data.stats);
+            document.getElementById('plotInfo').textContent = 
+                `File: ${currentFile} | Type: ${currentDataType} | Cutoff: ${cutoff} Hz`;
+        } else {
+            alert('Error loading plot data: ' + data.error);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function refreshAllPlots() {
+    if (!currentFile) return;
+    
+    // Refresh trend plot
+    await loadPlotData();
+    
+    // Clear cached analysis data
+    cachedASTMData = null;
+    cachedGBData = null;
+    cachedZoneData = null;
+    cachedReversalData = null;
+    
+    // Re-render current tabs if they're visible
+    if (document.getElementById('astm-tab').classList.contains('active')) {
+        loadASTMData();
+    }
+    if (document.getElementById('gb-tab').classList.contains('active')) {
+        loadGBData();
+    }
+    if (document.getElementById('zone-tab').classList.contains('active')) {
+        loadZoneData();
+    }
+    if (document.getElementById('reversal-tab').classList.contains('active')) {
+        loadReversalData();
+    }
+}
+
+function renderTrendPlot(data) {
+    if (!data) return;
+    
+    const axisMap = {
+        'x': { label: 'X (Fore/Back)', color: '#e74c3c', key: 'x' },
+        'y': { label: 'Y (Lateral)', color: '#27ae60', key: 'y' },
+        'z': { label: 'Z (Vertical)', color: '#3498db', key: 'z' }
+    };
+    
+    const axis = axisMap[currentTrendAxis];
+    
+    const traces = [{
+        x: data.time,
+        y: data[axis.key],
+        name: axis.label,
+        type: USE_WEBGL ? 'scattergl' : 'scatter',
+        line: { color: axis.color, width: 1 },
+        hovertemplate: `${axis.label}: %{y:.3f}g<br>Time: %{x:.3f}s<extra></extra>`
+    }];
+    
+    const layout = {
+        title: { text: `<b>${data.filename || currentFile}</b> - ${axis.label}`, font: { size: 14 } },
+        margin: { t: 50, r: 30, b: 50, l: 60 },
+        plot_bgcolor: '#fafafa',
+        showlegend: false,
+        xaxis: { title: 'Time (s)', gridcolor: '#f0f0f0' },
+        yaxis: { title: `${axis.label} (g)`, gridcolor: '#f0f0f0' },
+        hovermode: 'x unified'
+    };
+    
+    Plotly.newPlot('trendPlot', traces, layout);
+}
+
+function updateStats(stats) {
+    if (!stats) return;
+    
+    document.getElementById('statsContent').innerHTML = `
+        <table class="table table-sm table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Axis</th>
+                    <th>Max</th>
+                    <th>Min</th>
+                    <th>t(Max)</th>
+                    <th>t(Min)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge bg-danger">X</span></td>
+                    <td>${stats.x.max.toFixed(3)}</td>
+                    <td>${stats.x.min.toFixed(3)}</td>
+                    <td>${stats.x.max_time.toFixed(3)}s</td>
+                    <td>${stats.x.min_time.toFixed(3)}s</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-success">Y</span></td>
+                    <td>${stats.y.max.toFixed(3)}</td>
+                    <td>${stats.y.min.toFixed(3)}</td>
+                    <td>${stats.y.max_time.toFixed(3)}s</td>
+                    <td>${stats.y.min_time.toFixed(3)}s</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-primary">Z</span></td>
+                    <td>${stats.z.max.toFixed(3)}</td>
+                    <td>${stats.z.min.toFixed(3)}</td>
+                    <td>${stats.z.max_time.toFixed(3)}s</td>
+                    <td>${stats.z.min_time.toFixed(3)}s</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="mt-2">
+            <small class="text-muted">
+                <strong>Duration:</strong> ${stats.duration ? stats.duration.toFixed(2) : 'N/A'}s | 
+                <strong>Points:</strong> ${stats.points ? stats.points.toLocaleString() : 'N/A'}
+            </small>
+        </div>
+    `;
+}
+
+async function loadASTMData() {
+    if (!currentFile) return;
+    
+    document.getElementById('astmLoading').style.display = 'flex';
+    
+    try {
+        const response = await fetch('/acceleration/astm-fit/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                filename: currentFile,
+                cutoff: cutoff,
+                restraint: document.getElementById('restraintType').value,
+                condition: document.getElementById('conditionType').value,
+                height: parseFloat(document.getElementById('heightValue').value)
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            cachedASTMData = data;
+            renderASTMPlot();
+        } else {
+            alert('ASTM analysis error: ' + data.error);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+    } finally {
+        document.getElementById('astmLoading').style.display = 'none';
+    }
+}
+
+function renderASTMPlot() {
+    if (!cachedASTMData || !cachedASTMData.astm_data) return;
+    
+    const astm = cachedASTMData.astm_data;
+    const limits = cachedASTMData.astm_limits || {};
+    const restraintContours = cachedASTMData.restraint_contours || {};
+    const restraint = cachedASTMData.restraint || 'None';
+    const restraintLimits = cachedASTMData.restraint_limits || {};
+    
+    let traces = [];
+    let layout = {};
+    
+    if (currentASTMPlot === 'ax') {
+        traces = [
+            { x: astm.time_axis, y: astm.ax_positive, name: 'ax(+)', type: 'scatter', line: { color: '#e74c3c', width: 2 } },
+            { x: astm.time_axis, y: astm.ax_negative, name: 'ax(-)', type: 'scatter', line: { color: '#c0392b', width: 2, dash: 'dash' } }
+        ];
+        
+        if (limits.ax_positive) {
+            traces.push({ x: limits.ax_positive.x, y: limits.ax_positive.y, name: 'ASTM Limit(+)', line: { color: 'red', width: 3 } });
+        }
+        if (limits.ax_negative) {
+            traces.push({ x: limits.ax_negative.x, y: limits.ax_negative.y, name: 'ASTM Limit(-)', line: { color: 'red', width: 3 } });
+        }
+        
+        if (restraint !== 'None' && restraintLimits.ax_positive) {
+            traces.push({ x: restraintLimits.ax_positive.x, y: restraintLimits.ax_positive.y, name: restraint + ' Limit(+)', line: { color: 'darkred', width: 2 } });
+        }
+        if (restraint !== 'None' && restraintLimits.ax_negative) {
+            traces.push({ x: restraintLimits.ax_negative.x, y: restraintLimits.ax_negative.y, name: restraint + ' Limit(-)', line: { color: 'darkred', width: 2 } });
+        }
+        
+        layout = {
+            title: { text: 'ax vs dt (Fore/Aft)', font: { size: 14 } },
+            xaxis: { title: 'dt (s)' },
+            yaxis: { title: 'ax (g)' },
+            hovermode: 'x unified',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 }
+        };
+        
+    } else if (currentASTMPlot === 'ay') {
+        traces = [
+            { x: astm.time_axis, y: astm.ay_positive, name: 'ay(+)', type: 'scatter', line: { color: '#27ae60', width: 2 } },
+            { x: astm.time_axis, y: astm.ay_negative, name: 'ay(-)', type: 'scatter', line: { color: '#1e8449', width: 2, dash: 'dash' } }
+        ];
+        
+        if (limits.ay_positive) {
+            traces.push({ x: limits.ay_positive.x, y: limits.ay_positive.y, name: 'ASTM Limit', line: { color: 'red', width: 3 } });
+        }
+        
+        if (restraint !== 'None' && restraintLimits.ay_positive) {
+            traces.push({ x: restraintLimits.ay_positive.x, y: restraintLimits.ay_positive.y, name: restraint + ' Limit', line: { color: 'darkgreen', width: 2 } });
+        }
+        
+        layout = {
+            title: { text: 'ay vs dt (Lateral)', font: { size: 14 } },
+            xaxis: { title: 'dt (s)' },
+            yaxis: { title: 'ay (g)' },
+            hovermode: 'x unified',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 }
+        };
+        
+    } else if (currentASTMPlot === 'az') {
+        traces = [
+            { x: astm.time_axis, y: astm.az_positive, name: 'az(+)', type: 'scatter', line: { color: '#3498db', width: 2 } },
+            { x: astm.time_axis, y: astm.az_negative, name: 'az(-)', type: 'scatter', line: { color: '#2980b9', width: 2, dash: 'dash' } }
+        ];
+        
+        if (limits.az_positive) {
+            traces.push({ x: limits.az_positive.x, y: limits.az_positive.y, name: 'ASTM Limit(+)', line: { color: 'red', width: 3 } });
+        }
+        if (limits.az_negative) {
+            traces.push({ x: limits.az_negative.x, y: limits.az_negative.y, name: 'ASTM Limit(-)', line: { color: 'red', width: 3 } });
+        }
+        
+        if (restraint !== 'None' && restraintLimits.az_positive) {
+            traces.push({ x: restraintLimits.az_positive.x, y: restraintLimits.az_positive.y, name: restraint + ' Limit(+)', line: { color: 'darkblue', width: 2 } });
+        }
+        if (restraint !== 'None' && restraintLimits.az_negative) {
+            traces.push({ x: restraintLimits.az_negative.x, y: restraintLimits.az_negative.y, name: restraint + ' Limit(-)', line: { color: 'darkblue', width: 2 } });
+        }
+        
+        layout = {
+            title: { text: 'az vs dt (Vertical)', font: { size: 14 } },
+            xaxis: { title: 'dt (s)' },
+            yaxis: { title: 'az (g)' },
+            hovermode: 'x unified',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 }
+        };
+        
+    } else if (['xy', 'xz', 'yz'].includes(currentASTMPlot)) {
+        const eggMap = {
+            'xy': { x: astm.raw_x, y: astm.raw_y, xLabel: 'Front <=> Back (X, g)', yLabel: 'Left <=> Right (Y, g)', range: [-6, 6] },
+            'xz': { x: astm.raw_x, y: astm.raw_z, xLabel: 'Front <=> Back (X, g)', yLabel: 'Up <=> Down (Z, g)', range: [-6, 6] },
+            'yz': { x: astm.raw_y, y: astm.raw_z, xLabel: 'Left <=> Right (Y, g)', yLabel: 'Up <=> Down (Z, g)', range: [-6, 6] }
+        };
+        
+        const egg = eggMap[currentASTMPlot];
+        const contourKey = currentASTMPlot;
+        
+        traces = [{
+            x: egg.x,
+            y: egg.y,
+            name: 'Data',
+            mode: 'markers',
+            type: USE_WEBGL ? 'scattergl' : 'scatter',
+            marker: { color: '#17becf', size: 3, opacity: 0.5 }
+        }];
+        
+        // Add restraint contours
+        if (restraint !== 'None' && restraintContours) {
+            if (restraintContours[contourKey]) {
+                const contour = restraintContours[contourKey];
+                const yKey = contourKey === 'xy' ? 'y' : 'z';
+                traces.push({
+                    x: contour.x,
+                    y: contour[yKey],
+                    name: restraint + ' (0s)',
+                    mode: 'lines',
+                    line: { color: 'red', width: 2 }
+                });
+            }
+            if (restraintContours[contourKey + '_dash']) {
+                const contour = restraintContours[contourKey + '_dash'];
+                const yKey = contourKey === 'xy' ? 'y' : 'z';
+                traces.push({
+                    x: contour.x,
+                    y: contour[yKey],
+                    name: restraint + ' (0.2s)',
+                    mode: 'lines',
+                    line: { color: 'red', width: 2, dash: 'dash' }
+                });
+            }
+        }
+        
+        layout = {
+            title: { text: `${currentASTMPlot.toUpperCase()} Egg Contour`, font: { size: 14 } },
+            xaxis: { title: egg.xLabel, range: egg.range },
+            yaxis: { title: egg.yLabel, range: egg.range },
+            hovermode: 'closest',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 }
+        };
+    }
+    
+    layout.plot_bgcolor = '#fafafa';
+    Plotly.newPlot('astmPlot', traces, layout);
+}
+
+async function loadGBData() {
+    if (!currentFile) return;
+    
+    document.getElementById('gbLoading').style.display = 'flex';
+    
+    try {
+        const response = await fetch('/acceleration/gb-fit/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                filename: currentFile,
+                cutoff: cutoff
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            cachedGBData = data;
+            renderGBPlot();
+        } else {
+            alert('GB analysis error: ' + data.error);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+    } finally {
+        document.getElementById('gbLoading').style.display = 'none';
+    }
+}
+
+function renderGBPlot() {
+    if (!cachedGBData || !cachedGBData.gb_data) return;
+    
+    const gb = cachedGBData.gb_data;
+    const limits = cachedGBData.gb_limits || {};
+    const contour = cachedGBData.gb_contour || {};
+    
+    let traces = [];
+    let layout = {};
+    
+    if (currentGBPlot === 'ay') {
+        traces = [
+            { x: gb.time_axis, y: gb.ay_positive, name: 'ay(+)', type: 'scatter', line: { color: '#27ae60', width: 2 } },
+            { x: gb.time_axis, y: gb.ay_negative, name: 'ay(-)', type: 'scatter', line: { color: '#1e8449', width: 2, dash: 'dash' } }
+        ];
+        
+        if (limits.ay_positive) {
+            traces.push({ x: limits.ay_positive.x, y: limits.ay_positive.y, name: 'GB Limit(+)', line: { color: 'red', width: 3 } });
+        }
+        if (limits.ay_negative) {
+            traces.push({ x: limits.ay_negative.x, y: limits.ay_negative.y, name: 'GB Limit(-)', line: { color: 'red', width: 3 } });
+        }
+        
+        layout = {
+            title: { text: 'ay vs dt (Lateral)', font: { size: 14 } },
+            xaxis: { title: 'dt (s)' },
+            yaxis: { title: 'ay (g)' },
+            hovermode: 'x unified',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 }
+        };
+        
+    } else if (currentGBPlot === 'az') {
+        traces = [
+            { x: gb.time_axis, y: gb.az_positive, name: 'az(+)', type: 'scatter', line: { color: '#3498db', width: 2 } },
+            { x: gb.time_axis, y: gb.az_negative, name: 'az(-)', type: 'scatter', line: { color: '#2980b9', width: 2, dash: 'dash' } }
+        ];
+        
+        if (limits.az_positive) {
+            traces.push({ x: limits.az_positive.x, y: limits.az_positive.y, name: 'GB Limit(+)', line: { color: 'red', width: 3 } });
+        }
+        if (limits.az_negative) {
+            traces.push({ x: limits.az_negative.x, y: limits.az_negative.y, name: 'GB Limit(-)', line: { color: 'red', width: 3 } });
+        }
+        
+        layout = {
+            title: { text: 'az vs dt (Vertical)', font: { size: 14 } },
+            xaxis: { title: 'dt (s)' },
+            yaxis: { title: 'az (g)' },
+            hovermode: 'x unified',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 }
+        };
+        
+    } else if (currentGBPlot === 'combined') {
+        traces = [{
+            x: gb.raw_z,
+            y: gb.raw_y,
+            name: 'Data',
+            mode: 'markers',
+            type: USE_WEBGL ? 'scattergl' : 'scatter',
+            marker: { color: '#17becf', size: 3, opacity: 0.5 }
+        }];
+        
+        if (contour.x) {
+            traces.push({
+                x: contour.x,
+                y: contour.y_pos,
+                name: 'GB Limit(+)',
+                mode: 'lines',
+                line: { color: 'orange', width: 2 }
+            });
+            traces.push({
+                x: contour.x,
+                y: contour.y_neg,
+                name: 'GB Limit(-)',
+                mode: 'lines',
+                line: { color: 'orange', width: 2 }
+            });
+        }
+        
+        layout = {
+            title: { text: 'Combined (az vs ay)', font: { size: 14 } },
+            xaxis: { title: 'az (g)', range: [-3, 7] },
+            yaxis: { title: 'ay (g)', range: [-4, 4] },
+            hovermode: 'closest',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 }
+        };
+    }
+    
+    layout.plot_bgcolor = '#fafafa';
+    Plotly.newPlot('gbPlot', traces, layout);
+}
+
+async function loadZoneData() {
+    if (!currentFile) return;
+    
+    document.getElementById('zoneLoading').style.display = 'flex';
+    
+    try {
+        const response = await fetch('/acceleration/zone-analysis/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                filename: currentFile,
+                cutoff: cutoff
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            cachedZoneData = data;
+            renderZonePlot();
+        } else {
+            alert('Zone analysis error: ' + data.error);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+    } finally {
+        document.getElementById('zoneLoading').style.display = 'none';
+    }
+}
+
+function renderZonePlot() {
+    if (!cachedZoneData || !cachedZoneData.zone_data) return;
+    
+    const zone = cachedZoneData.zone_data;
+    const boundaries = cachedZoneData.zone_boundaries || {};
+    
+    let traces = [];
+    
+    // Add zone boundary polygons
+    const zoneOrder = ['zone1', 'zone2', 'zone3', 'zone4', 'zone5'];
+    const zoneNames = {'zone1': 'Zone 1', 'zone2': 'Zone 2', 'zone3': 'Zone 3', 'zone4': 'Zone 4', 'zone5': 'Zone 5'};
+    
+    zoneOrder.forEach(zoneKey => {
+        if (boundaries[zoneKey]) {
+            boundaries[zoneKey].forEach(region => {
+                traces.push({
+                    x: region.x,
+                    y: region.y,
+                    fill: 'toself',
+                    fillcolor: region.color || 'rgba(0,0,0,0.1)',
+                    line: { width: 0 },
+                    name: zoneNames[zoneKey],
+                    showlegend: true,
+                    hoverinfo: 'none',
+                    type: 'scatter',
+                    mode: 'lines'
+                });
+            });
+        }
+    });
+    
+    // Add zone boundary lines
+    traces.push({
+        x: [-0.7, 0, 0.7],
+        y: [0.2, 0, -0.2],
+        mode: 'lines',
+        line: { color: 'black', width: 2 },
+        name: 'Zone Boundary',
+        showlegend: true,
+        hoverinfo: 'none'
+    });
+    
+    // Vertical lines
+    [-1.2, -0.7, -0.2, 0.2, 0.7].forEach(x => {
+        traces.push({
+            x: [x, x],
+            y: [-4, 4],
+            mode: 'lines',
+            line: { color: 'black', width: 1, dash: 'dot' },
+            showlegend: false,
+            hoverinfo: 'none'
+        });
+    });
+    
+    // Horizontal lines
+    [-0.2, 0, 0.2, 0.7].forEach(y => {
+        traces.push({
+            x: [-6, 6],
+            y: [y, y],
+            mode: 'lines',
+            line: { color: 'black', width: 1, dash: 'dot' },
+            showlegend: false,
+            hoverinfo: 'none'
+        });
+    });
+    
+    // Add data points with zone colors
+    traces.push({
+        x: zone.x,
+        y: zone.z,
+        name: 'Data',
+        mode: 'markers',
+        type: USE_WEBGL ? 'scattergl' : 'scatter',
+        marker: {
+            color: zone.colors || '#3498db',
+            size: 3,
+            opacity: 0.8,
+            line: { color: 'black', width: 0.5 }
+        },
+        hovertemplate: 't: %{customdata[0]:.3f}s<br>X: %{x:.3f}g<br>Z: %{y:.3f}g<br>Zone: %{customdata[1]}<extra></extra>',
+        customdata: zone.time.map((t, i) => [t, zone.zone_labels[i] || 'Unknown'])
+    });
+    
+    const layout = {
+        title: { text: 'Acceleration Zone Analysis', font: { size: 14 } },
+        xaxis: { title: 'Front <=> Back (X, g)', range: [-6, 6] },
+        yaxis: { title: 'Up <=> Down (Z, g)', range: [-4, 4] },
+        hovermode: 'closest',
+        showlegend: true,
+        margin: { t: 50, r: 30, b: 50, l: 60 },
+        plot_bgcolor: '#fafafa'
+    };
+    
+    Plotly.newPlot('zonePlot', traces, layout);
+    updateAnalysisResults('Zone Analysis', {
+        zone_data: zone,
+        most_severe: cachedZoneData.zone_analysis?.most_severe,
+        zone_durations: cachedZoneData.zone_analysis?.zone_durations
+    });
+}
+
+async function loadReversalData() {
+    if (!currentFile) return;
+    
+    document.getElementById('reversalLoading').style.display = 'flex';
+    
+    try {
+        const response = await fetch('/acceleration/reversal-analysis/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                filename: currentFile,
+                cutoff: cutoff
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            cachedReversalData = data;
+            renderReversalPlot();
+        } else {
+            alert('Reversal analysis error: ' + data.error);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+    } finally {
+        document.getElementById('reversalLoading').style.display = 'none';
+    }
+}
+
+function renderReversalPlot() {
+    if (!cachedReversalData || !cachedReversalData.data) return;
+    
+    const rev = cachedReversalData.data;
+    const zReversals = cachedReversalData.z_reversals || [];
+    const xyReversals = cachedReversalData.xy_reversals || { x_reversals: [], y_reversals: [] };
+    
+    let traces = [];
+    let layout = {};
+    
+    if (currentReversalPlot === 'z') {
+        traces = [{
+            x: rev.time,
+            y: rev.z,
+            name: 'Z',
+            type: USE_WEBGL ? 'scattergl' : 'scatter',
+            line: { color: '#3498db', width: 1 }
+        }];
+        
+        // Add Z reversal markers
+        const colors = ['red', 'orange', 'purple', 'cyan', 'magenta', 'brown'];
+        zReversals.forEach((r, i) => {
+            const color = colors[i % colors.length];
+            traces.push({
+                x: [r.window_start, r.window_end],
+                y: [r.min_value, r.max_value],
+                name: 'Z Reversal',
+                mode: 'markers',
+                type: 'scatter',
+                marker: { color: color, size: 10, symbol: 'star' },
+                line: { color: color, width: 2, dash: 'dot' },
+                showlegend: false
+            });
+        });
+        
+        layout = {
+            title: { text: 'Z-Axis Reversal Analysis', font: { size: 14 } },
+            xaxis: { title: 'Time (s)' },
+            yaxis: { title: 'Z Acceleration (g)' },
+            hovermode: 'x unified',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 },
+            plot_bgcolor: '#fafafa'
+        };
+        
+    } else if (currentReversalPlot === 'xy') {
+        traces = [
+            { x: rev.time, y: rev.x, name: 'X', type: USE_WEBGL ? 'scattergl' : 'scatter', line: { color: '#e74c3c', width: 1 } },
+            { x: rev.time, y: rev.y, name: 'Y', type: USE_WEBGL ? 'scattergl' : 'scatter', line: { color: '#27ae60', width: 1 } }
+        ];
+        
+        // Add XY reversal markers
+        const colors = ['red', 'orange', 'purple', 'cyan', 'magenta', 'brown'];
+        
+        xyReversals.x_reversals.forEach((r, i) => {
+            const color = colors[i % colors.length];
+            traces.push({
+                x: [r.min_time, r.max_time],
+                y: [r.min_value, r.max_value],
+                name: 'X Reversal',
+                mode: 'lines+markers',
+                type: 'scatter',
+                marker: { color: color, size: 10, symbol: 'diamond' },
+                line: { color: color, width: 2, dash: 'dot' },
+                showlegend: false
+            });
+        });
+        
+        xyReversals.y_reversals.forEach((r, i) => {
+            const color = colors[i % colors.length];
+            traces.push({
+                x: [r.min_time, r.max_time],
+                y: [r.min_value, r.max_value],
+                name: 'Y Reversal',
+                mode: 'lines+markers',
+                type: 'scatter',
+                marker: { color: color, size: 10, symbol: 'diamond' },
+                line: { color: color, width: 2, dash: 'dot' },
+                showlegend: false
+            });
+        });
+        
+        layout = {
+            title: { text: 'X/Y-Axis Reversal Analysis', font: { size: 14 } },
+            xaxis: { title: 'Time (s)' },
+            yaxis: { title: 'Acceleration (g)' },
+            hovermode: 'x unified',
+            showlegend: true,
+            margin: { t: 50, r: 30, b: 50, l: 60 },
+            plot_bgcolor: '#fafafa'
+        };
+    }
+    
+    Plotly.newPlot('reversalPlot', traces, layout);
+    updateAnalysisResults('Reversal Analysis', {
+        reversals: cachedReversalData.reversals || [],
+        xy_reversals: cachedReversalData.xy_reversals || []
+    });
+}
+
+function updateAnalysisResults(title, data) {
+    let html = `<h6>${title}</h6>`;
+    
+    if (title === 'Zone Analysis') {
+        const mostSevere = data.most_severe;
+        const zoneDurations = data.zone_durations || {};
+        
+        if (mostSevere) {
+            html += `
+                <div class="alert alert-danger py-2 mb-2">
+                    <small><strong>Most Severe Zone: ${mostSevere[1]}</strong></small>
+                </div>
+            `;
+            
+            if (zoneDurations[mostSevere[1]]) {
+                html += '<table class="table table-sm"><tr><th>#</th><th>Start Time</th><th>End Time</th><th>Duration</th></tr>';
+                zoneDurations[mostSevere[1]].slice(0, 5).forEach((d, i) => {
+                    html += `<tr><td>${i+1}</td><td>${d.start_time.toFixed(3)}s</td><td>${d.end_time.toFixed(3)}s</td><td>${d.duration.toFixed(3)}s</td></tr>`;
+                });
+                html += '</table>';
+            }
+        } else {
+            html += `
+                <div class="alert alert-success py-2">
+                    <small>No zone meets the 0.2s duration threshold.</small>
+                </div>
+            `;
+        }
+    } else if (title === 'Reversal Analysis') {
+        const reversals = data.reversals || [];
+        const xyReversals = data.xy_reversals || [];
+        
+        html += `
+            <div class="alert alert-warning py-2 mb-2">
+                <small><strong>Z Reversals:</strong> ${reversals.length} detected</small>
+            </div>
+        `;
+        
+        html += `
+            <div class="alert alert-info py-2 mb-2">
+                <small><strong>X/Y Reversals:</strong> ${xyReversals.length} detected</small>
+            </div>
+        `;
+    }
+    
+    document.getElementById('analysisContent').innerHTML = html;
+}
+
+function showLoading(show) {
+    // Show loading on trend plot (main visible plot)
+    const trendLoading = document.getElementById('trendLoading');
+    if (trendLoading) {
+        trendLoading.style.display = show ? 'flex' : 'none';
+    }
+}
+
+function updateStatus(text) {
+    document.getElementById('statusText').textContent = text;
+}
+
+function getCSRFToken() {
+    // Try multiple methods to get CSRF token
+    // Method 1: From hidden input in form
+    let token = document.querySelector('#uploadForm [name=csrfmiddlewaretoken]')?.value;
+    if (token) return token;
+    
+    // Method 2: From cookie
+    const cookieValue = document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    if (cookieValue) return cookieValue;
+    
+    // Method 3: From meta tag (if available)
+    token = document.querySelector('meta[name=csrf-token]')?.content;
+    if (token) return token;
+    
+    console.warn('CSRF token not found!');
+    return '';
+}
+</script>
+{% endblock %}

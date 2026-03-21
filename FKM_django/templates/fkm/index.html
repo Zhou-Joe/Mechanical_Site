@@ -1,0 +1,64 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}FKM Calculation Module{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">FKM Calculation Module</h1>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Fatigue Strength Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Perform fatigue strength analysis and life assessment according to FKM specifications.</p>
+                    <ul class="list-unstyled">
+                        <li>✓ Base material fatigue assessment</li>
+                        <li>✓ Welded joint fatigue assessment</li>
+                        <li>✓ Multi-axial stress state analysis</li>
+                        <li>✓ Mean stress correction</li>
+                    </ul>
+                    <a href="{% url 'fkm:fatigue' %}" class="btn btn-primary">Enter Fatigue Calculator</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Static Strength Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Perform static strength analysis and safety factor assessment according to FKM specifications.</p>
+                    <ul class="list-unstyled">
+                        <li>✓ Base material static strength assessment</li>
+                        <li>✓ Welded joint static strength assessment</li>
+                        <li>✓ Multi-axial stress state analysis</li>
+                        <li>✓ Plastic reserve analysis</li>
+                    </ul>
+                    <a href="{% url 'fkm:static' %}" class="btn btn-success">Enter Static Calculator</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">About FKM Specification</h5>
+        </div>
+        <div class="card-body">
+            <p>The FKM specification is a strength analysis standard published by the German Mechanical Engineering Research Association (FKM), widely used for fatigue and static strength assessment of mechanical components. This module implements the core calculation methods of the FKM specification, including:</p>
+            <ul>
+                <li>Material fatigue limit calculation</li>
+                <li>Size effect correction</li>
+                <li>Surface roughness correction</li>
+                <li>Mean stress sensitivity analysis</li>
+                <li>Safety factor determination</li>
+                <li>Damage accumulation assessment</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

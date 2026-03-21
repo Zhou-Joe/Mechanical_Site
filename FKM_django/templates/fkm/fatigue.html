@@ -1,0 +1,854 @@
+{% extends 'oil_records/base_me.html' %}
+
+{% block title %}Fatigue Strength Calculator - FKM{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">FKM Fatigue Strength Calculator</h1>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <ul class="nav nav-tabs" id="fkmTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="step1-tab" data-bs-toggle="tab" data-bs-target="#step1" type="button">Step 1: Service Stresses</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="step2-tab" data-bs-toggle="tab" data-bs-target="#step2" type="button">Step 2: Material Properties</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="step3-tab" data-bs-toggle="tab" data-bs-target="#step3" type="button">Step 3: Design Parameters</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="step4-tab" data-bs-toggle="tab" data-bs-target="#step4" type="button">Step 4: Component Strength</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="step5-tab" data-bs-toggle="tab" data-bs-target="#step5" type="button">Step 5: Safety Factors</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="step6-tab" data-bs-toggle="tab" data-bs-target="#step6" type="button">Step 6: Assessment</button>
+            </li>
+        </ul>
+        <button class="btn btn-success ms-3" onclick="exportReport()">
+            <i class="bi bi-download me-1"></i>Export Report
+        </button>
+    </div>
+    
+    <div class="tab-content" id="fkmTabsContent">
+        <!-- Step 1: Characteristic Service Stresses -->
+        <div class="tab-pane fade show active" id="step1" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Characteristic Service Stresses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="calcType" id="calcTypeBase" value="base" checked>
+                                <label class="form-check-label" for="calcTypeBase">
+                                    Base Material Fatigue
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="calcType" id="calcTypeWeld" value="weld">
+                                <label class="form-check-label" for="calcTypeWeld">
+                                    Welded Joint Fatigue
+                                </label>
+                            </div>
+                            
+                            <div id="baseInputs">
+                                <h6>Base Material Stresses (MPa)</h6>
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <label>Max X Normal Stress σx_max</label>
+                                        <input type="number" class="form-control" id="sigma_x_max" step="0.1" value="100">
+                                    </div>
+                                    <div class="col">
+                                        <label>Min X Normal Stress σx_min</label>
+                                        <input type="number" class="form-control" id="sigma_x_min" step="0.1" value="0">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <label>Max Y Normal Stress σy_max</label>
+                                        <input type="number" class="form-control" id="sigma_y_max" step="0.1" value="50">
+                                    </div>
+                                    <div class="col">
+                                        <label>Min Y Normal Stress σy_min</label>
+                                        <input type="number" class="form-control" id="sigma_y_min" step="0.1" value="0">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <label>Max Shear Stress t_max</label>
+                                        <input type="number" class="form-control" id="t_max" step="0.1" value="30">
+                                    </div>
+                                    <div class="col">
+                                        <label>Min Shear Stress t_min</label>
+                                        <input type="number" class="form-control" id="t_min" step="0.1" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="weldInputs" style="display:none;">
+                                <h6>Welded Joint Stresses (MPa)</h6>
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <label>Max Perpendicular Stress σ⊥_max</label>
+                                        <input type="number" class="form-control" id="sigma_pp_max" step="0.1" value="100">
+                                    </div>
+                                    <div class="col">
+                                        <label>Min Perpendicular Stress σ⊥_min</label>
+                                        <input type="number" class="form-control" id="sigma_pp_min" step="0.1" value="0">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <label>Max Parallel Stress σ∥_max</label>
+                                        <input type="number" class="form-control" id="sigma_pl_max" step="0.1" value="50">
+                                    </div>
+                                    <div class="col">
+                                        <label>Min Parallel Stress σ∥_min</label>
+                                        <input type="number" class="form-control" id="sigma_pl_min" step="0.1" value="0">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <label>Max Shear Stress t_max</label>
+                                        <input type="number" class="form-control" id="t_pl_max" step="0.1" value="30">
+                                    </div>
+                                    <div class="col">
+                                        <label>Min Shear Stress t_min</label>
+                                        <input type="number" class="form-control" id="t_pl_min" step="0.1" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary mt-3" onclick="calculateStep1()">Calculate</button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Results</h6>
+                            <table class="table table-sm table-bordered" id="step1Results">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Value</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Material Properties -->
+        <div class="tab-pane fade" id="step2" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Material Properties</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Material Type</label>
+                                <select class="form-select" id="material_type">
+                                    <option value="0">Non-Alloyed Structural Steel (FKM Table 5.1.2)</option>
+                                    <option value="1">Weldable Fine Grain Structural Steel (FKM Table 5.1.3)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Material Selection</label>
+                                <select class="form-select" id="material_name">
+                                    <option value="S235">S235</option>
+                                    <option value="S275">S275</option>
+                                    <option value="S355">S355</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Effective Diameter/Thickness d_eff (mm)</label>
+                                <input type="number" class="form-control" id="d_eff" value="10" step="0.1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Anisotropy Factor KA</label>
+                                <select class="form-select" id="ka_index">
+                                    <option value="0">1 - Stress parallel to processing direction</option>
+                                    <option value="1">0.9 - Tensile strength ≤600MPa</option>
+                                    <option value="2">0.86 - Tensile strength 600-900MPa</option>
+                                    <option value="3">0.83 - Tensile strength 900-1200MPa</option>
+                                    <option value="4">0.8 - Tensile strength >1200MPa</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Fatigue Strength Factor</label>
+                                <select class="form-select" id="fatigue_factor_index">
+                                    <option value="0">0.4 - Case Hardening Steel</option>
+                                    <option value="1">0.4 - Forging Steel</option>
+                                    <option value="2">0.45 - Other Steel</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="calculateStep2()">Calculate</button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Material Properties Results</h6>
+                            <table class="table table-sm table-bordered" id="step2Results">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Value</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 3: Design Parameters -->
+        <div class="tab-pane fade" id="step3" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Design Parameters</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Common Parameters</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Surface Treatment Factor Kv</label>
+                                <input type="number" class="form-control" id="surface_treatment" value="1" step="0.01">
+                                <small class="form-text text-muted">1 = no surface treatment</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Surface Roughness Rz (μm)</label>
+                                <input type="number" class="form-control" id="roughness" value="0" step="0.1">
+                                <small class="form-text text-muted">0 = polished surface</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Kt-Kf Calculation Method</label>
+                                <select class="form-select" id="kt_calc_method">
+                                    <option value="0">Simplified (nσ=nt=1)</option>
+                                    <option value="1">Detailed Calculation</option>
+                                </select>
+                            </div>
+                            
+                            <div id="detailedKtInputs" style="display:none;">
+                                <h6 class="mt-3 text-primary">Detailed Kt-Kf Calculation Inputs</h6>
+                                <div class="mb-2">
+                                    <label class="form-label">Statistical Method - Highly Stressed Surface Area Aσ (mm²)</label>
+                                    <input type="number" class="form-control" id="A_sigma" value="500" step="1">
+                                    <small class="form-text text-muted">Reference area A_ref = 500mm², k_st = 30 for steel</small>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Deformation-Mechanical Method - Distance Δs (mm)</label>
+                                    <input type="number" class="form-control" id="ds" value="1" step="0.1">
+                                    <small class="form-text text-muted">Distance between surface and neighboring point</small>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Stress at Surface σ1a / t1a</label>
+                                        <input type="number" class="form-control" id="sigma_1a" value="100" step="0.1">
+                                        <input type="number" class="form-control" id="t_1a" value="50" step="0.1" placeholder="Shear t1a">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Stress at Δs σ2a / t2a</label>
+                                        <input type="number" class="form-control" id="sigma_2a" value="80" step="0.1">
+                                        <input type="number" class="form-control" id="t_2a" value="40" step="0.1" placeholder="Shear t2a">
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted d-block mt-1">Rm, bm = 680MPa for steel; A_ref,st = 500mm², k_st = 30</small>
+                            </div>
+                            
+                            <div id="weldStep3Inputs" style="display:none;">
+                                <h6 class="mt-3">Weld-Specific Parameters</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Weld Factor a_W (Table 3.3.5)</label>
+                                    <select class="form-select" id="a_W_index">
+                                        <option value="0">Full penetration weld or with back weld / all / Compression</option>
+                                        <option value="1">Full penetration weld or with back weld / verified / Tension&Shear</option>
+                                        <option value="2">Full penetration weld or with back weld / not verified / Tension&Shear</option>
+                                        <option value="3">Partial penetration or fillet weld / all / all</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Thickness Factor Exponent (Table 4.3.6)</label>
+                                    <select class="form-select" id="thickness_factor_exp_index">
+                                        <option value="0">Select condition...</option>
+                                        <option value="1">Cruciform joints, transversely loaded T-joints - as welded (n=0.3)</option>
+                                        <option value="2">Cruciform joints, transversely loaded T-joints - toe ground (n=0.2)</option>
+                                        <option value="3">Transversely loaded butt joints, as welded (n=0.2)</option>
+                                        <option value="4">Butt joints ground flush, longitudinally loaded welds (n=0.1)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">FAT Class FAT⊥ (Table 5.4.1)</label>
+                                    <input type="number" class="form-control" id="FAT_pp" value="100" step="1">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">FAT Class FAT∥ (Table 5.4.3)</label>
+                                    <input type="number" class="form-control" id="FAT_pl" value="100" step="1">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">FAT Class FATt (Table 5.4.2)</label>
+                                    <input type="number" class="form-control" id="FAT_t" value="100" step="1">
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary mt-3" onclick="calculateStep3()">Calculate</button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Design Parameters Results</h6>
+                            <table class="table table-sm table-bordered" id="step3Results">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Value</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 4: Component Strength -->
+        <div class="tab-pane fade" id="step4" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Component Strength</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="weldStep4Inputs" style="display:none;">
+                                <h6>Weld-Specific Parameters</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Residual Stress Condition (Table 4.4.2)</label>
+                                    <select class="form-select" id="sel_KE">
+                                        <option value="0">Low - No tensile residual stresses</option>
+                                        <option value="1">Moderate - Local tensile residual stresses</option>
+                                        <option value="2">High - Macro residual stresses</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Required Cycles N (x10^6)</label>
+                                <input type="number" class="form-control" id="N_bar" value="1" step="0.1">
+                            </div>
+                            <button class="btn btn-primary mb-3" onclick="calculateStep4()">Calculate Component Strength</button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Component Strength Results</h6>
+                            <table class="table table-sm table-bordered" id="step4Results">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Value</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 5: Safety Factors -->
+        <div class="tab-pane fade" id="step5" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Safety Factors</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Consequence of Failure</label>
+                                <select class="form-select" id="consequence">
+                                    <option value="0">Severe</option>
+                                    <option value="1" selected>Mean</option>
+                                    <option value="2">Moderate</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Regular Inspections</label>
+                                <select class="form-select" id="inspection">
+                                    <option value="0">No</option>
+                                    <option value="1" selected>Yes</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Casting Factor jG</label>
+                                <select class="form-select" id="jG_index">
+                                    <option value="0">1 - Non-cast material</option>
+                                    <option value="1">1 - High quality cast (NDT)</option>
+                                    <option value="2">1.25 - Cast (NDT)</option>
+                                    <option value="3">1.4 - Cast (no NDT)</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="calculateStep5()">Calculate</button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Safety Factors Results</h6>
+                            <table class="table table-sm table-bordered" id="step5Results">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Value</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 6: Assessment -->
+        <div class="tab-pane fade" id="step6" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Assessment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button class="btn btn-primary mb-3" onclick="calculateStep6()">Run Assessment</button>
+                            <div id="assessmentResult" class="alert alert-info" style="display:none;"></div>
+                            <table class="table table-sm table-bordered" id="step6Results">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Value</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.nav-tabs .nav-link { color: #495057; }
+.nav-tabs .nav-link.active { font-weight: bold; }
+</style>
+
+<script>
+// Global data storage
+let fkmData = {};
+
+// Toggle input forms based on calculation type
+document.querySelectorAll('input[name="calcType"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const isWeld = this.value === 'weld';
+        document.getElementById('baseInputs').style.display = isWeld ? 'none' : 'block';
+        document.getElementById('weldInputs').style.display = isWeld ? 'block' : 'none';
+        document.getElementById('weldStep3Inputs').style.display = isWeld ? 'block' : 'none';
+        document.getElementById('weldStep4Inputs').style.display = isWeld ? 'block' : 'none';
+    });
+});
+
+// Toggle detailed Kt-Kf inputs visibility
+document.getElementById('kt_calc_method').addEventListener('change', function() {
+    const showDetailed = this.value === '1';
+    document.getElementById('detailedKtInputs').style.display = showDetailed ? 'block' : 'none';
+});
+
+function updateTable(tableId, results) {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    tbody.innerHTML = '';
+    results.forEach(r => {
+        const row = `<tr><td>${r.variable}</td><td>${r.description}</td><td>${r.value}</td><td>${r.ref}</td></tr>`;
+        tbody.innerHTML += row;
+    });
+}
+
+function isWeld() {
+    return document.querySelector('input[name="calcType"]:checked').value === 'weld';
+}
+
+function calculateStep1() {
+    const calcType = isWeld() ? 'weld' : 'base';
+    const data = { calculation_type: calcType };
+    
+    if (calcType === 'base') {
+        data.sigma_x_max = parseFloat(document.getElementById('sigma_x_max').value);
+        data.sigma_x_min = parseFloat(document.getElementById('sigma_x_min').value);
+        data.sigma_y_max = parseFloat(document.getElementById('sigma_y_max').value);
+        data.sigma_y_min = parseFloat(document.getElementById('sigma_y_min').value);
+        data.t_max = parseFloat(document.getElementById('t_max').value);
+        data.t_min = parseFloat(document.getElementById('t_min').value);
+    } else {
+        data.sigma_pp_max = parseFloat(document.getElementById('sigma_pp_max').value);
+        data.sigma_pp_min = parseFloat(document.getElementById('sigma_pp_min').value);
+        data.sigma_pl_max = parseFloat(document.getElementById('sigma_pl_max').value);
+        data.sigma_pl_min = parseFloat(document.getElementById('sigma_pl_min').value);
+        data.t_pl_max = parseFloat(document.getElementById('t_pl_max').value);
+        data.t_pl_min = parseFloat(document.getElementById('t_pl_min').value);
+    }
+    
+    fetch('/fkm/api/fatigue/step1/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateTable('step1Results', data.results);
+            fkmData.step1 = data.results;
+            // Store step1 data for later steps
+            data.results.forEach(r => {
+                fkmData[r.variable] = r.value;
+            });
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function calculateStep2() {
+    const data = {
+        material_type: document.getElementById('material_type').value,
+        material_name: document.getElementById('material_name').value,
+        d_eff: parseFloat(document.getElementById('d_eff').value),
+        ka_index: parseInt(document.getElementById('ka_index').value),
+        fatigue_factor_index: parseInt(document.getElementById('fatigue_factor_index').value)
+    };
+    
+    fetch('/fkm/api/fatigue/step2/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateTable('step2Results', data.results);
+            fkmData.step2 = data.results;
+            fkmData.material = data.material_data;
+            // Store material data for later steps
+            fkmData.Rm = data.material_data.Rm;
+            fkmData.Rp = data.material_data.Rp;
+            fkmData.sigma_W_zd = data.material_data.sigma_W_zd;
+            fkmData.t_W_s = data.material_data.t_W_s;
+            fkmData.A = data.material_data.A;
+            fkmData.ad_m = data.material_data.ad_m;
+            fkmData.ad_p = data.material_data.ad_p;
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function calculateStep3() {
+    const weld = isWeld();
+    const ktMethod = parseInt(document.getElementById('kt_calc_method').value);
+    const data = {
+        is_weld: weld,
+        surface_treatment: parseFloat(document.getElementById('surface_treatment').value),
+        roughness: parseFloat(document.getElementById('roughness').value),
+        kt_calc_method: ktMethod,
+        Rm: fkmData.Rm || 500,
+        Rp: fkmData.Rp || 355,
+        sigma_W_zd: fkmData.sigma_W_zd || 200,
+        t_W_s: fkmData.t_W_s || 115,
+        A: fkmData.A || 20,
+        d_eff: parseFloat(document.getElementById('d_eff').value)
+    };
+    
+    // Add detailed Kt-Kf inputs if selected
+    if (ktMethod === 1) {
+        data.A_sigma = parseFloat(document.getElementById('A_sigma').value);
+        data.ds = parseFloat(document.getElementById('ds').value);
+        data.sigma_1a = parseFloat(document.getElementById('sigma_1a').value);
+        data.t_1a = parseFloat(document.getElementById('t_1a').value);
+        data.sigma_2a = parseFloat(document.getElementById('sigma_2a').value);
+        data.t_2a = parseFloat(document.getElementById('t_2a').value);
+    }
+    
+    const url = weld ? '/fkm/api/fatigue/step3-weld/' : '/fkm/api/fatigue/step3/';
+    
+    if (weld) {
+        data.a_W_index = parseInt(document.getElementById('a_W_index').value);
+        data.thickness_factor_exp_index = parseInt(document.getElementById('thickness_factor_exp_index').value);
+        data.FAT_pp = parseFloat(document.getElementById('FAT_pp').value);
+        data.FAT_pl = parseFloat(document.getElementById('FAT_pl').value);
+        data.FAT_t = parseFloat(document.getElementById('FAT_t').value);
+        data.material_name = document.getElementById('material_name').value;
+    }
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateTable('step3Results', data.results);
+            fkmData.step3 = data.results;
+            fkmData.step3_data = data.step3_data;
+            // Store step3 data for later steps
+            Object.assign(fkmData, data.step3_data);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function calculateStep4() {
+    const weld = isWeld();
+    const data = {
+        N_bar: parseFloat(document.getElementById('N_bar').value)
+    };
+    
+    if (weld) {
+        // Weld calculation - pass all step3_data
+        data.FAT_pp = fkmData.FAT_pp || fkmData.step3_data?.FAT_pp || 100;
+        data.FAT_pl = fkmData.FAT_pl || fkmData.step3_data?.FAT_pl || 100;
+        data.FAT_t = fkmData.FAT_t || fkmData.step3_data?.FAT_t || 100;
+        data.ft = fkmData.ft || fkmData.step3_data?.ft || 1;
+        data.K_V = fkmData.K_V || fkmData.step3_data?.K_V || 1;
+        data.K_NL_E = fkmData.K_NL_E || fkmData.step3_data?.K_NL_E || 1;
+        data.a_W = fkmData.a_W || fkmData.step3_data?.a_W || 1;
+        data.f_FAT_sigma = fkmData.f_FAT_sigma || fkmData.step3_data?.f_FAT_sigma || 0.368;
+        data.f_FAT_t = fkmData.f_FAT_t || fkmData.step3_data?.f_FAT_t || 0.231;
+        data.sel_KE = parseInt(document.getElementById('sel_KE').value);
+        data.Rp = fkmData.Rp || 355;
+        data.n_pl = 1;
+        
+        // Stress ratios from step 1
+        data.R_pp = fkmData['R⊥'] || 0;
+        data.R_pl = fkmData['R∥'] || 0;
+        data.R_t = fkmData.Rt || 0;
+        data.sigma_m_n = fkmData['σ⊥_m'] || 0;
+        data.sigma_a_n = fkmData['σ⊥_a'] || 0;
+        data.sigma_m_1 = fkmData['σ∥_m'] || 0;
+        data.sigma_a_1 = fkmData['σ∥_a'] || 0;
+        data.t_m_1 = fkmData.t_m || 0;
+        data.t_a_1 = fkmData.t_a || 0;
+        
+        fetch('/fkm/api/fatigue/step4-weld/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateTable('step4Results', data.results);
+                fkmData.step4 = data.results;
+                fkmData.step4_data = data.step4_data;
+                Object.assign(fkmData, data.step4_data);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    } else {
+        // Base material calculation
+        data.sigma_W_zd = fkmData.sigma_W_zd || 200;
+        data.t_W_s = fkmData.t_W_s || 115;
+        data.K_WK_sigma = fkmData.K_WK_sigma || fkmData.step3_data?.K_WK_sigma || 1;
+        data.K_WK_t = fkmData.K_WK_t || fkmData.step3_data?.K_WK_t || 1;
+        data.Rm = fkmData.Rm || 500;
+        data.Rp = fkmData.Rp || 355;
+        data.n_pl = 1;
+        
+        // Stress ratios from step 1
+        data.Rx = fkmData.Rx || 0;
+        data.Ry = fkmData.Ry || 0;
+        data.Rt = fkmData.Rt || 0;
+        data.sigma_m_x = fkmData.σx_m || 0;
+        data.sigma_a_x = fkmData.σx_a || 0;
+        data.sigma_m_y = fkmData.σy_m || 0;
+        data.sigma_a_y = fkmData.σy_a || 0;
+        data.t_m = fkmData.t_m || 0;
+        data.t_a = fkmData.t_a || 0;
+        
+        fetch('/fkm/api/fatigue/step4/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateTable('step4Results', data.results);
+                fkmData.step4 = data.results;
+                fkmData.step4_data = data.step4_data;
+                Object.assign(fkmData, data.step4_data);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function calculateStep5() {
+    const data = {
+        consequence: parseInt(document.getElementById('consequence').value),
+        inspection: parseInt(document.getElementById('inspection').value),
+        jG_index: parseInt(document.getElementById('jG_index').value),
+        is_weld: isWeld()
+    };
+    
+    fetch('/fkm/api/fatigue/step5/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateTable('step5Results', data.results);
+            fkmData.step5 = data.results;
+            fkmData.j_D = data.j_D;
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function calculateStep6() {
+    const weld = isWeld();
+    const data = { is_weld: weld, j_D: fkmData.j_D || 1 };
+    
+    if (weld) {
+        // Get stress amplitudes from step 1 results
+        data.sigma_a_n = fkmData['σ⊥_a'] || 50;
+        data.sigma_a_1 = fkmData['σ∥_a'] || 25;
+        data.t_a_1 = fkmData.t_a || 15;
+        // Get strength values from step 4 results
+        data.sigma_BK_pp = fkmData.sigma_BK_pp || fkmData.step4_data?.sigma_BK_pp || 100;
+        data.sigma_BK_pl = fkmData.sigma_BK_pl || fkmData.step4_data?.sigma_BK_pl || 100;
+        data.t_BK = fkmData.t_BK || fkmData.step4_data?.t_BK || 100;
+    } else {
+        data.sigma_a_x = fkmData.σx_a || 50;
+        data.sigma_a_y = fkmData.σy_a || 25;
+        data.t_a = fkmData.t_a || 15;
+        data.sigma_BK_x = fkmData.sigma_BK_x || fkmData.step4_data?.sigma_BK_x || 100;
+        data.sigma_BK_y = fkmData.sigma_BK_y || fkmData.step4_data?.sigma_BK_y || 100;
+        data.t_BK = fkmData.t_BK || fkmData.step4_data?.t_BK || 100;
+    }
+    
+    fetch('/fkm/api/fatigue/step6/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateTable('step6Results', data.results);
+            fkmData.step6 = data.results;
+            const resultDiv = document.getElementById('assessmentResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = data.assessment === 'PASS' ? 'alert alert-success' : 'alert alert-danger';
+            resultDiv.textContent = 'Assessment: ' + data.assessment + (data.assessment === 'PASS' ? ' ✓' : ' ✗');
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function exportReport() {
+    // Collect all step data from the global fkmData object
+    const steps = [];
+    const weld = isWeld();
+    
+    // Step names
+    const stepNames = [
+        'Step 1: Characteristic Service Stresses',
+        'Step 2: Material Properties',
+        'Step 3: Design Parameters',
+        'Step 4: Component Strength',
+        'Step 5: Safety Factors',
+        'Step 6: Assessment'
+    ];
+    
+    // Collect data from each step
+    if (fkmData.step1) {
+        steps.push({ step_name: stepNames[0], variables: fkmData.step1 });
+    }
+    if (fkmData.step2) {
+        steps.push({ step_name: stepNames[1], variables: fkmData.step2 });
+    }
+    if (fkmData.step3) {
+        steps.push({ step_name: stepNames[2], variables: fkmData.step3 });
+    }
+    if (fkmData.step4) {
+        steps.push({ step_name: stepNames[3], variables: fkmData.step4 });
+    }
+    if (fkmData.step5) {
+        steps.push({ step_name: stepNames[4], variables: fkmData.step5 });
+    }
+    if (fkmData.step6) {
+        steps.push({ step_name: stepNames[5], variables: fkmData.step6 });
+    }
+    
+    if (steps.length === 0) {
+        alert('No calculation data available. Please complete at least one step before exporting.');
+        return;
+    }
+    
+    // Send data to export endpoint
+    fetch('/fkm/api/fatigue/export/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            is_weld: weld,
+            steps: steps
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.blob();
+        }
+        throw new Error('Export failed');
+    })
+    .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fatigue_${weld ? 'welded' : 'non_welded'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        alert('Error exporting report: ' + error.message);
+    });
+}
+</script>
+{% endblock %}
