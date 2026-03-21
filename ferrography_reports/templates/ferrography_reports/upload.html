@@ -1,8 +1,8 @@
 {% extends 'ferrography_reports/base.html' %}
 
-{% block title %}铁谱分析 - 上传报告{% endblock %}
+{% block title %}Ferrography Analysis - Upload Report{% endblock %}
 {% block ferrography_breadcrumb %}
-    <li class="breadcrumb-item active">上传报告</li>
+    <li class="breadcrumb-item active">Upload Report</li>
 {% endblock %}
 
 {% block extra_css %}
@@ -54,26 +54,26 @@
 
 {% block content %}
 <div class="row">
-    <!-- 单个上传 -->
+    <!-- Single Upload -->
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>单个上传</h5>
+                <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Single Upload</h5>
             </div>
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data" id="uploadForm">
                     {% csrf_token %}
                     
                     <div class="mb-4">
-                        <label class="form-label">选择PDF文件 <span class="text-danger">*</span></label>
+                        <label class="form-label">Select PDF File <span class="text-danger">*</span></label>
                         <div class="upload-area" id="uploadArea">
                             <input type="file" name="pdf_file" id="pdfFile" accept=".pdf" style="display: none;" required>
                             <div id="uploadPlaceholder">
                                 <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
-                                <h5 class="mt-3">拖拽PDF文件到此处或点击选择</h5>
-                                <p class="text-muted">仅支持PDF格式，最大50MB</p>
+                                <h5 class="mt-3">Drag and drop PDF file here or click to select</h5>
+                                <p class="text-muted">PDF format only, maximum 50MB</p>
                                 <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('pdfFile').click()">
-                                    <i class="bi bi-folder-open"></i> 选择文件
+                                    <i class="bi bi-folder-open"></i> Select File
                                 </button>
                             </div>
                             <div id="fileInfo" style="display: none;">
@@ -81,7 +81,7 @@
                                 <h5 class="mt-3" id="fileName"></h5>
                                 <p class="text-muted" id="fileSize"></p>
                                 <button type="button" class="btn btn-outline-secondary" onclick="clearFile()">
-                                    <i class="bi bi-arrow-counterclockwise"></i> 更换文件
+                                    <i class="bi bi-arrow-counterclockwise"></i> Change File
                                 </button>
                             </div>
                         </div>
@@ -93,7 +93,7 @@
                     <div class="row mt-4">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="bi bi-upload"></i> 上传并预览
+                                <i class="bi bi-upload"></i> Upload and Preview
                             </button>
                         </div>
                     </div>
@@ -102,26 +102,26 @@
         </div>
     </div>
     
-    <!-- 批量上传 -->
+    <!-- Batch Upload -->
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-cloud-upload-fill me-2"></i>批量上传</h5>
+                <h5 class="mb-0"><i class="bi bi-cloud-upload-fill me-2"></i>Batch Upload</h5>
             </div>
             <div class="card-body">
                 <form id="batchUploadForm">
                     {% csrf_token %}
                     
                     <div class="mb-4">
-                        <label class="form-label">选择多个PDF文件 <span class="text-danger">*</span></label>
+                        <label class="form-label">Select Multiple PDF Files <span class="text-danger">*</span></label>
                         <div class="upload-area" id="batchUploadArea">
                             <input type="file" name="pdf_files" id="batchPdfFiles" accept=".pdf" style="display: none;" multiple>
                             <div id="batchUploadPlaceholder">
                                 <i class="bi bi-cloud-upload-fill" style="font-size: 3rem; color: #6c757d;"></i>
-                                <h5 class="mt-3">拖拽多个PDF文件到此处或点击选择</h5>
-                                <p class="text-muted">支持批量上传，自动识别设备和景点</p>
+                                <h5 class="mt-3">Drag and drop multiple PDF files here or click to select</h5>
+                                <p class="text-muted">Supports batch upload, automatic equipment and attraction recognition</p>
                                 <button type="button" class="btn btn-outline-success" onclick="document.getElementById('batchPdfFiles').click()">
-                                    <i class="bi bi-folder-open"></i> 选择多个文件
+                                    <i class="bi bi-folder-open"></i> Select Multiple Files
                                 </button>
                             </div>
                             <div id="batchFileInfo" style="display: none;">
@@ -129,7 +129,7 @@
                                 <h5 class="mt-3" id="batchFileCount"></h5>
                                 <p class="text-muted" id="batchFileNames"></p>
                                 <button type="button" class="btn btn-outline-secondary" onclick="clearBatchFiles()">
-                                    <i class="bi bi-arrow-counterclockwise"></i> 重新选择
+                                    <i class="bi bi-arrow-counterclockwise"></i> Re-select
                                 </button>
                             </div>
                         </div>
@@ -141,16 +141,16 @@
                     <div class="row mt-4">
                         <div class="col-12">
                             <button type="submit" class="btn btn-success" id="batchSubmitBtn">
-                                <i class="bi bi-upload"></i> 批量处理
+                                <i class="bi bi-upload"></i> Batch Process
                             </button>
                         </div>
                     </div>
                 </form>
                 
-                <!-- 批量上传进度 -->
+                <!-- Batch Upload Progress -->
                 <div id="batchProgress" style="display: none;" class="mt-4">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span id="batchProgressText">准备上传...</span>
+                        <span id="batchProgressText">Preparing upload...</span>
                         <span id="batchProgressCount" class="badge bg-primary">0/0</span>
                     </div>
                     <div class="progress" style="height: 25px;">
@@ -159,14 +159,14 @@
                     </div>
                 </div>
                 
-                <!-- 批量上传结果 -->
+                <!-- Batch Upload Results -->
                 <div id="batchResults" style="display: none;" class="mt-4">
-                    <h6>处理结果：</h6>
+                    <h6>Processing Results:</h6>
                     <div id="batchResultsList" style="max-height: 300px; overflow-y: auto;"></div>
                     <div class="mt-3">
-                        <span class="badge bg-success" id="successCount">成功: 0</span>
-                        <span class="badge bg-warning text-dark" id="partialCount">部分: 0</span>
-                        <span class="badge bg-danger" id="errorCount">失败: 0</span>
+                        <span class="badge bg-success" id="successCount">Success: 0</span>
+                        <span class="badge bg-warning text-dark" id="partialCount">Partial: 0</span>
+                        <span class="badge bg-danger" id="errorCount">Failed: 0</span>
                     </div>
                 </div>
             </div>
@@ -176,14 +176,14 @@
 
 <div class="card mt-4">
     <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>说明</h5>
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Instructions</h5>
     </div>
     <div class="card-body">
         <ul class="mb-0">
-            <li>系统会自动从文件名和PDF内容中提取设备信息</li>
-            <li>支持自动匹配Soaring、HPS等景点的设备</li>
-            <li>上传后会显示预览页面，可以确认或修改匹配结果</li>
-            <li>批量上传会显示每个文件的处理结果</li>
+            <li>The system automatically extracts equipment information from filenames and PDF content</li>
+            <li>Supports automatic matching of equipment from Soaring, HPS and other attractions</li>
+            <li>After upload, a preview page will be displayed to confirm or modify matching results</li>
+            <li>Batch upload will display processing results for each file</li>
         </ul>
     </div>
 </div>
@@ -192,17 +192,17 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
-        // ========== 单个上传 ==========
+        // ========== Single Upload ==========
         $('#pdfFile').on('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 if (file.type !== 'application/pdf') {
-                    alert('请选择PDF格式的文件');
+                    alert('Please select PDF format');
                     clearFile();
                     return;
                 }
                 if (file.size > 50 * 1024 * 1024) {
-                    alert('文件大小不能超过50MB');
+                    alert('File size cannot exceed 50MB');
                     clearFile();
                     return;
                 }
@@ -210,7 +210,7 @@
             }
         });
 
-        // 拖拽上传
+        // Drag and drop upload
         const uploadArea = document.getElementById('uploadArea');
         
         uploadArea.addEventListener('dragover', function(e) {
@@ -231,11 +231,11 @@
             if (files.length > 0) {
                 const file = files[0];
                 if (file.type !== 'application/pdf') {
-                    alert('请选择PDF格式的文件');
+                    alert('Please select PDF format');
                     return;
                 }
                 if (file.size > 50 * 1024 * 1024) {
-                    alert('文件大小不能超过50MB');
+                    alert('File size cannot exceed 50MB');
                     return;
                 }
                 
@@ -244,18 +244,18 @@
             }
         });
 
-        // 表单提交
+        // Form submission
         $('#uploadForm').on('submit', function(e) {
             e.preventDefault();
             
             const file = $('#pdfFile')[0].files[0];
             if (!file) {
-                alert('请选择PDF文件');
+                alert('Please select PDF file');
                 return;
             }
             
             $('#uploadProgress').show();
-            $('#submitBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> 处理中...');
+            $('#submitBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Processing...');
             
             const formData = new FormData(this);
             formData.append('action', 'preview');
@@ -270,32 +270,32 @@
                     if (response.success) {
                         window.location.href = response.redirect;
                     } else {
-                        alert(response.error || '处理失败');
+                        alert(response.error || 'Processing failed');
                         $('#uploadProgress').hide();
-                        $('#submitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 上传并预览');
+                        $('#submitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> Upload and Preview');
                     }
                 },
                 error: function() {
-                    alert('上传失败，请重试');
+                    alert('Upload failed, please try again');
                     $('#uploadProgress').hide();
-                    $('#submitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 上传并预览');
+                    $('#submitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> Upload and Preview');
                 }
             });
         });
 
-        // ========== 批量上传 ==========
+        // ========== Batch Upload ==========
         $('#batchPdfFiles').on('change', function(e) {
             const files = e.target.files;
             if (files.length > 0) {
-                // 检查所有文件
+                // Check all files
                 for (let file of files) {
                     if (file.type !== 'application/pdf') {
-                        alert('所有文件必须是PDF格式');
+                        alert('All files must be PDF format');
                         clearBatchFiles();
                         return;
                     }
                     if (file.size > 50 * 1024 * 1024) {
-                        alert('文件大小不能超过50MB: ' + file.name);
+                        alert('File size cannot exceed 50MB: ' + file.name);
                         clearBatchFiles();
                         return;
                     }
@@ -304,7 +304,7 @@
             }
         });
 
-        // 批量拖拽上传
+        // Batch drag and drop upload
         const batchUploadArea = document.getElementById('batchUploadArea');
         
         batchUploadArea.addEventListener('dragover', function(e) {
@@ -323,14 +323,14 @@
             
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                // 检查所有文件
+                // Check all files
                 for (let file of files) {
                     if (file.type !== 'application/pdf') {
-                        alert('所有文件必须是PDF格式');
+                        alert('All files must be PDF format');
                         return;
                     }
                     if (file.size > 50 * 1024 * 1024) {
-                        alert('文件大小不能超过50MB: ' + file.name);
+                        alert('File size cannot exceed 50MB: ' + file.name);
                         return;
                     }
                 }
@@ -340,20 +340,20 @@
             }
         });
 
-        // 批量表单提交 - 使用SSE实时进度
+        // Batch form submission - Use SSE for real-time progress
         $('#batchUploadForm').on('submit', function(e) {
             e.preventDefault();
             
             const files = $('#batchPdfFiles')[0].files;
             if (!files || files.length === 0) {
-                alert('请选择PDF文件');
+                alert('Please select PDF files');
                 return;
             }
             
-            // 显示进度区域
+            // Show progress area
             $('#batchProgress').show();
             $('#batchResults').hide();
-            $('#batchSubmitBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> 批量处理中...');
+            $('#batchSubmitBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Batch processing...');
             
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val());
@@ -362,7 +362,7 @@
                 formData.append('pdf_files', files[i]);
             }
             
-            // 第一步：启动异步任务
+            // Step 1: Start async task
             $.ajax({
                 url: '{% url "ferrography_reports:batch_upload_async" %}',
                 type: 'POST',
@@ -371,21 +371,21 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        // 第二步：建立SSE连接接收实时进度
+                        // Step 2: Establish SSE connection for real-time progress
                         startBatchUploadStream(response.task_id, files.length);
                     } else {
-                        alert(response.error || '启动批量处理失败');
+                        alert(response.error || 'Failed to start batch processing');
                         resetBatchUpload();
                     }
                 },
                 error: function() {
-                    alert('启动批量上传失败，请重试');
+                    alert('Failed to start batch upload, please try again');
                     resetBatchUpload();
                 }
             });
         });
         
-        // 建立SSE连接接收实时进度
+        // Establish SSE connection for real-time progress
         function startBatchUploadStream(taskId, totalFiles) {
             const evtSource = new EventSource('{% url "ferrography_reports:batch_upload_stream" %}?task_id=' + taskId);
             const results = [];
@@ -396,12 +396,12 @@
                 
                 switch(data.type) {
                     case 'start':
-                        $('#batchProgressText').text('开始处理...');
+                        $('#batchProgressText').text('Starting processing...');
                         $('#batchProgressCount').text('0/' + data.total);
                         break;
                         
                     case 'processing':
-                        $('#batchProgressText').text('正在处理: ' + data.filename);
+                        $('#batchProgressText').text('Processing: ' + data.filename);
                         $('#batchProgressCount').text(data.progress);
                         updateBatchProgress(data.index + 1, totalFiles);
                         break;
@@ -413,49 +413,49 @@
                         addBatchResultItem(data);
                         updateBatchProgress(processedCount, totalFiles);
                         
-                        // 显示结果区域
+                        // Show results area
                         if ($('#batchResults').is(':hidden')) {
                             $('#batchResults').show();
                         }
                         break;
                         
                     case 'complete':
-                        $('#batchProgressText').text('处理完成！');
+                        $('#batchProgressText').text('Processing complete!');
                         $('#batchProgressBar').removeClass('progress-bar-animated').addClass('bg-success');
                         evtSource.close();
-                        $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 批量处理');
+                        $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> Batch Process');
                         updateBatchSummary(results);
                         break;
                         
                     case 'error':
-                        $('#batchProgressText').text('处理出错: ' + data.message);
+                        $('#batchProgressText').text('Processing error: ' + data.message);
                         $('#batchProgressBar').addClass('bg-danger');
                         evtSource.close();
                         resetBatchUpload();
-                        alert('批量处理出错: ' + data.message);
+                        alert('Batch processing error: ' + data.message);
                         break;
                         
                     case 'heartbeat':
-                        // 忽略心跳
+                        // Ignore heartbeat
                         break;
                 }
             };
             
             evtSource.onerror = function() {
-                console.error('SSE连接错误');
+                console.error('SSE connection error');
                 evtSource.close();
                 resetBatchUpload();
             };
         }
         
-        // 更新进度条
+        // Update progress bar
         function updateBatchProgress(current, total) {
             const percentage = Math.round((current / total) * 100);
             $('#batchProgressBar').css('width', percentage + '%').text(percentage + '%');
             $('#batchProgressCount').text(current + '/' + total);
         }
         
-        // 添加单个结果项
+        // Add single result item
         function addBatchResultItem(result) {
             let statusClass = '';
             let icon = '';
@@ -491,11 +491,11 @@
                 '</div>';
             
             $('#batchResultsList').append(html);
-            // 滚动到底部
+            // Scroll to bottom
             $('#batchResultsList').scrollTop($('#batchResultsList')[0].scrollHeight);
         }
         
-        // 更新汇总统计
+        // Update summary statistics
         function updateBatchSummary(results) {
             let successCount = 0;
             let partialCount = 0;
@@ -507,16 +507,16 @@
                 else errorCount++;
             });
             
-            $('#successCount').text('成功: ' + successCount);
-            $('#partialCount').text('部分: ' + partialCount);
-            $('#errorCount').text('失败: ' + errorCount);
+            $('#successCount').text('Success: ' + successCount);
+            $('#partialCount').text('Partial: ' + partialCount);
+            $('#errorCount').text('Failed: ' + errorCount);
         }
         
-        // 重置批量上传状态
+        // Reset batch upload status
         function resetBatchUpload() {
             $('#batchUploadProgress').hide();
             $('#batchProgress').hide();
-            $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> 批量处理');
+            $('#batchSubmitBtn').prop('disabled', false).html('<i class="bi bi-upload"></i> Batch Process');
         }
     });
 
@@ -534,13 +534,13 @@
     }
 
     function showBatchFileInfo(files) {
-        $('#batchFileCount').text(files.length + ' 个文件');
+        $('#batchFileCount').text(files.length + ' files');
         let names = '';
         for (let i = 0; i < Math.min(files.length, 3); i++) {
             names += files[i].name + '<br>';
         }
         if (files.length > 3) {
-            names += '... 等' + files.length + '个文件';
+            names += '... and ' + files.length + ' files';
         }
         $('#batchFileNames').html(names);
         $('#batchUploadPlaceholder').hide();

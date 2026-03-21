@@ -1,79 +1,79 @@
 {% extends 'ferrography_reports/base.html' %}
 
-{% block title %}铁谱分析 - 预览确认{% endblock %}
+{% block title %}Ferrography Analysis - Preview and Confirm{% endblock %}
 {% block ferrography_breadcrumb %}
-    <li class="breadcrumb-item active">预览确认</li>
+    <li class="breadcrumb-item active">Preview and Confirm</li>
 {% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-eye me-2"></i>铁谱报告预览</h5>
+        <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Ferrography Report Preview</h5>
     </div>
     <div class="card-body">
         <form method="post" action="{% url 'ferrography_reports:confirm' %}">
             {% csrf_token %}
             
-            <!-- 文件信息 -->
+            <!-- File Information -->
             <div class="alert alert-info">
-                <strong>文件名：</strong>{{ preview_data.filename }}
+                <strong>Filename:</strong> {{ preview_data.filename }}
             </div>
             
-            <!-- 自动匹配结果 -->
+            <!-- Auto Match Results -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-robot me-2"></i>自动识别结果</h6>
+                    <h6 class="mb-0"><i class="bi bi-robot me-2"></i>Auto Recognition Results</h6>
                 </div>
                 <div class="card-body">
                     {% if preview_data.matched_info.equipment_name %}
                     <div class="alert alert-success">
-                        <strong>识别到的设备：</strong>{{ preview_data.matched_info.equipment_name }}<br>
-                        <strong>所属景点：</strong>{{ preview_data.matched_info.attraction_name }}
+                        <strong>Recognized Equipment:</strong> {{ preview_data.matched_info.equipment_name }}<br>
+                        <strong>Attraction:</strong> {{ preview_data.matched_info.attraction_name }}
                     </div>
                     {% else %}
                     <div class="alert alert-warning">
-                        未能自动识别设备，请手动选择
+                        Could not automatically recognize equipment, please select manually
                     </div>
                     {% endif %}
                 </div>
             </div>
             
-            <!-- 手动选择设备 -->
+            <!-- Manual Equipment Selection -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-hand-index me-2"></i>手动选择设备（如自动识别不正确）</h6>
+                    <h6 class="mb-0"><i class="bi bi-hand-index me-2"></i>Manual Equipment Selection (if auto recognition is incorrect)</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-floating mb-3">
                                 <select name="attraction" id="attractionSelect" class="form-select">
-                                    <option value="">选择景点</option>
+                                    <option value="">Select Attraction</option>
                                     {% for attraction in attractions %}
                                     <option value="{{ attraction.id }}" {% if matched_equipment and matched_equipment.attraction.id == attraction.id %}selected{% endif %}>
                                         {{ attraction.name }}
                                     </option>
                                     {% endfor %}
                                 </select>
-                                <label for="attractionSelect">景点</label>
+                                <label for="attractionSelect">Attraction</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating mb-3">
                                 <select name="confirmed_equipment" id="equipmentSelect" class="form-select">
-                                    <option value="">{% if matched_equipment %}当前：{{ matched_equipment.name }}{% else %}先选择景点{% endif %}</option>
+                                    <option value="">{% if matched_equipment %}Current: {{ matched_equipment.name }}{% else %}Select attraction first{% endif %}</option>
                                 </select>
-                                <label for="equipmentSelect">设备</label>
+                                <label for="equipmentSelect">Equipment</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 日期信息 -->
+            <!-- Date Information -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>日期信息</h6>
+                    <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>Date Information</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -81,35 +81,35 @@
                             <div class="form-floating mb-3">
                                 <input type="date" name="sample_date" id="sampleDate" class="form-control" 
                                        value="{{ preview_data.ferrography_info.sample_date|default:'' }}">
-                                <label for="sampleDate">采样日期</label>
+                                <label for="sampleDate">Sample Date</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating mb-3">
                                 <input type="date" name="report_date" id="reportDate" class="form-control"
                                        value="{{ preview_data.ferrography_info.report_date|default:'' }}">
-                                <label for="reportDate">报告日期</label>
+                                <label for="reportDate">Report Date</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 提取的信息 -->
+            <!-- Extracted Information -->
             {% if preview_data.ferrography_info.particles %}
             <div class="card mb-3">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-droplet me-2"></i>提取的颗粒信息 ({{ preview_data.ferrography_info.particles|length }}个)</h6>
+                    <h6 class="mb-0"><i class="bi bi-droplet me-2"></i>Extracted Particle Information ({{ preview_data.ferrography_info.particles|length }} particles)</h6>
                 </div>
                 <div class="card-body">
                     <table class="table table-sm table-striped">
                         <thead>
                             <tr>
-                                <th>颗粒类型</th>
-                                <th>浓度</th>
-                                <th>尺寸范围</th>
-                                <th>严重等级</th>
-                                <th>形貌描述</th>
+                                <th>Particle Type</th>
+                                <th>Concentration</th>
+                                <th>Size Range</th>
+                                <th>Severity Level</th>
+                                <th>Morphology Description</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -131,24 +131,24 @@
             {% if preview_data.ferrography_info.diagnosis %}
             <div class="card mb-3">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>诊断结论</h6>
+                    <h6 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Diagnostic Conclusion</h6>
                 </div>
                 <div class="card-body">
                     {% if preview_data.ferrography_info.diagnosis.overall_assessment %}
                     <div class="mb-3">
-                        <strong>总体评价：</strong>
+                        <strong>Overall Assessment:</strong>
                         <p>{{ preview_data.ferrography_info.diagnosis.overall_assessment }}</p>
                     </div>
                     {% endif %}
                     {% if preview_data.ferrography_info.diagnosis.wear_status %}
                     <div class="mb-3">
-                        <strong>磨损状态：</strong>
+                        <strong>Wear Status:</strong>
                         <span class="badge bg-info">{{ preview_data.ferrography_info.diagnosis.wear_status }}</span>
                     </div>
                     {% endif %}
                     {% if preview_data.ferrography_info.diagnosis.recommendations %}
                     <div class="mb-3">
-                        <strong>建议措施：</strong>
+                        <strong>Recommendations:</strong>
                         <p>{{ preview_data.ferrography_info.diagnosis.recommendations }}</p>
                     </div>
                     {% endif %}
@@ -159,10 +159,10 @@
             <div class="row mt-4">
                 <div class="col-12">
                     <button type="submit" class="btn btn-success btn-lg">
-                        <i class="bi bi-check-circle"></i> 确认上传
+                        <i class="bi bi-check-circle"></i> Confirm Upload
                     </button>
                     <a href="{% url 'ferrography_reports:upload' %}" class="btn btn-secondary btn-lg">
-                        <i class="bi bi-arrow-left"></i> 重新上传
+                        <i class="bi bi-arrow-left"></i> Re-upload
                     </a>
                 </div>
             </div>
@@ -174,28 +174,28 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
-        // 景点选择变化时加载设备
+        // Load equipment when attraction changes
         $('#attractionSelect').on('change', function() {
             const attractionId = $(this).val();
             const equipmentSelect = $('#equipmentSelect');
             
             equipmentSelect.prop('disabled', true);
-            equipmentSelect.html('<option value="">加载中...</option>');
+            equipmentSelect.html('<option value="">Loading...</option>');
             
             if (attractionId) {
                 $.get('{% url "ferrography_reports:get_equipment_api" %}', {attraction_id: attractionId}, function(data) {
-                    equipmentSelect.html('<option value="">选择设备</option>');
+                    equipmentSelect.html('<option value="">Select Equipment</option>');
                     data.equipment.forEach(function(eq) {
                         equipmentSelect.append(`<option value="${eq.id}">${eq.name}</option>`);
                     });
                     equipmentSelect.prop('disabled', false);
                 });
             } else {
-                equipmentSelect.html('<option value="">先选择景点</option>');
+                equipmentSelect.html('<option value="">Select attraction first</option>');
             }
         });
         
-        // 设置默认日期
+        // Set default dates
         const today = new Date().toISOString().split('T')[0];
         if (!$('#sampleDate').val()) {
             $('#sampleDate').val(today);

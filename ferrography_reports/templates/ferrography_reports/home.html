@@ -1,80 +1,430 @@
 {% extends 'ferrography_reports/base.html' %}
 
-{% block title %}铁谱分析 - 首页{% endblock %}
+{% block title %}Ferrography Analysis - Home{% endblock %}
 {% block ferrography_breadcrumb %}
-    <li class="breadcrumb-item active">首页</li>
+    <li class="breadcrumb-item active">Home</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Overview Stats Cards */
+    .overview-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 28px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--accent-emerald) 0%, var(--accent-cyan) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card.primary {
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-violet) 100%);
+    }
+
+    .stat-card.primary .stat-icon,
+    .stat-card.primary .stat-value,
+    .stat-card.primary .stat-label {
+        color: white;
+    }
+
+    .stat-card.primary::before {
+        opacity: 1;
+        background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+    }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+    }
+
+    .stat-card:not(.primary) .stat-icon {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        color: var(--accent-emerald);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 20px 24px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.primary {
+        background: linear-gradient(135deg, var(--accent-emerald) 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .action-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+
+    .action-btn.secondary {
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .action-btn.secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .action-btn i {
+        font-size: 1.25rem;
+    }
+
+    /* Recent Reports Table */
+    .reports-card {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .reports-card-header {
+        background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .reports-card-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .reports-card-title i {
+        color: var(--accent-emerald);
+        font-size: 1.25rem;
+    }
+
+    .view-all-link {
+        color: var(--accent-blue);
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: gap 0.3s ease;
+    }
+
+    .view-all-link:hover {
+        gap: 10px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .reports-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .reports-table thead th {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 16px 20px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .reports-table tbody td {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+
+    .reports-table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .reports-table tbody tr:hover {
+        background: var(--bg-tertiary);
+    }
+
+    .equipment-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .equipment-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-blue);
+        font-size: 1.1rem;
+    }
+
+    .equipment-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .equipment-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .equipment-location {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .date-cell {
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .btn-view-report {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+    }
+
+    .btn-view-report:hover {
+        background: var(--accent-blue);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    .empty-state p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    .empty-state .btn-action {
+        margin-top: 16px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>铁谱分析概览</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body">
-                                <h4 class="card-title">{{ report_count }}</h4>
-                                <p class="card-text">铁谱报告总数</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{% url 'ferrography_reports:upload' %}" class="btn btn-success btn-lg w-100">
-                            <i class="bi bi-upload me-2"></i>上传铁谱报告
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{% url 'ferrography_reports:list' %}" class="btn btn-info btn-lg w-100">
-                            <i class="bi bi-list me-2"></i>查看报告列表
-                        </a>
-                    </div>
-                </div>
-            </div>
+<!-- Overview Stats -->
+<div class="overview-stats">
+    <div class="stat-card primary">
+        <div class="stat-icon">
+            <i class="bi bi-file-earmark-text"></i>
         </div>
+        <div class="stat-value">{{ report_count }}</div>
+        <div class="stat-label">Total Ferrography Reports</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="bi bi-calendar-check"></i>
+        </div>
+        <div class="stat-value">
+            {% if recent_reports %}
+                {{ recent_reports|length }}
+            {% else %}
+                0
+            {% endif %}
+        </div>
+        <div class="stat-label">Recently Uploaded</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="bi bi-microscope"></i>
+        </div>
+        <div class="stat-value">
+            {% if recent_reports %}
+                {{ recent_reports|length }}
+            {% else %}
+                0
+            {% endif %}
+        </div>
+        <div class="stat-label">Pending Analysis</div>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>最近上传的报告</h5>
-            </div>
-            <div class="card-body">
-                {% if recent_reports %}
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>设备</th>
-                            <th>景点</th>
-                            <th>报告日期</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for report in recent_reports %}
-                        <tr>
-                            <td>{{ report.equipment.name }}</td>
-                            <td>{{ report.equipment.attraction.name }}</td>
-                            <td>{{ report.report_date }}</td>
-                            <td>
-                                <a href="{% url 'ferrography_reports:detail' report.id %}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-eye"></i> 查看
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-muted">暂无报告</p>
-                {% endif %}
-            </div>
-        </div>
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <a href="{% url 'ferrography_reports:upload' %}" class="action-btn primary">
+        <i class="bi bi-upload"></i>
+        Upload Ferrography Report
+    </a>
+    <a href="{% url 'ferrography_reports:list' %}" class="action-btn secondary">
+        <i class="bi bi-list-ul"></i>
+        View Report List
+    </a>
+</div>
+
+<!-- Recent Reports -->
+<div class="reports-card">
+    <div class="reports-card-header">
+        <h5 class="reports-card-title">
+            <i class="bi bi-clock-history"></i>
+            Recently Uploaded Reports
+        </h5>
+        <a href="{% url 'ferrography_reports:list' %}" class="view-all-link">
+            View All <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
+    
+    {% if recent_reports %}
+    <div class="table-responsive">
+        <table class="reports-table">
+            <thead>
+                <tr>
+                    <th>Equipment</th>
+                    <th>Attraction</th>
+                    <th>Report Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in recent_reports %}
+                <tr>
+                    <td>
+                        <div class="equipment-cell">
+                            <div class="equipment-icon">
+                                <i class="bi bi-gear"></i>
+                            </div>
+                            <div class="equipment-info">
+                                <span class="equipment-name">{{ report.equipment.name }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="color: var(--text-secondary);">
+                            {{ report.equipment.attraction.name }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="date-cell">
+                            <i class="bi bi-calendar-event me-2" style="color: var(--accent-blue);"></i>
+                            {{ report.report_date }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'ferrography_reports:detail' report.id %}" class="btn-view-report">
+                            <i class="bi bi-eye"></i>
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p class="mb-3">No reports yet</p>
+        <a href="{% url 'ferrography_reports:upload' %}" class="btn-view-report btn-action">
+            <i class="bi bi-upload"></i>
+            Upload First Report
+        </a>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

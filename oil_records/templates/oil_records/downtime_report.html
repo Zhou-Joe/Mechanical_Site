@@ -1,134 +1,304 @@
 {% extends 'oil_records/base_me.html' %}
 
-{% block title %}停机报告 - 机械工程系统{% endblock %}
-{% block page_title %}停机报告{% endblock %}
+{% block title %}Downtime Report - Mechanical Engineering System{% endblock %}
+{% block page_title %}Downtime Report{% endblock %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item active">停机报告</li>
+<li class="breadcrumb-item active">Downtime Report</li>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    .report-form {
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 30px;
+    .report-generator {
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 32px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
     }
-    
-    .form-group {
-        margin-bottom: 20px;
+
+    .report-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
     }
-    
-    .form-label {
+
+    .report-header-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0066cc 0%, #6633cc 100%) !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .report-header h4 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.25rem;
+    }
+
+    .report-header p {
+        margin: 4px 0 0 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .date-range-picker {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 16px;
+        align-items: end;
+    }
+
+    .date-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .date-input-group label {
         font-weight: 600;
-        color: #333;
-        margin-bottom: 8px;
-        display: block;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
-    
-    .form-control {
-        width: 100%;
-        padding: 10px 15px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-size: 16px;
-        transition: border-color 0.3s;
+
+    .date-input-group label i {
+        color: var(--accent-blue);
     }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: #3498db;
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
-    
-    .btn-generate {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        font-size: 16px;
-        border-radius: 6px;
+
+    .date-input {
+        padding: 12px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        background: var(--bg-secondary);
         cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
     }
-    
+
+    .date-input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-generate {
+        background: linear-gradient(135deg, #0066cc 0%, #6633cc 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 14px 32px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        height: 48px;
+    }
+
     .btn-generate:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        background: linear-gradient(135deg, #0055aa 0%, #5522aa 100%) !important;
+        color: white !important;
     }
-    
+
     .btn-generate:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
+        box-shadow: none;
     }
-    
-    .report-preview {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+    .btn-generate i {
+        font-size: 1.1rem;
+    }
+
+    /* Report Preview Cards */
+    .report-preview-section {
+        display: none;
+    }
+
+    .report-preview-section.active {
+        display: block;
+    }
+
+    .report-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .report-preview-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+    }
+
+    .report-preview-title i {
+        color: var(--accent-blue);
+    }
+
+    .report-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+
+    .btn-download:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--accent-blue);
+        color: var(--accent-blue);
+    }
+
+    .report-frame {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
         overflow: hidden;
+        margin-bottom: 24px;
     }
-    
-    .report-preview iframe {
+
+    .report-frame-header {
+        background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .report-frame iframe {
         width: 100%;
-        height: 800px;
+        height: 600px;
         border: none;
+        display: block;
     }
-    
+
+    /* Loading Overlay */
     .loading-overlay {
         display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
         z-index: 9999;
         justify-content: center;
         align-items: center;
+        animation: fadeIn 0.3s ease;
     }
-    
+
+    .loading-overlay.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
     .loading-content {
-        background: white;
-        padding: 40px;
-        border-radius: 10px;
+        background: var(--bg-secondary);
+        padding: 48px 64px;
+        border-radius: 20px;
         text-align: center;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border-color);
     }
-    
+
     .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
+        width: 56px;
+        height: 56px;
+        border: 4px solid var(--bg-tertiary);
+        border-top-color: var(--accent-blue);
         border-radius: 50%;
         animation: spin 1s linear infinite;
-        margin: 0 auto 20px;
+        margin: 0 auto 24px;
     }
-    
+
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        to { transform: rotate(360deg); }
     }
-    
+
+    .loading-content h5 {
+        margin: 0 0 8px 0;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .loading-content p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    /* Alert Styles */
     .alert {
-        padding: 15px;
-        border-radius: 6px;
+        border-radius: 12px;
+        padding: 16px 20px;
+        border: none;
         margin-bottom: 20px;
+        font-weight: 500;
+        display: none;
     }
-    
+
+    .alert.active {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .alert-danger {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
     }
-    
+
     .alert-success {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
     }
 </style>
 {% endblock %}
@@ -136,91 +306,124 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="report-form">
-            <h4 class="mb-4">生成停机报告</h4>
+        <!-- Report Generator Card -->
+        <div class="report-generator">
+            <div class="report-header">
+                <div class="report-header-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div>
+                    <h4>Generate Downtime Report</h4>
+                    <p>Select date range to generate downtime analysis charts and detailed reports</p>
+                </div>
+            </div>
+            
             <form id="downtimeReportForm">
                 {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">开始日期</label>
-                            <input type="date" class="form-control" id="startDate" name="start_date" required>
-                        </div>
+                <div class="date-range-picker">
+                    <div class="date-input-group">
+                        <label for="startDate">
+                            <i class="bi bi-calendar-event"></i>
+                            Start Date
+                        </label>
+                        <input type="date" class="date-input" id="startDate" name="start_date" required>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">结束日期</label>
-                            <input type="date" class="form-control" id="endDate" name="end_date" required>
-                        </div>
+                    
+                    <div class="date-input-group">
+                        <label for="endDate">
+                            <i class="bi bi-calendar-check"></i>
+                            End Date
+                        </label>
+                        <input type="date" class="date-input" id="endDate" name="end_date" required>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">&nbsp;</label>
-                            <div>
-                                <button type="submit" class="btn-generate" id="generateBtn">
-                                    <i class="bi bi-graph-up"></i> 生成报告
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    
+                    <button type="submit" class="btn-generate" id="generateBtn">
+                        <i class="bi bi-magic"></i>
+                        Generate Report
+                    </button>
                 </div>
             </form>
-            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
-            <div id="successMessage" class="alert alert-success" style="display: none;"></div>
+            
+            <div id="errorMessage" class="alert alert-danger"></div>
+            <div id="successMessage" class="alert alert-success"></div>
         </div>
     </div>
 </div>
 
-<div class="row" id="reportContainer" style="display: none;">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>报告预览</h4>
-            <div>
-                <button class="btn btn-secondary me-2" onclick="downloadChartReport()">
-                    <i class="bi bi-download"></i> 下载图表报告
-                </button>
-                <button class="btn btn-secondary me-2" onclick="downloadDetail101Report()">
-                    <i class="bi bi-download"></i> 下载101详情
-                </button>
-                <button class="btn btn-secondary" onclick="downloadDetail105Report()">
-                    <i class="bi bi-download"></i> 下载105详情
-                </button>
+<!-- Report Preview Section -->
+<div class="report-preview-section" id="reportContainer">
+    <div class="row">
+        <div class="col-12">
+            <div class="report-preview-header">
+                <div class="report-preview-title">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                    <span>Report Preview</span>
+                </div>
+                <div class="report-actions">
+                    <button class="btn-download" onclick="downloadChartReport()">
+                        <i class="bi bi-download"></i> Download Chart Report
+                    </button>
+                    <button class="btn-download" onclick="downloadDetail101Report()">
+                        <i class="bi bi-download"></i> Download 101 Detail
+                    </button>
+                    <button class="btn-download" onclick="downloadDetail105Report()">
+                        <i class="bi bi-download"></i> Download 105 Detail
+                    </button>
+                </div>
             </div>
         </div>
-        
-        <!-- 图表报告 -->
-        <div class="report-preview mb-4">
-            <h5 class="p-3 bg-light border-bottom">图表报告</h5>
-            <iframe id="reportFrame"></iframe>
+    </div>
+    
+    <!-- Chart Report -->
+    <div class="row">
+        <div class="col-12">
+            <div class="report-frame">
+                <div class="report-frame-header">
+                    <i class="bi bi-bar-chart-fill me-2"></i>Chart Report
+                </div>
+                <iframe id="reportFrame"></iframe>
+            </div>
         </div>
-        
-        <!-- 101详情报告 -->
-        <div class="report-preview mb-4">
-            <h5 class="p-3 bg-light border-bottom">101 详细报告</h5>
-            <iframe id="detail101Frame"></iframe>
+    </div>
+    
+    <!-- 101 Detail Report -->
+    <div class="row">
+        <div class="col-12">
+            <div class="report-frame">
+                <div class="report-frame-header">
+                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>101 Detail Report
+                </div>
+                <iframe id="detail101Frame"></iframe>
+            </div>
         </div>
-        
-        <!-- 105详情报告 -->
-        <div class="report-preview mb-4">
-            <h5 class="p-3 bg-light border-bottom">105 详细报告</h5>
-            <iframe id="detail105Frame"></iframe>
+    </div>
+    
+    <!-- 105 Detail Report -->
+    <div class="row">
+        <div class="col-12">
+            <div class="report-frame">
+                <div class="report-frame-header">
+                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>105 Detail Report
+                </div>
+                <iframe id="detail105Frame"></iframe>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- 加载遮罩 -->
+<!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-content">
         <div class="loading-spinner"></div>
-        <h5>正在生成报告...</h5>
-        <p class="text-muted">请稍候，正在从Splunk获取数据并分析</p>
+        <h5>Generating Report...</h5>
+        <p>Please wait while fetching data from Splunk</p>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // 设置默认日期范围（本周）
+    // Set default date range (this week)
     document.addEventListener('DOMContentLoaded', function() {
         const today = new Date();
         const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -236,7 +439,7 @@
         return `${year}-${month}-${day}`;
     }
     
-    // 表单提交
+    // Form submission
     document.getElementById('downtimeReportForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -244,12 +447,12 @@
         const endDate = document.getElementById('endDate').value;
         
         if (!startDate || !endDate) {
-            showError('请选择开始日期和结束日期');
+            showError('Please select both start and end dates');
             return;
         }
         
         if (new Date(startDate) > new Date(endDate)) {
-            showError('开始日期不能晚于结束日期');
+            showError('Start date cannot be later than end date');
             return;
         }
         
@@ -257,8 +460,8 @@
     });
     
     function generateReport(startDate, endDate) {
-        // 显示加载遮罩
-        document.getElementById('loadingOverlay').style.display = 'flex';
+        // Show loading overlay
+        document.getElementById('loadingOverlay').classList.add('active');
         document.getElementById('generateBtn').disabled = true;
         hideMessages();
         
@@ -273,47 +476,47 @@
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('loadingOverlay').classList.remove('active');
             document.getElementById('generateBtn').disabled = false;
             
             if (data.success) {
-                // 显示图表报告
+                // Show chart report
                 const reportFrame = document.getElementById('reportFrame');
                 reportFrame.srcdoc = data.chart_html;
                 
-                // 显示101详情报告
+                // Show 101 detail report
                 const detail101Frame = document.getElementById('detail101Frame');
                 detail101Frame.srcdoc = data.detail_101_html;
                 
-                // 显示105详情报告
+                // Show 105 detail report
                 const detail105Frame = document.getElementById('detail105Frame');
                 detail105Frame.srcdoc = data.detail_105_html;
                 
-                document.getElementById('reportContainer').style.display = 'block';
+                document.getElementById('reportContainer').classList.add('active');
                 
-                // 滚动到报告区域
+                // Scroll to report area
                 document.getElementById('reportContainer').scrollIntoView({ behavior: 'smooth' });
                 
-                showSuccess('报告生成成功！');
+                showSuccess('Report generated successfully!');
                 
-                // 保存HTML内容供下载使用
+                // Save HTML content for download
                 window.chartHtmlContent = data.chart_html;
                 window.detail101HtmlContent = data.detail_101_html;
                 window.detail105HtmlContent = data.detail_105_html;
             } else {
-                showError(data.error || '生成报告失败');
+                showError(data.error || 'Failed to generate report');
             }
         })
         .catch(error => {
-            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('loadingOverlay').classList.remove('active');
             document.getElementById('generateBtn').disabled = false;
-            showError('请求失败：' + error.message);
+            showError('Request failed: ' + error.message);
         });
     }
     
     function downloadChartReport() {
         if (!window.chartHtmlContent) {
-            showError('没有可下载的报告内容');
+            showError('No report content available for download');
             return;
         }
         
@@ -334,7 +537,7 @@
     
     function downloadDetail101Report() {
         if (!window.detail101HtmlContent) {
-            showError('没有可下载的报告内容');
+            showError('No report content available for download');
             return;
         }
         
@@ -355,7 +558,7 @@
     
     function downloadDetail105Report() {
         if (!window.detail105HtmlContent) {
-            showError('没有可下载的报告内容');
+            showError('No report content available for download');
             return;
         }
         
@@ -377,20 +580,20 @@
     function showError(message) {
         const errorDiv = document.getElementById('errorMessage');
         errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        document.getElementById('successMessage').style.display = 'none';
+        errorDiv.classList.add('active');
+        document.getElementById('successMessage').classList.remove('active');
     }
     
     function showSuccess(message) {
         const successDiv = document.getElementById('successMessage');
         successDiv.textContent = message;
-        successDiv.style.display = 'block';
-        document.getElementById('errorMessage').style.display = 'none';
+        successDiv.classList.add('active');
+        document.getElementById('errorMessage').classList.remove('active');
     }
     
     function hideMessages() {
-        document.getElementById('errorMessage').style.display = 'none';
-        document.getElementById('successMessage').style.display = 'none';
+        document.getElementById('errorMessage').classList.remove('active');
+        document.getElementById('successMessage').classList.remove('active');
     }
 </script>
 {% endblock %}

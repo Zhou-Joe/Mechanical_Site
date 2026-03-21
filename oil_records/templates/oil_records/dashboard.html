@@ -9,22 +9,161 @@
 
 {% block extra_css %}
 <style>
-    .chart-container {
-        position: relative;
-        height: 400px;
-        margin-top: 20px;
+    .dashboard-filters {
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid var(--border-color);
     }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .filter-group label i {
+        color: var(--accent-blue);
+    }
+
+    .btn-group-custom {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
     .btn-action {
-        margin-left: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .loading {
+
+    .btn-action i {
+        font-size: 1rem;
+    }
+
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-category-row {
+        font-weight: 600;
+        background: var(--bg-tertiary) !important;
+    }
+
+    .trend-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .trend-up {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--accent-rose);
+    }
+
+    .trend-down {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent-emerald);
+    }
+
+    .trend-flat {
+        background: rgba(148, 163, 184, 0.1);
+        color: var(--text-muted);
+    }
+
+    .data-value {
+        font-weight: 600;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.9rem;
+    }
+
+    .value-normal {
+        color: var(--accent-emerald);
+    }
+
+    .value-warning {
+        color: var(--accent-amber);
+    }
+
+    .value-danger {
+        color: var(--accent-rose);
+    }
+
+    .loading-state {
         display: none;
         text-align: center;
-        padding: 20px;
+        padding: 60px 20px;
     }
-    .spinner-border {
-        width: 3rem;
-        height: 3rem;
+
+    .loading-state.active {
+        display: block;
+    }
+
+    .loading-state .spinner-border {
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 16px;
+    }
+
+    .loading-state p {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .empty-state {
+        display: none;
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state.active {
+        display: block;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    .empty-state p {
+        color: var(--text-secondary);
+    }
+
+    .table-container {
+        display: none;
+    }
+
+    .table-container.active {
+        display: block;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .loading-state .spinner-border {
+        animation: pulse 1.5s ease-in-out infinite;
     }
 </style>
 {% endblock %}
@@ -33,7 +172,7 @@
 <!-- 操作按钮 -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <a href="{% url 'oil_records:upload_report_simple' %}" class="btn btn-success">
+        <a href="{% url 'oil_records:upload_report_simple' %}" class="btn btn-success btn-action">
             <i class="bi bi-upload"></i> 上传报告
         </a>
         <button id="exportBtn" class="btn btn-outline-primary btn-action">
@@ -43,15 +182,19 @@
 </div>
 
 <!-- 选择器卡片 -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>数据筛选</h5>
+<div class="dashboard-filters">
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-funnel" style="color: var(--accent-blue); font-size: 1.25rem;"></i>
+        <h5 class="mb-0" style="font-weight: 600;">数据筛选</h5>
     </div>
-    <div class="card-body">
-        <form id="filterForm">
-            <div class="row">
-                <div class="col-md-3">
-                    <label for="attractionSelect" class="form-label">景点</label>
+    <form id="filterForm">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label for="attractionSelect">
+                        <i class="bi bi-geo-alt"></i>
+                        景点
+                    </label>
                     <select id="attractionSelect" class="form-select" name="attraction">
                         <option value="">选择景点</option>
                         {% for attraction in attractions %}
@@ -59,61 +202,81 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label for="equipmentSelect" class="form-label">设备</label>
+            </div>
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label for="equipmentSelect">
+                        <i class="bi bi-gear"></i>
+                        设备
+                    </label>
                     <select id="equipmentSelect" class="form-select" name="equipment" disabled>
                         <option value="">请先选择景点</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label for="daysSelect" class="form-label">时间范围</label>
+            </div>
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label for="daysSelect">
+                        <i class="bi bi-calendar-range"></i>
+                        时间范围
+                    </label>
                     <select id="daysSelect" class="form-select" name="days">
-                        <option value="7">最近7天</option>
-                        <option value="30">最近30天</option>
-                        <option value="90">最近90天</option>
-                        <option value="180">最近180天</option>
-                        <option value="365" selected>最近1年</option>
+                        <option value="7">最近 7 天</option>
+                        <option value="30">最近 30 天</option>
+                        <option value="90">最近 90 天</option>
+                        <option value="180">最近 180 天</option>
+                        <option value="365" selected>最近 1 年</option>
                     </select>
                 </div>
             </div>
-            <div class="row mt-3">
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search"></i> 查询趋势
-                    </button>
-                    <button type="button" id="resetBtn" class="btn btn-secondary">
-                        <i class="bi bi-arrow-clockwise"></i> 重置
-                    </button>
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label class="invisible">&nbsp;</label>
+                    <div class="btn-group-custom">
+                        <button type="submit" class="btn btn-primary btn-action w-100">
+                            <i class="bi bi-search"></i> 查询趋势
+                        </button>
+                        <button type="button" id="resetBtn" class="btn btn-outline-secondary btn-action">
+                            <i class="bi bi-arrow-clockwise"></i> 重置
+                        </button>
+                    </div>
                 </div>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
 <!-- 数据对比表格 -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-table me-2"></i>数据对比表</h5>
+        <i class="bi bi-table"></i>
+        <span>数据对比表</span>
     </div>
     <div class="card-body">
-        <div class="loading" id="tableLoading">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">加载中...</span>
+        <!-- Loading State -->
+        <div class="loading-state" id="tableLoading">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p>正在加载数据...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="noTableDataMessage">
+            <i class="bi bi-inbox"></i>
+            <p class="mb-0">暂无数据，请选择设备和时间范围查询</p>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container" id="tableContainer">
+            <div class="table-responsive">
+                <table class="table table-hover" id="comparisonTable">
+                    <thead id="tableHead">
+                        <!-- 动态生成表头 -->
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- 动态生成表格内容 -->
+                    </tbody>
+                </table>
             </div>
-            <p class="mt-2">正在加载数据...</p>
-        </div>
-        <div id="tableContainer" style="display: none; overflow-x: auto;">
-            <table class="table table-striped table-hover table-bordered" id="comparisonTable">
-                <thead id="tableHead">
-                    <!-- 动态生成表头 -->
-                </thead>
-                <tbody id="tableBody">
-                    <!-- 动态生成表格内容 -->
-                </tbody>
-            </table>
-        </div>
-        <div id="noTableDataMessage" class="alert alert-info" style="display: none;">
-            <i class="bi bi-info-circle"></i> 暂无数据，请选择设备和时间范围查询
         </div>
     </div>
 </div>
@@ -125,7 +288,8 @@
         // Initialize Select2
         $('#attractionSelect, #equipmentSelect, #daysSelect').select2({
             theme: 'bootstrap-5',
-            width: '100%'
+            width: '100%',
+            dropdownParent: $('#filterForm')
         });
 
         // Load equipment when attraction changes
@@ -160,8 +324,8 @@
             $('#filterForm')[0].reset();
             $('#equipmentSelect').prop('disabled', true).html('<option value="">请先选择景点</option>');
             
-            $('#tableContainer').hide();
-            $('#noTableDataMessage').show();
+            $('#tableContainer').removeClass('active');
+            $('#noTableDataMessage').addClass('active');
         });
 
         // Export data
@@ -181,24 +345,24 @@
                 return;
             }
 
-            $('#tableLoading').show();
-            $('#tableContainer').hide();
-            $('#noTableDataMessage').hide();
+            $('#tableLoading').addClass('active');
+            $('#tableContainer').removeClass('active');
+            $('#noTableDataMessage').removeClass('active');
 
             $.get('{% url "oil_records:get_table_data_api" %}', {
                 equipment_id: equipmentId,
                 days: days
             }, function(data) {
-                $('#tableLoading').hide();
+                $('#tableLoading').removeClass('active');
                 
                 if (data.data && data.data.length > 0) {
                     renderComparisonTable(data);
-                    $('#tableContainer').show();
+                    $('#tableContainer').addClass('active');
                 } else {
-                    $('#noTableDataMessage').show();
+                    $('#noTableDataMessage').addClass('active');
                 }
             }).fail(function() {
-                $('#tableLoading').hide();
+                $('#tableLoading').removeClass('active');
                 alert('加载数据失败，请稍后重试');
             });
         }
@@ -217,33 +381,59 @@
             
             // 生成表格内容
             let tbodyHtml = '';
+            let lastCategory = null;
+            
             tableData.forEach(row => {
-                let trClass = '';
-                if (row.category === '金属') trClass = 'table-primary';
-                else if (row.category === '水分') trClass = 'table-info';
-                else if (row.category === '粘度') trClass = 'table-warning';
+                // Add category header row
+                if (row.category !== lastCategory) {
+                    const categoryColors = {
+                        '金属': 'primary',
+                        '水分': 'info',
+                        '粘度': 'warning'
+                    };
+                    const categoryIcons = {
+                        '金属': 'bi-droplet-half',
+                        '水分': 'bi-water',
+                        '粘度': 'bi-speedometer2'
+                    };
+                    tbodyHtml += `
+                        <tr class="table-category-row">
+                            <td colspan="${dates.length + 3}">
+                                <i class="bi ${categoryIcons[row.category] || 'bi-circle'} me-2"></i>
+                                ${row.category}
+                            </td>
+                        </tr>
+                    `;
+                    lastCategory = row.category;
+                }
                 
-                let rowHtml = `<tr class="${trClass}">`;
+                let rowClass = '';
+                
+                let rowHtml = `<tr class="${rowClass}">`;
                 rowHtml += `<td><strong>${row.parameter_name}</strong></td>`;
-                rowHtml += `<td>${row.unit || '-'}</td>`;
-                rowHtml += `<td>${row.standard_range || '-'}</td>`;
+                rowHtml += `<td><span class="text-muted">${row.unit || '-'}</span></td>`;
+                rowHtml += `<td><span class="badge bg-secondary">${row.standard_range || '-'}</span></td>`;
                 
                 dates.forEach(date => {
                     const value = row[`value_${date}`];
                     const isNormal = row[`normal_${date}`];
                     if (value !== null && value !== undefined) {
-                        const cellClass = isNormal === false ? 'table-danger' : '';
-                        rowHtml += `<td class="${cellClass}">${value}</td>`;
+                        const cellClass = isNormal === false ? 'value-danger' : 'value-normal';
+                        rowHtml += `<td><span class="data-value ${cellClass}">${value}</span></td>`;
                     } else {
-                        rowHtml += `<td>-</td>`;
+                        rowHtml += `<td><span class="text-muted">-</span></td>`;
                     }
                 });
                 
                 // 趋势列
                 let trendHtml = row.trend || '-';
-                if (row.trend_class === 'trend-up') trendHtml = `<span class="text-danger">${trendHtml}</span>`;
-                else if (row.trend_class === 'trend-down') trendHtml = `<span class="text-success">${trendHtml}</span>`;
-                else if (row.trend_class === 'trend-flat') trendHtml = `<span class="text-muted">${trendHtml}</span>`;
+                if (row.trend_class === 'trend-up') {
+                    trendHtml = `<span class="trend-indicator trend-up"><i class="bi bi-arrow-up"></i>${trendHtml}</span>`;
+                } else if (row.trend_class === 'trend-down') {
+                    trendHtml = `<span class="trend-indicator trend-down"><i class="bi bi-arrow-down"></i>${trendHtml}</span>`;
+                } else if (row.trend_class === 'trend-flat') {
+                    trendHtml = `<span class="trend-indicator trend-flat"><i class="bi bi-dash"></i>${trendHtml}</span>`;
+                }
                 rowHtml += `<td>${trendHtml}</td>`;
                 
                 rowHtml += '</tr>';

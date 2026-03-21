@@ -27,6 +27,8 @@ urlpatterns = [
     path("", include("oil_records.urls")),
     path("ecr/", include("ecr.urls")),
     path("ferrography/", include("ferrography_reports.urls")),
+    path("acceleration/", include("acceleration_reader.urls")),
+    path("fkm/", include("FKM_django.urls")),
 ]
 
 # Serve media files during development

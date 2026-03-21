@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "oil_records",
     "ecr",
     "ferrography_reports",
+    "acceleration_reader",
+    "FKM_django",
 ]
 
 MIDDLEWARE = [
