@@ -43,7 +43,25 @@ class AccData:
             self.z_avg = 1
         else:
             self.cutoff = cutoff
-            self.rawdata = pd.read_csv(rawdata, header=None, index_col=False, sep='\t', low_memory=False)
+            # Read file - header lines are single column, data lines are tab-separated
+            import csv
+            lines = []
+            max_cols = 4  # Time + X + Y + Z
+            with open(rawdata, 'r') as f:
+                for line in f:
+                    line = line.rstrip('\n\r')
+                    if not line:
+                        continue
+                    # Check if line has tabs (data line) or not (header line)
+                    if '\t' in line:
+                        parts = line.split('\t')
+                        # Pad to max_cols if needed
+                        while len(parts) < max_cols:
+                            parts.append('')
+                        lines.append(parts[:max_cols])
+                    else:
+                        lines.append([line, '', '', ''])
+            self.rawdata = pd.DataFrame(lines, columns=['col0', 'col1', 'col2', 'col3'])
             self.filename = os.path.basename(rawdata)
             self.filtered_data = pd.DataFrame()
             self.std_data = pd.DataFrame()
@@ -143,10 +161,13 @@ class AccData:
         """Parse columns into data DataFrame"""
         self.data = pd.DataFrame()
         for i in range(len(self.columns)):
-            self.data[self.columns[i]] = self.rawdata.iloc[self.start_idx:, i]
-        self.data.reset_index(drop=True, inplace=True)
+            col_data = self.rawdata.iloc[self.start_idx:, i]
+            # Convert to numeric, coercing errors to NaN, then drop NaN rows
+            col_numeric = pd.to_numeric(col_data, errors='coerce')
+            self.data[self.columns[i]] = col_numeric.values
+        self.data = self.data.dropna().reset_index(drop=True)
         if "Time" in self.columns:
-            self.data['Time'] = pd.to_numeric(self.data['Time'], errors='ignore').round(decimals=4)
+            self.data.loc[:, 'Time'] = self.data['Time'].round(decimals=4)
         self.data = self.data.round(decimals=4)
     
     def calculate_sampling_frequency(self):
@@ -309,46 +330,24 @@ class AccData:
                 self.std_data.to_csv(path, sep='\t', header=False, index=False)
             elif plottype == 'Filter':
                 self.filtered_data.to_csv(path, sep='\t', header=False, index=False)
-        except:
-            pass
-    
-    def to_dict(self, plottype='Standard'):
-        """Convert data to dictionary for JSON serialization"""
-        if plottype == 'Standard':
-            data = self.std_data
-        elif plottype == 'Filter':
-            data = self.filtered_data
-        else:
-            data = self.data
-        
-        return {
-            'time': data.iloc[:, 0].values.tolist(),
-            'x': data.iloc[:, 1].values.tolist(),
-            'y': data.iloc[:, 2].values.tolist(),
-            'z': data.iloc[:, 3].values.tolist(),
-            'filename': self.filename,
-            'pitch_angle': self.pitch_angle,
-            'seatback_angle': self.seatback_angle,
-            'roll_angle': self.roll_angle,
-            'yaw_angle': self.yaw_angle,
-            'fs': self.fs
-        }
-    
+        except Exception as e:
+            print(f"Error exporting data: {e}")
+
     def get_stats_dict(self, plottype='Standard'):
-        """Get statistics as dictionary"""
+        """Get statistics as dictionary for API response"""
         if plottype == 'Standard':
             data = self.std_data
         elif plottype == 'Filter':
             data = self.filtered_data
         else:
             data = self.data
-        
+
         # Calculate duration and points
         duration = 0
         points = len(data)
         if points > 0 and self.fs > 0:
             duration = points / self.fs
-        
+
         return {
             'filename': self.filename,
             'pitch_angle': self.pitch_angle,
@@ -379,6 +378,28 @@ class AccData:
                 'min': float(data.iloc[:, 3].min()) if len(data) > 0 else 0,
                 'zero_pos': float(self.zero_z)
             }
+        }
+    
+    def to_dict(self, plottype='Standard'):
+        """Convert data to dictionary for JSON serialization"""
+        if plottype == 'Standard':
+            data = self.std_data
+        elif plottype == 'Filter':
+            data = self.filtered_data
+        else:
+            data = self.data
+        
+        return {
+            'time': data.iloc[:, 0].values.tolist(),
+            'x': data.iloc[:, 1].values.tolist(),
+            'y': data.iloc[:, 2].values.tolist(),
+            'z': data.iloc[:, 3].values.tolist(),
+            'filename': self.filename,
+            'pitch_angle': self.pitch_angle,
+            'seatback_angle': self.seatback_angle,
+            'roll_angle': self.roll_angle,
+            'yaw_angle': self.yaw_angle,
+            'fs': self.fs
         }
 
 

@@ -16,5 +16,8 @@ urlpatterns = [
     path('zone-analysis/', views.get_zone_analysis, name='get_zone_analysis'),
     path('reversal-analysis/', views.get_reversal_analysis, name='get_reversal_analysis'),
     path('edit-data/', views.edit_data, name='edit_data'),
+    path('remove-dataset/', views.remove_dataset, name='remove_dataset'),
+    path('export/', views.export_dataset, name='export_dataset'),
+    path('report/', views.generate_report, name='generate_report'),
     path('clear-data/', views.clear_data, name='clear_data'),
 ]

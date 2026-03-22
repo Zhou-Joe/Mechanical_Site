@@ -5,378 +5,624 @@
 
 {% block extra_css %}
 <style>
-    .plot-container {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        padding: 20px;
-        margin-bottom: 20px;
+    :root {
+        --acc-bg: linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #fef3c7 100%);
+        --acc-card: rgba(255, 255, 255, 0.88);
+        --acc-border: rgba(15, 23, 42, 0.09);
+        --acc-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --acc-ink: #0f172a;
+        --acc-muted: #475569;
+        --acc-blue: #1d4ed8;
+        --acc-green: #15803d;
+        --acc-red: #dc2626;
+        --acc-amber: #d97706;
     }
-    .plot-area {
-        width: 100%;
-        height: 500px;
-        position: relative;
+
+    .acc-page {
+        background: var(--acc-bg);
+        min-height: calc(100vh - 3rem);
+        padding: 1.25rem 0;
     }
-    .stats-panel {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 15px;
+
+    .acc-status {
+        background: rgba(15, 23, 42, 0.88);
+        border-radius: 18px;
+        color: #fff;
+        padding: 1rem 1.25rem;
+        box-shadow: var(--acc-shadow);
+        margin-bottom: 1rem;
     }
-    .file-item {
-        padding: 10px 15px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
+
+    .acc-card {
+        background: var(--acc-card);
+        border: 1px solid var(--acc-border);
+        border-radius: 18px;
+        box-shadow: var(--acc-shadow);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
     }
-    .file-item:hover {
-        background: #f0f0f0;
-    }
-    .file-item.active {
-        background: #e3f2fd;
-        border-left: 3px solid #2196F3;
-    }
-    .control-panel {
-        background: #fff;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .status-bar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 10px 15px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-    }
-    .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255,255,255,0.8);
+
+    .acc-card-header {
+        padding: 0.95rem 1.1rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
         display: flex;
         align-items: center;
-        justify-content: center;
-        z-index: 1000;
+        justify-content: space-between;
+        gap: 0.75rem;
     }
-    .analysis-results {
-        max-height: 300px;
-        overflow-y: auto;
+
+    .acc-card-body {
+        padding: 1rem 1.1rem 1.1rem;
     }
-    /* Tab styling */
-    .nav-tabs .nav-link {
-        color: #495057;
-        border: 1px solid #dee2e6;
-        border-bottom: none;
-        margin-right: 2px;
+
+    .acc-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--acc-ink);
+        margin: 0;
     }
-    .nav-tabs .nav-link.active {
-        background-color: #fff;
-        border-color: #dee2e6 #dee2e6 #fff;
-        font-weight: bold;
-    }
-    .nav-tabs .nav-link:hover {
-        border-color: #e9ecef #e9ecef #dee2e6;
-    }
-    .tab-content {
-        border: 1px solid #dee2e6;
-        border-top: none;
-        border-radius: 0 0 0.25rem 0.25rem;
-        padding: 15px;
-        background: #fff;
-    }
-    .sub-tab-content {
-        border: 1px solid #dee2e6;
-        border-top: none;
-        border-radius: 0 0 0.25rem 0.25rem;
-        padding: 15px;
-        background: #f8f9fa;
-    }
-    .sub-nav-tabs .nav-link {
+
+    .acc-subtle {
+        color: var(--acc-muted);
         font-size: 0.9rem;
-        padding: 0.5rem 0.75rem;
+    }
+
+    .acc-control-grid {
+        display: grid;
+        gap: 0.8rem;
+    }
+
+    .acc-inline-buttons,
+    .acc-view-switch {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .acc-btn-chip {
+        border: 1px solid rgba(29, 78, 216, 0.18);
+        background: rgba(255, 255, 255, 0.9);
+        background-color: rgba(255, 255, 255, 0.9);
+        background-image: none;
+        color: var(--acc-blue);
+        border-radius: 999px;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.16s ease;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .acc-btn-chip:hover,
+    .acc-btn-chip.active {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        background-image: none !important;
+        color: var(--acc-red) !important;
+        border-color: var(--acc-red) !important;
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.14);
+    }
+
+    .acc-btn-chip:focus,
+    .acc-btn-chip.active:focus,
+    .acc-btn-chip.active:hover,
+    .acc-page button.acc-btn-chip.active,
+    .acc-page button.acc-btn-chip.active:hover,
+    .acc-page button.acc-btn-chip.active:focus,
+    .acc-page .acc-inline-buttons .acc-btn-chip.active,
+    .acc-page .acc-view-switch .acc-btn-chip.active,
+    .acc-page .acc-btn-chip.active,
+    .acc-page .acc-btn-chip.active:hover,
+    .acc-page .acc-btn-chip.active:focus {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        background-image: none !important;
+        color: var(--acc-red) !important;
+        border-color: var(--acc-red) !important;
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.14) !important;
+    }
+
+    .acc-btn-ghost {
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--acc-ink);
+        border-radius: 12px;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .acc-btn-ghost:hover {
+        border-color: rgba(29, 78, 216, 0.35);
+        color: var(--acc-blue);
+    }
+
+    .acc-btn-danger {
+        color: var(--acc-red);
+        border-color: rgba(220, 38, 38, 0.18);
+    }
+
+    .acc-btn-success {
+        color: var(--acc-green);
+        border-color: rgba(21, 128, 61, 0.18);
+    }
+
+    .acc-btn-primary {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.65rem 0.95rem;
+        font-weight: 700;
+    }
+
+    .acc-btn-primary:hover {
+        filter: brightness(1.05);
+    }
+
+    .acc-field label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--acc-muted);
+        margin-bottom: 0.35rem;
+        display: block;
+    }
+
+    .acc-field input,
+    .acc-field select {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0.6rem 0.75rem;
+    }
+
+    .acc-field-row {
+        display: grid;
+        gap: 0.65rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .acc-field-row.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .acc-dataset-list {
+        display: grid;
+        gap: 0.9rem;
+        max-height: calc(100vh - 19rem);
+        overflow-y: auto;
+        padding-right: 0.2rem;
+    }
+
+    .acc-dataset {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 0.9rem;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+    }
+
+    .acc-dataset.active {
+        border-color: rgba(37, 99, 235, 0.35);
+        box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+    }
+
+    .acc-dataset-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .acc-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.2rem 0.55rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        background: rgba(29, 78, 216, 0.12);
+        color: var(--acc-blue);
+    }
+
+    .acc-badge.gb {
+        background: rgba(217, 119, 6, 0.12);
+        color: var(--acc-amber);
+    }
+
+    .acc-badge.astm {
+        background: rgba(21, 128, 61, 0.12);
+        color: var(--acc-green);
+    }
+
+    .acc-dataset-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--acc-ink);
+        word-break: break-word;
+    }
+
+    .acc-angle-box {
+        background: rgba(248, 250, 252, 0.96);
+        border-radius: 12px;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        padding: 0.65rem 0.75rem;
+        color: var(--acc-muted);
+        font-size: 0.84rem;
+        line-height: 1.45;
+        margin-bottom: 0.75rem;
+        white-space: pre-line;
+    }
+
+    .acc-stats-table {
+        width: 100%;
+        font-size: 0.79rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .acc-stats-table th,
+    .acc-stats-table td {
+        padding: 0.3rem 0.25rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        text-align: left;
+    }
+
+    .acc-action-grid {
+        display: grid;
+        gap: 0.45rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .acc-action-panel {
+        margin-top: 0.8rem;
+        border-top: 1px dashed rgba(15, 23, 42, 0.12);
+        padding-top: 0.8rem;
+    }
+
+    .acc-tabs {
+        border-bottom: 0;
+        gap: 0.35rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .acc-tabs .nav-link {
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--acc-ink) !important;
+        font-weight: 700;
+    }
+
+    .acc-tabs .nav-link:hover,
+    .acc-tabs .nav-link:focus {
+        color: var(--acc-ink) !important;
+    }
+
+    .acc-tabs .nav-link.active,
+    .acc-tabs .nav-item.show .nav-link,
+    .acc-page .nav-tabs .nav-link.active,
+    .acc-page .nav-tabs .nav-item.show .nav-link {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        background-image: none !important;
+        color: var(--acc-red) !important;
+        border-color: var(--acc-red) !important;
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.14) !important;
+    }
+
+    .acc-tabs .nav-link.active:hover,
+    .acc-tabs .nav-link.active:focus,
+    .acc-tabs .nav-item.show .nav-link:hover,
+    .acc-tabs .nav-item.show .nav-link:focus,
+    .acc-page .nav-tabs .nav-link.active:hover,
+    .acc-page .nav-tabs .nav-link.active:focus {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: var(--acc-red) !important;
+        border-color: var(--acc-red) !important;
+    }
+
+    .acc-pane {
+        background: rgba(255, 255, 255, 0.72);
+        border-radius: 20px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: var(--acc-shadow);
+        padding: 1rem;
+    }
+
+    .acc-plot-grid-trend {
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .acc-plot-panel {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 18px;
+        padding: 0.75rem;
+    }
+
+    .acc-plot {
+        width: 100%;
+        height: 420px;
+    }
+
+    .acc-plot.tall {
+        height: 560px;
+    }
+
+    .acc-summary {
+        margin-top: 1rem;
+        background: rgba(248, 250, 252, 0.96);
+        border-radius: 16px;
+        padding: 0.95rem 1rem;
+        color: var(--acc-muted);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        min-height: 92px;
+    }
+
+    .acc-empty {
+        text-align: center;
+        color: var(--acc-muted);
+        padding: 1.4rem 1rem;
+        border: 1px dashed rgba(15, 23, 42, 0.12);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.68);
+    }
+
+    .acc-loading {
+        display: none;
+        align-items: center;
+        gap: 0.6rem;
+        color: var(--acc-blue);
+        font-weight: 700;
+    }
+
+    .acc-selected {
+        color: var(--acc-blue);
+        font-weight: 700;
+    }
+
+    @media (max-width: 1199.98px) {
+        .acc-dataset-list {
+            max-height: none;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .acc-field-row,
+        .acc-field-row.three,
+        .acc-action-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .acc-plot {
+            height: 360px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row mb-3">
-        <div class="col-12">
-            <div class="status-bar">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Acceleration Data Reader</h4>
-                    <span id="statusText">Ready - Upload a file to begin</span>
+<div class="acc-page">
+    <div class="container-fluid">
+        <div class="acc-status">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <div class="h5 mb-1">Acceleration Reader</div>
+                    <div class="small opacity-75" id="statusText">Ready for upload.</div>
+                </div>
+                <div class="small">
+                    Active dataset:
+                    <span class="acc-selected" id="activeDatasetLabel">None selected</span>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="row">
-        <!-- Left Panel - File Upload and Controls -->
-        <div class="col-md-3">
-            <!-- File Upload Card -->
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-upload me-2"></i>File Upload</h5>
-                </div>
-                <div class="card-body">
-                    <form id="uploadForm">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Data Type</label>
-                            <select class="form-select" id="fileType">
-                                <option value="standard">Standard Format</option>
-                                <option value="raw">Raw (GB+ASTM)</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Select File</label>
-                            <input type="file" class="form-control" id="fileInput" accept=".txt,.csv,.dat,.sup,.sups">
-                        </div>
-                        <button type="button" class="btn btn-primary w-100" id="uploadBtn">
-                            <i class="bi bi-cloud-upload me-1"></i>Upload
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Loaded Files -->
-            <div class="card mb-3">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="bi bi-files me-2"></i>Loaded Files</h5>
-                </div>
-                <div class="card-body p-0" id="fileList" style="max-height: 200px; overflow-y: auto;">
-                    <div class="text-muted p-3 text-center">No files loaded</div>
-                </div>
-            </div>
-            
-            <!-- Filter Settings -->
-            <div class="card mb-3" id="filterSettings" style="display:none;">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Filter Settings</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Cutoff Frequency: <span id="cutoffValue">{{ default_cutoff }}</span> Hz</label>
-                        <input type="range" class="form-range" id="cutoffSlider" min="1" max="{{ max_cutoff }}" value="{{ default_cutoff }}">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">1 Hz</small>
-                            <small class="text-muted">{{ max_cutoff }} Hz</small>
+
+        <div class="row g-4">
+            <div class="col-xl-3 col-lg-4">
+                <div class="acc-card">
+                    <div class="acc-card-header">
+                        <h2 class="acc-title">Upload</h2>
+                        <div class="acc-loading" id="uploadLoading">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span>Working</span>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-info w-100" id="applyCutoffBtn">
-                        <i class="bi bi-check-circle me-1"></i>Apply Filter
-                    </button>
-                </div>
-            </div>
-            
-            <!-- ASTM Settings -->
-            <div class="card mb-3" id="astmSettings" style="display:none;">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>ASTM Settings</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Restraint Type</label>
-                        <select class="form-select" id="restraintType">
-                            {% for rt in restraint_types %}
-                            <option value="{{ rt }}">{{ rt }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Condition</label>
-                        <select class="form-select" id="conditionType">
-                            {% for ct in condition_types %}
-                            <option value="{{ ct }}">{{ ct }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Height (inches)</label>
-                        <input type="number" class="form-control" id="heightValue" value="0" min="0" max="100">
+                    <div class="acc-card-body">
+                        <form id="uploadForm" class="acc-control-grid">
+                            {% csrf_token %}
+                            <div class="acc-field">
+                                <label for="fileType">Data Type</label>
+                                <select id="fileType">
+                                    <option value="standard">Standard Acceleration Data</option>
+                                    <option value="raw">Raw Upload (GB + ASTM)</option>
+                                </select>
+                            </div>
+                            <div class="acc-field">
+                                <label for="fileInput">Select File</label>
+                                <input id="fileInput" type="file" accept=".txt,.csv,.dat,.sup,.sups">
+                            </div>
+                            <button type="button" class="acc-btn-primary" id="uploadBtn">Upload Dataset</button>
+                        </form>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Main Plot Area with Tabs -->
-        <div class="col-md-9">
-            <!-- Control Bar -->
-            <div class="control-panel">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="btn-group w-100" role="group">
-                            <button type="button" class="btn btn-outline-secondary active" data-type="Standard">Standard</button>
-                            <button type="button" class="btn btn-outline-secondary" data-type="Filter">Filtered</button>
-                            <button type="button" class="btn btn-outline-secondary" data-type="Raw">Raw</button>
-                        </div>
+
+                <div class="acc-card">
+                    <div class="acc-card-header">
+                        <h2 class="acc-title">Controls</h2>
+                        <span class="acc-subtle" id="plotModeText">Standard view</span>
                     </div>
-                    <div class="col-md-6">
-                        <small class="text-muted" id="plotInfo">Select a file to view data</small>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Main Tabs -->
-            <ul class="nav nav-tabs" id="mainTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="trend-tab" data-bs-toggle="tab" data-bs-target="#trend" type="button" role="tab">
-                        <i class="bi bi-graph-up me-1"></i>Trend Plot
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="astm-tab" data-bs-toggle="tab" data-bs-target="#astm" type="button" role="tab">
-                        <i class="bi bi-book me-1"></i>ASTM F2291
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="gb-tab" data-bs-toggle="tab" data-bs-target="#gb" type="button" role="tab">
-                        <i class="bi bi-book me-1"></i>GB 8408
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="zone-tab" data-bs-toggle="tab" data-bs-target="#zone" type="button" role="tab">
-                        <i class="bi bi-grid-3x3-gap me-1"></i>Zone Analysis
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reversal-tab" data-bs-toggle="tab" data-bs-target="#reversal" type="button" role="tab">
-                        <i class="bi bi-arrow-left-right me-1"></i>Reversal Analysis
-                    </button>
-                </li>
-            </ul>
-            
-            <!-- Tab Content -->
-            <div class="tab-content" id="mainTabContent">
-                <!-- Trend Plot Tab -->
-                <div class="tab-pane fade show active" id="trend" role="tabpanel">
-                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="trendSubTabs">
-                        <li class="nav-item">
-                            <button class="nav-link active" data-plot-axis="x">X-Axis (Fore/Aft)</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-plot-axis="y">Y-Axis (Lateral)</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-plot-axis="z">Z-Axis (Vertical)</button>
-                        </li>
-                    </ul>
-                    <div class="plot-container">
-                        <div id="trendPlot" class="plot-area"></div>
-                        <div class="loading-overlay" id="trendLoading" style="display:none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                    <div class="acc-card-body">
+                        <div class="acc-control-grid">
+                            <div>
+                                <div class="acc-subtle mb-2">Plot Data Type</div>
+                                <div class="acc-inline-buttons" id="plotTypeButtons">
+                                    <button type="button" class="acc-btn-chip active" data-plot-type="Standard">Standard</button>
+                                    <button type="button" class="acc-btn-chip" data-plot-type="Filter">Filter</button>
+                                    <button type="button" class="acc-btn-chip" data-plot-type="Raw">Raw</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="acc-subtle mb-2">Fit Max Alignment</div>
+                                <div class="acc-inline-buttons" id="fitAxisButtons">
+                                    <button type="button" class="acc-btn-chip active" data-fit-axis="">None</button>
+                                    <button type="button" class="acc-btn-chip" data-fit-axis="x">Fit Max X</button>
+                                    <button type="button" class="acc-btn-chip" data-fit-axis="y">Fit Max Y</button>
+                                    <button type="button" class="acc-btn-chip" data-fit-axis="z">Fit Max Z</button>
+                                </div>
+                            </div>
+
+                            <div class="acc-field">
+                                <label for="cutoffSlider">Cutoff Frequency: <span id="cutoffValue">{{ default_cutoff }}</span> Hz</label>
+                                <input id="cutoffSlider" type="range" min="1" max="{{ max_cutoff }}" value="{{ default_cutoff }}">
+                            </div>
+
+                            <div class="acc-inline-buttons">
+                                <button type="button" class="acc-btn-ghost acc-btn-success" id="applyCutoffBtn">Apply Cutoff</button>
+                                <button type="button" class="acc-btn-ghost" id="annotationModeBtn">Annotations: Single</button>
+                            </div>
+
+                            <div class="acc-inline-buttons">
+                                <button type="button" class="acc-btn-ghost acc-btn-success" id="generateReportBtn">Generate Report</button>
+                                <button type="button" class="acc-btn-ghost acc-btn-danger" id="clearAllBtn">Clear All</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- ASTM Tab -->
-                <div class="tab-pane fade" id="astm" role="tabpanel">
-                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="astmSubTabs">
-                        <li class="nav-item">
-                            <button class="nav-link active" data-astm-plot="ax">ax vs dt</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-astm-plot="ay">ay vs dt</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-astm-plot="az">az vs dt</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-astm-plot="xy">XY Egg</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-astm-plot="xz">XZ Egg</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-astm-plot="yz">YZ Egg</button>
-                        </li>
-                    </ul>
-                    <div class="plot-container">
-                        <div id="astmPlot" class="plot-area"></div>
-                        <div class="loading-overlay" id="astmLoading" style="display:none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+
+                <div class="acc-card">
+                    <div class="acc-card-header">
+                        <h2 class="acc-title">ASTM Settings</h2>
+                        <span class="acc-subtle">Used by ASTM plots and reports</span>
+                    </div>
+                    <div class="acc-card-body">
+                        <div class="acc-control-grid">
+                            <div class="acc-field">
+                                <label for="restraintType">Restraint Type</label>
+                                <select id="restraintType">
+                                    {% for restraint in restraint_types %}
+                                    <option value="{{ restraint }}">{{ restraint }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="acc-field">
+                                <label for="conditionType">Condition</label>
+                                <select id="conditionType">
+                                    {% for condition in condition_types %}
+                                    <option value="{{ condition }}">{{ condition }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="acc-field">
+                                <label for="heightValue">Patron Height (inches)</label>
+                                <input id="heightValue" type="number" min="0" max="100" value="0">
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- GB Tab -->
-                <div class="tab-pane fade" id="gb" role="tabpanel">
-                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="gbSubTabs">
-                        <li class="nav-item">
-                            <button class="nav-link active" data-gb-plot="ay">ay vs dt</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-gb-plot="az">az vs dt</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-gb-plot="combined">Combined (ay vs az)</button>
-                        </li>
-                    </ul>
-                    <div class="plot-container">
-                        <div id="gbPlot" class="plot-area"></div>
-                        <div class="loading-overlay" id="gbLoading" style="display:none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
+
+                <div class="acc-card">
+                    <div class="acc-card-header">
+                        <h2 class="acc-title">Loaded Datasets</h2>
+                        <span class="acc-subtle" id="datasetCount">0 loaded</span>
                     </div>
-                </div>
-                
-                <!-- Zone Analysis Tab -->
-                <div class="tab-pane fade" id="zone" role="tabpanel">
-                    <div class="plot-container">
-                        <div id="zonePlot" class="plot-area"></div>
-                        <div class="loading-overlay" id="zoneLoading" style="display:none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Reversal Analysis Tab -->
-                <div class="tab-pane fade" id="reversal" role="tabpanel">
-                    <ul class="nav nav-tabs sub-nav-tabs mb-2" id="reversalSubTabs">
-                        <li class="nav-item">
-                            <button class="nav-link active" data-reversal-plot="z">Z-Axis Reversals</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-reversal-plot="xy">XY Reversals</button>
-                        </li>
-                    </ul>
-                    <div class="plot-container">
-                        <div id="reversalPlot" class="plot-area"></div>
-                        <div class="loading-overlay" id="reversalLoading" style="display:none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
+                    <div class="acc-card-body">
+                        <div class="acc-dataset-list" id="datasetList">
+                            <div class="acc-empty">Upload a dataset to begin.</div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Stats and Analysis Panels -->
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="stats-panel" id="statsPanel">
-                        <h6><i class="bi bi-table me-2"></i>Data Statistics</h6>
-                        <div id="statsContent" class="analysis-results">
-                            <p class="text-muted">Load a file to see statistics</p>
+
+            <div class="col-xl-9 col-lg-8">
+                <ul class="nav acc-tabs" id="analysisTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#trendTab" type="button">Trend</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#astmTab" type="button">ASTM</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#gbTab" type="button">GB</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#zoneTab" type="button">Zone</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#zReversalTab" type="button">Z Reversal</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#xyReversalTab" type="button">X/Y Reversal</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="trendTab" role="tabpanel">
+                        <div class="acc-pane">
+                            <div class="acc-plot-grid-trend">
+                                <div class="acc-plot-panel"><div id="trendPlotX" class="acc-plot"></div></div>
+                                <div class="acc-plot-panel"><div id="trendPlotY" class="acc-plot"></div></div>
+                                <div class="acc-plot-panel"><div id="trendPlotZ" class="acc-plot"></div></div>
+                            </div>
+                            <div class="acc-summary" id="trendSummary">The trend tab overlays every loaded dataset. Use Fit Max to align peaks across the current plot type.</div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="stats-panel" id="analysisPanel">
-                        <h6><i class="bi bi-calculator me-2"></i>Analysis Results</h6>
-                        <div id="analysisContent" class="analysis-results">
-                            <p class="text-muted">Select analysis type to see results</p>
+
+                    <div class="tab-pane fade" id="astmTab" role="tabpanel">
+                        <div class="acc-pane">
+                            <div class="acc-view-switch mb-3" id="astmViewButtons">
+                                <button type="button" class="acc-btn-chip active" data-astm-view="ax">ax vs dt</button>
+                                <button type="button" class="acc-btn-chip" data-astm-view="ay">ay vs dt</button>
+                                <button type="button" class="acc-btn-chip" data-astm-view="az">az vs dt</button>
+                                <button type="button" class="acc-btn-chip" data-astm-view="xy">XY Egg</button>
+                                <button type="button" class="acc-btn-chip" data-astm-view="xz">XZ Egg</button>
+                                <button type="button" class="acc-btn-chip" data-astm-view="yz">YZ Egg</button>
+                            </div>
+                            <div class="acc-plot-panel"><div id="astmPlot" class="acc-plot tall"></div></div>
+                            <div class="acc-summary" id="astmSummary">Select a dataset to view ASTM analysis.</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="gbTab" role="tabpanel">
+                        <div class="acc-pane">
+                            <div class="acc-view-switch mb-3" id="gbViewButtons">
+                                <button type="button" class="acc-btn-chip active" data-gb-view="ay">ay vs dt</button>
+                                <button type="button" class="acc-btn-chip" data-gb-view="az">az vs dt</button>
+                                <button type="button" class="acc-btn-chip" data-gb-view="combined">Combined</button>
+                            </div>
+                            <div class="acc-plot-panel"><div id="gbPlot" class="acc-plot tall"></div></div>
+                            <div class="acc-summary" id="gbSummary">Select a dataset to view GB analysis.</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="zoneTab" role="tabpanel">
+                        <div class="acc-pane">
+                            <div class="acc-plot-panel"><div id="zonePlot" class="acc-plot tall"></div></div>
+                            <div class="acc-summary" id="zoneSummary">Select a dataset to view acceleration zone classification.</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="zReversalTab" role="tabpanel">
+                        <div class="acc-pane">
+                            <div class="acc-plot-panel"><div id="zReversalPlot" class="acc-plot tall"></div></div>
+                            <div class="acc-summary" id="zReversalSummary">Select a dataset to view Z-axis reversal detection.</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="xyReversalTab" role="tabpanel">
+                        <div class="acc-pane">
+                            <div class="acc-plot-panel"><div id="xyReversalPlot" class="acc-plot tall"></div></div>
+                            <div class="acc-summary" id="xyReversalSummary">Select a dataset to view X/Y reversal detection.</div>
                         </div>
                     </div>
                 </div>
@@ -387,1103 +633,1257 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Bootstrap JS for tabs -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Use Plotly.js with WebGL support for better performance -->
-<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <script>
-// Performance optimization: Use WebGL for large datasets
-const USE_WEBGL = true;
+const DEFAULT_CUTOFF = {{ default_cutoff }};
+const API_BASE = window.location.pathname.endsWith('/') ? window.location.pathname : `${window.location.pathname}/`;
 
-let currentFile = null;
-let currentDataType = 'Standard';
-let cutoff = {{ default_cutoff }};
-let loadedFiles = [];
+const state = {
+    datasets: [],
+    currentPlotType: 'Standard',
+    cutoff: DEFAULT_CUTOFF,
+    fitAxis: '',
+    annotationMode: 'Single',
+    activeDatasetId: null,
+    currentASTMView: 'ax',
+    currentGBView: 'ay',
+    currentAction: null,
+    caches: {
+        astm: null,
+        gb: null,
+        zone: null,
+        reversal: null,
+    },
+};
 
-// Current sub-tab selections
-let currentTrendAxis = 'x';
-let currentASTMPlot = 'ax';
-let currentGBPlot = 'ay';
-let currentReversalPlot = 'z';
+const plotAnnotations = {};
 
-// Cached data
-let cachedASTMData = null;
-let cachedGBData = null;
-let cachedZoneData = null;
-let cachedReversalData = null;
-
-// Initialize plots
-document.addEventListener('DOMContentLoaded', function() {
-    initPlots();
-    setupEventListeners();
+document.addEventListener('DOMContentLoaded', () => {
+    wireGlobalControls();
+    loadDashboard();
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach((button) => {
+        button.addEventListener('shown.bs.tab', handleTabChange);
+    });
 });
 
-function initPlots() {
-    // Initialize all plot areas
-    Plotly.newPlot('trendPlot', [], {
-        title: 'Trend Plot',
-        xaxis: { title: 'Time (s)' },
-        yaxis: { title: 'Acceleration (g)' },
-        hovermode: 'x unified',
-        showlegend: true,
-        margin: { t: 50, r: 30, b: 50, l: 60 }
-    });
-    
-    Plotly.newPlot('astmPlot', [], {
-        title: 'ASTM F2291 Analysis',
-        xaxis: { title: 'dt (s)' },
-        yaxis: { title: 'Acceleration (g)' },
-        hovermode: 'x unified',
-        showlegend: true,
-        margin: { t: 50, r: 30, b: 50, l: 60 }
-    });
-    
-    Plotly.newPlot('gbPlot', [], {
-        title: 'GB 8408 Analysis',
-        xaxis: { title: 'dt (s)' },
-        yaxis: { title: 'Acceleration (g)' },
-        hovermode: 'x unified',
-        showlegend: true,
-        margin: { t: 50, r: 30, b: 50, l: 60 }
-    });
-    
-    Plotly.newPlot('zonePlot', [], {
-        title: 'Acceleration Zone Analysis',
-        xaxis: { title: 'Front <=> Back (X, g)', range: [-6, 6] },
-        yaxis: { title: 'Up <=> Down (Z, g)', range: [-4, 4] },
-        hovermode: 'closest',
-        showlegend: true,
-        margin: { t: 50, r: 30, b: 50, l: 60 }
-    });
-    
-    Plotly.newPlot('reversalPlot', [], {
-        title: 'Reversal Analysis',
-        xaxis: { title: 'Time (s)' },
-        yaxis: { title: 'Acceleration (g)' },
-        hovermode: 'x unified',
-        showlegend: true,
-        margin: { t: 50, r: 30, b: 50, l: 60 }
-    });
+function csrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 }
 
-function setupEventListeners() {
-    // Upload button
+async function parseApiResponse(response) {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        return response.json();
+    }
+    return response.blob();
+}
+
+async function apiJson(path, payload) {
+    const response = await fetch(`${API_BASE}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken(),
+        },
+        body: JSON.stringify(payload),
+    });
+    const data = await parseApiResponse(response);
+    if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+    }
+    return data;
+}
+
+async function apiBlob(path, payload) {
+    const response = await fetch(`${API_BASE}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken(),
+        },
+        body: JSON.stringify(payload),
+    });
+    const data = await parseApiResponse(response);
+    if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+    }
+    return data;
+}
+
+function setStatus(message) {
+    document.getElementById('statusText').textContent = message;
+}
+
+function setActiveDataset(id) {
+    state.activeDatasetId = id;
+    const active = state.datasets.find((dataset) => dataset.id === id);
+    document.getElementById('activeDatasetLabel').textContent = active ? active.name : 'None selected';
+    renderDatasetList();
+    state.caches.astm = null;
+    state.caches.gb = null;
+    state.caches.zone = null;
+    state.caches.reversal = null;
+    loadCurrentAnalysis();
+}
+
+function wireGlobalControls() {
+    document.getElementById('fileInput').addEventListener('change', (event) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setStatus(`Ready to upload ${file.name}.`);
+        }
+    });
+
     document.getElementById('uploadBtn').addEventListener('click', handleUpload);
-    
-    // Cutoff slider
-    document.getElementById('cutoffSlider').addEventListener('input', function() {
-        document.getElementById('cutoffValue').textContent = this.value;
+
+    document.getElementById('cutoffSlider').addEventListener('input', (event) => {
+        document.getElementById('cutoffValue').textContent = event.target.value;
     });
-    
-    // Apply cutoff button
-    document.getElementById('applyCutoffBtn').addEventListener('click', function() {
-        cutoff = parseInt(document.getElementById('cutoffSlider').value);
-        if (currentFile) {
-            refreshAllPlots();
-        }
+
+    document.getElementById('applyCutoffBtn').addEventListener('click', () => {
+        state.cutoff = Number(document.getElementById('cutoffSlider').value);
+        resetCaches();
+        loadDashboard();
     });
-    
-    // Data type buttons
-    document.querySelectorAll('[data-type]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentDataType = this.dataset.type;
-            if (currentFile) {
-                refreshAllPlots();
-            }
+
+    document.getElementById('annotationModeBtn').addEventListener('click', () => {
+        state.annotationMode = state.annotationMode === 'Single' ? 'Multiple' : 'Single';
+        document.getElementById('annotationModeBtn').textContent = `Annotations: ${state.annotationMode}`;
+        Object.keys(plotAnnotations).forEach((key) => {
+            plotAnnotations[key] = [];
         });
     });
-    
-    // File input change
-    document.getElementById('fileInput').addEventListener('change', function() {
-        if (this.files.length > 0) {
-            document.getElementById('statusText').textContent = 'Ready to upload: ' + this.files[0].name;
+
+    document.getElementById('clearAllBtn').addEventListener('click', async () => {
+        if (!confirm('Clear every loaded dataset from this session?')) {
+            return;
         }
+        await apiJson('clear-data/', {});
+        state.datasets = [];
+        state.activeDatasetId = null;
+        resetCaches();
+        renderDatasetList();
+        renderTrendPlots();
+        clearAnalysisViews();
+        setStatus('All datasets cleared.');
     });
-    
-    // ASTM Settings change listeners
-    document.getElementById('restraintType').addEventListener('change', function() {
-        if (currentFile) {
-            loadASTMData();
-        }
-    });
-    
-    document.getElementById('conditionType').addEventListener('change', function() {
-        if (currentFile) {
-            loadASTMData();
-        }
-    });
-    
-    document.getElementById('heightValue').addEventListener('change', function() {
-        if (currentFile) {
-            loadASTMData();
-        }
-    });
-    
-    // Trend sub-tabs
-    document.querySelectorAll('#trendSubTabs .nav-link').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#trendSubTabs .nav-link').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentTrendAxis = this.dataset.plotAxis;
-            renderTrendPlot();
+
+    document.getElementById('generateReportBtn').addEventListener('click', handleReportDownload);
+
+    document.querySelectorAll('#plotTypeButtons [data-plot-type]').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('#plotTypeButtons [data-plot-type]').forEach((node) => node.classList.remove('active'));
+            button.classList.add('active');
+            state.currentPlotType = button.dataset.plotType;
+            document.getElementById('plotModeText').textContent = `${state.currentPlotType} view`;
+            resetCaches();
+            loadDashboard();
         });
     });
-    
-    // ASTM sub-tabs
-    document.querySelectorAll('#astmSubTabs .nav-link').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#astmSubTabs .nav-link').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentASTMPlot = this.dataset.astmPlot;
+
+    document.querySelectorAll('#fitAxisButtons [data-fit-axis]').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('#fitAxisButtons [data-fit-axis]').forEach((node) => node.classList.remove('active'));
+            button.classList.add('active');
+            state.fitAxis = button.dataset.fitAxis;
+            loadDashboard();
+        });
+    });
+
+    document.querySelectorAll('#astmViewButtons [data-astm-view]').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('#astmViewButtons [data-astm-view]').forEach((node) => node.classList.remove('active'));
+            button.classList.add('active');
+            state.currentASTMView = button.dataset.astmView;
             renderASTMPlot();
         });
     });
-    
-    // GB sub-tabs
-    document.querySelectorAll('#gbSubTabs .nav-link').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#gbSubTabs .nav-link').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentGBPlot = this.dataset.gbPlot;
+
+    document.querySelectorAll('#gbViewButtons [data-gb-view]').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('#gbViewButtons [data-gb-view]').forEach((node) => node.classList.remove('active'));
+            button.classList.add('active');
+            state.currentGBView = button.dataset.gbView;
             renderGBPlot();
         });
     });
-    
-    // Reversal sub-tabs
-    document.querySelectorAll('#reversalSubTabs .nav-link').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#reversalSubTabs .nav-link').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentReversalPlot = this.dataset.reversalPlot;
-            renderReversalPlot();
-        });
+
+    document.getElementById('restraintType').addEventListener('change', () => {
+        state.caches.astm = null;
+        if (currentTabId() === 'astmTab') {
+            loadASTMData();
+        }
     });
-    
-    // Main tab change - load data when switching to analysis tabs
-    document.getElementById('astm-tab').addEventListener('shown.bs.tab', function() {
-        if (currentFile) loadASTMData();
+    document.getElementById('conditionType').addEventListener('change', () => {
+        state.caches.astm = null;
+        if (currentTabId() === 'astmTab') {
+            loadASTMData();
+        }
     });
-    
-    document.getElementById('gb-tab').addEventListener('shown.bs.tab', function() {
-        if (currentFile) loadGBData();
+    document.getElementById('heightValue').addEventListener('change', () => {
+        state.caches.astm = null;
+        if (currentTabId() === 'astmTab') {
+            loadASTMData();
+        }
     });
-    
-    document.getElementById('zone-tab').addEventListener('shown.bs.tab', function() {
-        if (currentFile) loadZoneData();
-    });
-    
-    document.getElementById('reversal-tab').addEventListener('shown.bs.tab', function() {
-        if (currentFile) loadReversalData();
-    });
+
+    document.getElementById('datasetList').addEventListener('click', handleDatasetListClick);
+    document.getElementById('datasetList').addEventListener('submit', handleDatasetFormSubmit);
+}
+
+function currentTabId() {
+    return document.querySelector('.tab-pane.active')?.id || 'trendTab';
+}
+
+function handleTabChange() {
+    loadCurrentAnalysis();
+}
+
+function resetCaches() {
+    state.caches.astm = null;
+    state.caches.gb = null;
+    state.caches.zone = null;
+    state.caches.reversal = null;
 }
 
 async function handleUpload() {
     const fileInput = document.getElementById('fileInput');
-    if (!fileInput.files || fileInput.files.length === 0) {
-        alert('Please select a file first');
+    const file = fileInput.files?.[0];
+    if (!file) {
+        alert('Select a file before uploading.');
         return;
     }
-    
-    showLoading(true);
-    updateStatus('Uploading file...');
-    
+
+    const loading = document.getElementById('uploadLoading');
+    loading.style.display = 'inline-flex';
+    setStatus(`Uploading ${file.name}...`);
+
     const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+    formData.append('file', file);
     formData.append('file_type', document.getElementById('fileType').value);
-    formData.append('cutoff', cutoff);
-    
-    // Get CSRF token from the form's hidden input
-    const csrftoken = document.querySelector('#uploadForm [name=csrfmiddlewaretoken]')?.value;
-    
-    console.log('Uploading file:', fileInput.files[0].name);
-    console.log('CSRF Token:', csrftoken ? 'Found' : 'Not found');
-    
+    formData.append('cutoff', state.cutoff);
+
     try {
-        const response = await fetch('/acceleration/upload/', {
+        const response = await fetch(`${API_BASE}upload/`, {
             method: 'POST',
-            headers: { 
-                'X-CSRFToken': csrftoken || ''
-            },
-            body: formData
+            headers: { 'X-CSRFToken': csrfToken() },
+            body: formData,
         });
-        
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`Server returned ${response.status}`);
-        }
-        
         const data = await response.json();
-        console.log('Response data:', data);
-        
-        if (data.success) {
-            loadedFiles = data.files;
-            updateFileList(loadedFiles);
-            document.getElementById('filterSettings').style.display = 'block';
-            document.getElementById('astmSettings').style.display = 'block';
-            updateStatus('File uploaded successfully');
-            
-            // Clear cached data
-            cachedASTMData = null;
-            cachedGBData = null;
-            cachedZoneData = null;
-            cachedReversalData = null;
-            
-            if (loadedFiles.length > 0) {
-                selectFile(loadedFiles[0].name);
-            }
-        } else {
-            alert('Error: ' + data.error);
-            updateStatus('Upload failed');
+        if (!response.ok) {
+            throw new Error(data.error || 'Upload failed');
         }
-    } catch (err) {
-        console.error('Upload error:', err);
-        alert('Upload failed: ' + err.message);
-        updateStatus('Upload failed');
+        applyDashboard(data);
+        fileInput.value = '';
+        setStatus('Upload complete.');
+    } catch (error) {
+        alert(error.message);
+        setStatus(`Upload failed: ${error.message}`);
     } finally {
-        showLoading(false);
+        loading.style.display = 'none';
     }
 }
 
-function updateFileList(files) {
-    const fileList = document.getElementById('fileList');
-    if (files.length === 0) {
-        fileList.innerHTML = '<div class="text-muted p-3 text-center">No files loaded</div>';
+async function loadDashboard() {
+    try {
+        const data = await apiJson('plot-data/', {
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
+            fit_axis: state.fitAxis,
+        });
+        applyDashboard(data);
+    } catch (error) {
+        setStatus(`Failed to refresh data: ${error.message}`);
+    }
+}
+
+function applyDashboard(data) {
+    state.datasets = data.datasets || [];
+    document.getElementById('datasetCount').textContent = `${state.datasets.length} loaded`;
+
+    if (state.datasets.length === 0) {
+        state.activeDatasetId = null;
+        clearAnalysisViews();
+    } else if (!state.activeDatasetId || !state.datasets.some((dataset) => dataset.id === state.activeDatasetId)) {
+        state.activeDatasetId = state.datasets[0].id;
+    }
+
+    renderDatasetList();
+    renderTrendPlots();
+    document.getElementById('activeDatasetLabel').textContent =
+        state.datasets.find((dataset) => dataset.id === state.activeDatasetId)?.name || 'None selected';
+    loadCurrentAnalysis();
+}
+
+function renderDatasetList() {
+    const container = document.getElementById('datasetList');
+    if (state.datasets.length === 0) {
+        container.innerHTML = '<div class="acc-empty">Upload a dataset to begin.</div>';
         return;
     }
-    
-    fileList.innerHTML = files.map((f, i) => `
-        <div class="file-item ${i === 0 ? 'active' : ''}" data-name="${f.name}">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-file-earmark-text me-2 text-primary"></i>
-                <div>
-                    <strong>${f.name}</strong>
-                    <br><small class="text-muted">Type: ${f.type}</small>
+
+    container.innerHTML = state.datasets.map((dataset) => {
+        const stats = dataset.stats;
+        const isActive = dataset.id === state.activeDatasetId;
+        const badgeClass = dataset.dataset_type === 'gb' ? 'gb' : (dataset.dataset_type === 'astm' ? 'astm' : '');
+        const actionPanel = state.currentAction && state.currentAction.datasetId === dataset.id
+            ? renderActionPanel(dataset, state.currentAction.type)
+            : '';
+
+        return `
+            <div class="acc-dataset ${isActive ? 'active' : ''}" data-dataset-id="${dataset.id}">
+                <div class="acc-dataset-head">
+                    <div>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                            <span class="acc-badge ${badgeClass}">${dataset.dataset_type}</span>
+                            <label class="small m-0">
+                                <input type="checkbox" class="report-checkbox" value="${dataset.id}">
+                                Report
+                            </label>
+                        </div>
+                        <div class="acc-dataset-name">${escapeHtml(dataset.name)}</div>
+                    </div>
+                    <div class="small" style="color:${dataset.color}; font-weight:700;">●</div>
                 </div>
+                <div class="acc-angle-box">${escapeHtml(dataset.angle_info)}</div>
+                <table class="acc-stats-table">
+                    <thead>
+                        <tr>
+                            <th>Axis</th>
+                            <th>Max</th>
+                            <th>Min</th>
+                            <th>t(Max)</th>
+                            <th>t(Min)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${renderStatsRow('X', stats.x)}
+                        ${renderStatsRow('Y', stats.y)}
+                        ${renderStatsRow('Z', stats.z)}
+                    </tbody>
+                </table>
+                <div class="small acc-subtle mb-2">Duration: ${(stats.duration || 0).toFixed(2)}s | Points: ${(stats.points || 0).toLocaleString()}</div>
+                <div class="acc-action-grid">
+                    <button type="button" class="acc-btn-ghost" data-action="select" data-dataset-id="${dataset.id}">Select</button>
+                    <button type="button" class="acc-btn-ghost" data-action="angle" data-dataset-id="${dataset.id}">Angles</button>
+                    <button type="button" class="acc-btn-ghost" data-action="modify" data-dataset-id="${dataset.id}">Modify</button>
+                    <button type="button" class="acc-btn-ghost" data-action="truncate" data-dataset-id="${dataset.id}">Truncate</button>
+                    <button type="button" class="acc-btn-ghost acc-btn-success" data-action="export" data-dataset-id="${dataset.id}">Export</button>
+                    <button type="button" class="acc-btn-ghost acc-btn-danger" data-action="remove" data-dataset-id="${dataset.id}">Remove</button>
+                </div>
+                ${actionPanel}
             </div>
-        </div>
-    `).join('');
-    
-    document.querySelectorAll('.file-item').forEach(item => {
-        item.addEventListener('click', () => selectFile(item.dataset.name));
-    });
+        `;
+    }).join('');
 }
 
-async function selectFile(filename) {
-    currentFile = filename;
-    document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-    document.querySelector(`[data-name="${filename}"]`)?.classList.add('active');
-    updateStatus('Loading: ' + filename);
-    
-    // Clear cached data for new file
-    cachedASTMData = null;
-    cachedGBData = null;
-    cachedZoneData = null;
-    cachedReversalData = null;
-    
-    await loadPlotData();
-}
-
-async function loadPlotData() {
-    if (!currentFile) return;
-    
-    showLoading(true);
-    
-    try {
-        const response = await fetch('/acceleration/plot-data/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({
-                filename: currentFile,
-                plot_type: currentDataType,
-                cutoff: cutoff
-            })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            renderTrendPlot(data.data);
-            updateStats(data.stats);
-            document.getElementById('plotInfo').textContent = 
-                `File: ${currentFile} | Type: ${currentDataType} | Cutoff: ${cutoff} Hz`;
-        } else {
-            alert('Error loading plot data: ' + data.error);
-        }
-    } catch (err) {
-        console.error('Error:', err);
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function refreshAllPlots() {
-    if (!currentFile) return;
-    
-    // Refresh trend plot
-    await loadPlotData();
-    
-    // Clear cached analysis data
-    cachedASTMData = null;
-    cachedGBData = null;
-    cachedZoneData = null;
-    cachedReversalData = null;
-    
-    // Re-render current tabs if they're visible
-    if (document.getElementById('astm-tab').classList.contains('active')) {
-        loadASTMData();
-    }
-    if (document.getElementById('gb-tab').classList.contains('active')) {
-        loadGBData();
-    }
-    if (document.getElementById('zone-tab').classList.contains('active')) {
-        loadZoneData();
-    }
-    if (document.getElementById('reversal-tab').classList.contains('active')) {
-        loadReversalData();
-    }
-}
-
-function renderTrendPlot(data) {
-    if (!data) return;
-    
-    const axisMap = {
-        'x': { label: 'X (Fore/Back)', color: '#e74c3c', key: 'x' },
-        'y': { label: 'Y (Lateral)', color: '#27ae60', key: 'y' },
-        'z': { label: 'Z (Vertical)', color: '#3498db', key: 'z' }
-    };
-    
-    const axis = axisMap[currentTrendAxis];
-    
-    const traces = [{
-        x: data.time,
-        y: data[axis.key],
-        name: axis.label,
-        type: USE_WEBGL ? 'scattergl' : 'scatter',
-        line: { color: axis.color, width: 1 },
-        hovertemplate: `${axis.label}: %{y:.3f}g<br>Time: %{x:.3f}s<extra></extra>`
-    }];
-    
-    const layout = {
-        title: { text: `<b>${data.filename || currentFile}</b> - ${axis.label}`, font: { size: 14 } },
-        margin: { t: 50, r: 30, b: 50, l: 60 },
-        plot_bgcolor: '#fafafa',
-        showlegend: false,
-        xaxis: { title: 'Time (s)', gridcolor: '#f0f0f0' },
-        yaxis: { title: `${axis.label} (g)`, gridcolor: '#f0f0f0' },
-        hovermode: 'x unified'
-    };
-    
-    Plotly.newPlot('trendPlot', traces, layout);
-}
-
-function updateStats(stats) {
-    if (!stats) return;
-    
-    document.getElementById('statsContent').innerHTML = `
-        <table class="table table-sm table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Axis</th>
-                    <th>Max</th>
-                    <th>Min</th>
-                    <th>t(Max)</th>
-                    <th>t(Min)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><span class="badge bg-danger">X</span></td>
-                    <td>${stats.x.max.toFixed(3)}</td>
-                    <td>${stats.x.min.toFixed(3)}</td>
-                    <td>${stats.x.max_time.toFixed(3)}s</td>
-                    <td>${stats.x.min_time.toFixed(3)}s</td>
-                </tr>
-                <tr>
-                    <td><span class="badge bg-success">Y</span></td>
-                    <td>${stats.y.max.toFixed(3)}</td>
-                    <td>${stats.y.min.toFixed(3)}</td>
-                    <td>${stats.y.max_time.toFixed(3)}s</td>
-                    <td>${stats.y.min_time.toFixed(3)}s</td>
-                </tr>
-                <tr>
-                    <td><span class="badge bg-primary">Z</span></td>
-                    <td>${stats.z.max.toFixed(3)}</td>
-                    <td>${stats.z.min.toFixed(3)}</td>
-                    <td>${stats.z.max_time.toFixed(3)}s</td>
-                    <td>${stats.z.min_time.toFixed(3)}s</td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="mt-2">
-            <small class="text-muted">
-                <strong>Duration:</strong> ${stats.duration ? stats.duration.toFixed(2) : 'N/A'}s | 
-                <strong>Points:</strong> ${stats.points ? stats.points.toLocaleString() : 'N/A'}
-            </small>
-        </div>
+function renderStatsRow(label, values) {
+    return `
+        <tr>
+            <td>${label}</td>
+            <td>${Number(values.max || 0).toFixed(3)}</td>
+            <td>${Number(values.min || 0).toFixed(3)}</td>
+            <td>${Number(values.max_time || 0).toFixed(3)}</td>
+            <td>${Number(values.min_time || 0).toFixed(3)}</td>
+        </tr>
     `;
 }
 
-async function loadASTMData() {
-    if (!currentFile) return;
-    
-    document.getElementById('astmLoading').style.display = 'flex';
-    
+function renderActionPanel(dataset, type) {
+    if (type === 'angle') {
+        return `
+            <div class="acc-action-panel">
+                <form data-form-action="angle" data-dataset-id="${dataset.id}" class="acc-control-grid">
+                    <div class="acc-field-row">
+                        <div class="acc-field"><label>Pitch</label><input name="pitch" type="number" min="-180" max="180" value="${dataset.data.pitch_angle || 0}"></div>
+                        <div class="acc-field"><label>Seatback</label><input name="seatback" type="number" min="-180" max="180" value="${dataset.data.seatback_angle || 0}"></div>
+                        <div class="acc-field"><label>Roll</label><input name="roll" type="number" min="-180" max="180" value="${dataset.data.roll_angle || 0}"></div>
+                        <div class="acc-field"><label>Yaw</label><input name="yaw" type="number" min="-180" max="180" value="${dataset.data.yaw_angle || 0}"></div>
+                    </div>
+                    <div class="acc-inline-buttons">
+                        <button type="submit" class="acc-btn-primary">Apply Angles</button>
+                        <button type="button" class="acc-btn-ghost" data-action="close-panel" data-dataset-id="${dataset.id}">Close</button>
+                    </div>
+                </form>
+            </div>
+        `;
+    }
+
+    if (type === 'modify') {
+        return `
+            <div class="acc-action-panel">
+                <div class="acc-control-grid">
+                    <form data-form-action="add" data-dataset-id="${dataset.id}" class="acc-control-grid">
+                        <div class="acc-subtle">Add offset</div>
+                        <div class="acc-field-row three">
+                            <div class="acc-field"><label>X</label><input name="x" type="number" step="0.01" value="0"></div>
+                            <div class="acc-field"><label>Y</label><input name="y" type="number" step="0.01" value="0"></div>
+                            <div class="acc-field"><label>Z</label><input name="z" type="number" step="0.01" value="0"></div>
+                        </div>
+                        <button type="submit" class="acc-btn-primary">Apply Add</button>
+                    </form>
+                    <form data-form-action="multiply" data-dataset-id="${dataset.id}" class="acc-control-grid">
+                        <div class="acc-subtle">Multiply scale</div>
+                        <div class="acc-field-row three">
+                            <div class="acc-field"><label>X</label><input name="x" type="number" step="0.01" value="1"></div>
+                            <div class="acc-field"><label>Y</label><input name="y" type="number" step="0.01" value="1"></div>
+                            <div class="acc-field"><label>Z</label><input name="z" type="number" step="0.01" value="1"></div>
+                        </div>
+                        <div class="acc-inline-buttons">
+                            <button type="submit" class="acc-btn-primary">Apply Multiply</button>
+                            <button type="button" class="acc-btn-ghost" data-action="close-panel" data-dataset-id="${dataset.id}">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    }
+
+    if (type === 'truncate') {
+        return `
+            <div class="acc-action-panel">
+                <form data-form-action="truncate" data-dataset-id="${dataset.id}" class="acc-control-grid">
+                    <div class="acc-field-row">
+                        <div class="acc-field"><label>Start Time (s)</label><input name="start" type="number" min="0" step="1" value="0"></div>
+                        <div class="acc-field"><label>End Time (s)</label><input name="end" type="number" min="0" step="1" value="${Math.max(1, Math.floor(dataset.stats.duration || 1))}"></div>
+                    </div>
+                    <div class="acc-inline-buttons">
+                        <button type="submit" class="acc-btn-primary">Apply Truncate</button>
+                        <button type="button" class="acc-btn-ghost" data-action="close-panel" data-dataset-id="${dataset.id}">Close</button>
+                    </div>
+                </form>
+            </div>
+        `;
+    }
+
+    if (type === 'export') {
+        return `
+            <div class="acc-action-panel">
+                <form data-form-action="export" data-dataset-id="${dataset.id}" class="acc-control-grid">
+                    <div class="acc-field">
+                        <label>Base Filename</label>
+                        <input name="base_filename" type="text" value="${escapeHtml(dataset.name.replace(/\.[^.]+$/, ''))}">
+                    </div>
+                    <div class="acc-field-row">
+                        <div class="acc-field">
+                            <label>Export Mode</label>
+                            <select name="export_mode">
+                                <option value="formatted">Formatted Data for Newtonviewer</option>
+                                <option value="plot_data">Current Plot Data</option>
+                            </select>
+                        </div>
+                        <div class="acc-field">
+                            <label>Formatted Suffix</label>
+                            <select name="suffix">
+                                <option value=".sup">.sup</option>
+                                <option value=".sups">.sups</option>
+                                <option value=".txt">.txt</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="acc-inline-buttons">
+                        <button type="submit" class="acc-btn-primary">Download Export</button>
+                        <button type="button" class="acc-btn-ghost" data-action="close-panel" data-dataset-id="${dataset.id}">Close</button>
+                    </div>
+                </form>
+            </div>
+        `;
+    }
+
+    return '';
+}
+
+function handleDatasetListClick(event) {
+    const button = event.target.closest('[data-action]');
+    if (!button) {
+        return;
+    }
+
+    const action = button.dataset.action;
+    const datasetId = button.dataset.datasetId;
+
+    if (action === 'select') {
+        setActiveDataset(datasetId);
+        return;
+    }
+
+    if (action === 'remove') {
+        removeDataset(datasetId);
+        return;
+    }
+
+    if (action === 'close-panel') {
+        state.currentAction = null;
+        renderDatasetList();
+        return;
+    }
+
+    if (['angle', 'modify', 'truncate', 'export'].includes(action)) {
+        state.currentAction = { datasetId, type: action };
+        renderDatasetList();
+    }
+}
+
+async function handleDatasetFormSubmit(event) {
+    const form = event.target.closest('form[data-form-action]');
+    if (!form) {
+        return;
+    }
+    event.preventDefault();
+
+    const datasetId = form.dataset.datasetId;
+    const action = form.dataset.formAction;
+    const formData = new FormData(form);
+
+    if (action === 'export') {
+        await downloadExport(datasetId, formData);
+        return;
+    }
+
+    let operation = action;
+    let values = {};
+
+    if (action === 'angle') {
+        values = {
+            pitch: Number(formData.get('pitch') || 0),
+            seatback: Number(formData.get('seatback') || 0),
+            roll: Number(formData.get('roll') || 0),
+            yaw: Number(formData.get('yaw') || 0),
+        };
+    } else if (action === 'truncate') {
+        values = {
+            start: Number(formData.get('start') || 0),
+            end: Number(formData.get('end') || 0),
+        };
+    } else {
+        values = [
+            Number(formData.get('x') || 0),
+            Number(formData.get('y') || 0),
+            Number(formData.get('z') || 0),
+        ];
+    }
+
     try {
-        const response = await fetch('/acceleration/astm-fit/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({
-                filename: currentFile,
-                cutoff: cutoff,
-                restraint: document.getElementById('restraintType').value,
-                condition: document.getElementById('conditionType').value,
-                height: parseFloat(document.getElementById('heightValue').value)
-            })
+        const data = await apiJson('edit-data/', {
+            dataset_id: datasetId,
+            operation,
+            values,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
+            fit_axis: state.fitAxis,
         });
-        const data = await response.json();
-        
-        if (data.success) {
-            cachedASTMData = data;
-            renderASTMPlot();
-        } else {
-            alert('ASTM analysis error: ' + data.error);
-        }
-    } catch (err) {
-        console.error('Error:', err);
-    } finally {
-        document.getElementById('astmLoading').style.display = 'none';
+        state.currentAction = null;
+        applyDashboard(data);
+        setStatus('Dataset updated.');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function removeDataset(datasetId) {
+    if (!confirm('Remove this dataset from the session?')) {
+        return;
+    }
+
+    try {
+        const data = await apiJson('remove-dataset/', {
+            dataset_id: datasetId,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
+            fit_axis: state.fitAxis,
+        });
+        applyDashboard(data);
+        setStatus('Dataset removed.');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function downloadExport(datasetId, formData) {
+    try {
+        const exportMode = formData.get('export_mode');
+        const baseName = formData.get('base_filename') || 'acceleration_export';
+        const fallbackName = exportMode === 'formatted'
+            ? `${baseName}${formData.get('suffix') || '.txt'}`
+            : `${baseName}_${state.currentPlotType.toLowerCase()}.txt`;
+        const blob = await apiBlob('export/', {
+            dataset_id: datasetId,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
+            export_mode: exportMode,
+            suffix: formData.get('suffix'),
+            base_filename: baseName,
+        });
+        triggerDownload(blob, fallbackName);
+        setStatus('Export ready.');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function handleReportDownload() {
+    const selectedIds = Array.from(document.querySelectorAll('.report-checkbox:checked')).map((box) => box.value);
+    if (selectedIds.length === 0) {
+        alert('Check at least one dataset for the report.');
+        return;
+    }
+
+    try {
+        const blob = await apiBlob('report/', {
+            dataset_ids: selectedIds,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
+            restraint: document.getElementById('restraintType').value,
+            condition: document.getElementById('conditionType').value,
+            height: Number(document.getElementById('heightValue').value || 0),
+            astm_view: state.currentASTMView,
+            gb_view: state.currentGBView,
+        });
+        triggerDownload(blob, 'acceleration_report.docx');
+        setStatus('Report generated.');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function triggerDownload(blob, fallbackName) {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fallbackName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+}
+
+function renderTrendPlots() {
+    const datasets = state.datasets;
+    renderPlotMessage('trendPlotX', datasets.length === 0 ? 'No trend data loaded.' : null);
+    renderPlotMessage('trendPlotY', datasets.length === 0 ? 'No trend data loaded.' : null);
+    renderPlotMessage('trendPlotZ', datasets.length === 0 ? 'No trend data loaded.' : null);
+
+    if (datasets.length === 0) {
+        document.getElementById('trendSummary').textContent = 'The trend tab overlays every loaded dataset. Upload data to begin.';
+        return;
+    }
+
+    const axisConfig = [
+        ['trendPlotX', 'x', 'Fore/Aft (X)', '#e74c3c'],
+        ['trendPlotY', 'y', 'Lateral (Y)', '#27ae60'],
+        ['trendPlotZ', 'z', 'Vertical (Z)', '#2980b9'],
+    ];
+
+    axisConfig.forEach(([plotId, key, label, fallbackColor]) => {
+        const traces = datasets.map((dataset) => ({
+            x: dataset.data.time,
+            y: dataset.data[key],
+            type: 'scattergl',
+            mode: 'lines',
+            name: dataset.name,
+            line: { color: dataset.color || fallbackColor, width: 1.3 },
+            hovertemplate: `${label}<br>%{y:.4f} g<br>t=%{x:.4f}s<extra>${dataset.name}</extra>`,
+        }));
+
+        drawPlot(plotId, traces, {
+            title: `${label}`,
+            margin: { t: 42, r: 18, b: 48, l: 62 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: '#ffffff',
+            hovermode: 'x unified',
+            legend: { orientation: 'h' },
+            xaxis: { title: 'Time (s)', gridcolor: '#e2e8f0' },
+            yaxis: { title: `${label} (g)`, gridcolor: '#e2e8f0' },
+        }, (point) => `${point.data.name}<br>${label}: ${Number(point.y).toFixed(4)} g<br>t=${Number(point.x).toFixed(4)} s`);
+    });
+
+    document.getElementById('trendSummary').textContent =
+        state.fitAxis ? `Peak alignment is active on ${state.fitAxis.toUpperCase()}.` : 'Trend plots are using the current plot type with no peak alignment.';
+}
+
+function activeDataset() {
+    return state.datasets.find((dataset) => dataset.id === state.activeDatasetId) || null;
+}
+
+async function loadCurrentAnalysis() {
+    switch (currentTabId()) {
+        case 'astmTab':
+            await loadASTMData();
+            break;
+        case 'gbTab':
+            await loadGBData();
+            break;
+        case 'zoneTab':
+            await loadZoneData();
+            break;
+        case 'zReversalTab':
+        case 'xyReversalTab':
+            await loadReversalData();
+            break;
+        default:
+            break;
+    }
+}
+
+async function loadASTMData() {
+    const dataset = activeDataset();
+    if (!dataset) {
+        renderPlotMessage('astmPlot', 'Select a dataset to view ASTM analysis.');
+        document.getElementById('astmSummary').textContent = 'Select a dataset to view ASTM analysis.';
+        return;
+    }
+
+    try {
+        state.caches.astm = await apiJson('astm-fit/', {
+            dataset_id: dataset.id,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
+            restraint: document.getElementById('restraintType').value,
+            condition: document.getElementById('conditionType').value,
+            height: Number(document.getElementById('heightValue').value || 0),
+        });
+        renderASTMPlot();
+    } catch (error) {
+        renderPlotMessage('astmPlot', error.message);
     }
 }
 
 function renderASTMPlot() {
-    if (!cachedASTMData || !cachedASTMData.astm_data) return;
-    
-    const astm = cachedASTMData.astm_data;
-    const limits = cachedASTMData.astm_limits || {};
-    const restraintContours = cachedASTMData.restraint_contours || {};
-    const restraint = cachedASTMData.restraint || 'None';
-    const restraintLimits = cachedASTMData.restraint_limits || {};
-    
-    let traces = [];
-    let layout = {};
-    
-    if (currentASTMPlot === 'ax') {
-        traces = [
-            { x: astm.time_axis, y: astm.ax_positive, name: 'ax(+)', type: 'scatter', line: { color: '#e74c3c', width: 2 } },
-            { x: astm.time_axis, y: astm.ax_negative, name: 'ax(-)', type: 'scatter', line: { color: '#c0392b', width: 2, dash: 'dash' } }
-        ];
-        
-        if (limits.ax_positive) {
-            traces.push({ x: limits.ax_positive.x, y: limits.ax_positive.y, name: 'ASTM Limit(+)', line: { color: 'red', width: 3 } });
-        }
-        if (limits.ax_negative) {
-            traces.push({ x: limits.ax_negative.x, y: limits.ax_negative.y, name: 'ASTM Limit(-)', line: { color: 'red', width: 3 } });
-        }
-        
-        if (restraint !== 'None' && restraintLimits.ax_positive) {
-            traces.push({ x: restraintLimits.ax_positive.x, y: restraintLimits.ax_positive.y, name: restraint + ' Limit(+)', line: { color: 'darkred', width: 2 } });
-        }
-        if (restraint !== 'None' && restraintLimits.ax_negative) {
-            traces.push({ x: restraintLimits.ax_negative.x, y: restraintLimits.ax_negative.y, name: restraint + ' Limit(-)', line: { color: 'darkred', width: 2 } });
-        }
-        
-        layout = {
-            title: { text: 'ax vs dt (Fore/Aft)', font: { size: 14 } },
-            xaxis: { title: 'dt (s)' },
-            yaxis: { title: 'ax (g)' },
-            hovermode: 'x unified',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 }
-        };
-        
-    } else if (currentASTMPlot === 'ay') {
-        traces = [
-            { x: astm.time_axis, y: astm.ay_positive, name: 'ay(+)', type: 'scatter', line: { color: '#27ae60', width: 2 } },
-            { x: astm.time_axis, y: astm.ay_negative, name: 'ay(-)', type: 'scatter', line: { color: '#1e8449', width: 2, dash: 'dash' } }
-        ];
-        
-        if (limits.ay_positive) {
-            traces.push({ x: limits.ay_positive.x, y: limits.ay_positive.y, name: 'ASTM Limit', line: { color: 'red', width: 3 } });
-        }
-        
-        if (restraint !== 'None' && restraintLimits.ay_positive) {
-            traces.push({ x: restraintLimits.ay_positive.x, y: restraintLimits.ay_positive.y, name: restraint + ' Limit', line: { color: 'darkgreen', width: 2 } });
-        }
-        
-        layout = {
-            title: { text: 'ay vs dt (Lateral)', font: { size: 14 } },
-            xaxis: { title: 'dt (s)' },
-            yaxis: { title: 'ay (g)' },
-            hovermode: 'x unified',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 }
-        };
-        
-    } else if (currentASTMPlot === 'az') {
-        traces = [
-            { x: astm.time_axis, y: astm.az_positive, name: 'az(+)', type: 'scatter', line: { color: '#3498db', width: 2 } },
-            { x: astm.time_axis, y: astm.az_negative, name: 'az(-)', type: 'scatter', line: { color: '#2980b9', width: 2, dash: 'dash' } }
-        ];
-        
-        if (limits.az_positive) {
-            traces.push({ x: limits.az_positive.x, y: limits.az_positive.y, name: 'ASTM Limit(+)', line: { color: 'red', width: 3 } });
-        }
-        if (limits.az_negative) {
-            traces.push({ x: limits.az_negative.x, y: limits.az_negative.y, name: 'ASTM Limit(-)', line: { color: 'red', width: 3 } });
-        }
-        
-        if (restraint !== 'None' && restraintLimits.az_positive) {
-            traces.push({ x: restraintLimits.az_positive.x, y: restraintLimits.az_positive.y, name: restraint + ' Limit(+)', line: { color: 'darkblue', width: 2 } });
-        }
-        if (restraint !== 'None' && restraintLimits.az_negative) {
-            traces.push({ x: restraintLimits.az_negative.x, y: restraintLimits.az_negative.y, name: restraint + ' Limit(-)', line: { color: 'darkblue', width: 2 } });
-        }
-        
-        layout = {
-            title: { text: 'az vs dt (Vertical)', font: { size: 14 } },
-            xaxis: { title: 'dt (s)' },
-            yaxis: { title: 'az (g)' },
-            hovermode: 'x unified',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 }
-        };
-        
-    } else if (['xy', 'xz', 'yz'].includes(currentASTMPlot)) {
-        const eggMap = {
-            'xy': { x: astm.raw_x, y: astm.raw_y, xLabel: 'Front <=> Back (X, g)', yLabel: 'Left <=> Right (Y, g)', range: [-6, 6] },
-            'xz': { x: astm.raw_x, y: astm.raw_z, xLabel: 'Front <=> Back (X, g)', yLabel: 'Up <=> Down (Z, g)', range: [-6, 6] },
-            'yz': { x: astm.raw_y, y: astm.raw_z, xLabel: 'Left <=> Right (Y, g)', yLabel: 'Up <=> Down (Z, g)', range: [-6, 6] }
-        };
-        
-        const egg = eggMap[currentASTMPlot];
-        const contourKey = currentASTMPlot;
-        
-        traces = [{
-            x: egg.x,
-            y: egg.y,
-            name: 'Data',
-            mode: 'markers',
-            type: USE_WEBGL ? 'scattergl' : 'scatter',
-            marker: { color: '#17becf', size: 3, opacity: 0.5 }
-        }];
-        
-        // Add restraint contours
-        if (restraint !== 'None' && restraintContours) {
-            if (restraintContours[contourKey]) {
-                const contour = restraintContours[contourKey];
-                const yKey = contourKey === 'xy' ? 'y' : 'z';
-                traces.push({
-                    x: contour.x,
-                    y: contour[yKey],
-                    name: restraint + ' (0s)',
-                    mode: 'lines',
-                    line: { color: 'red', width: 2 }
-                });
-            }
-            if (restraintContours[contourKey + '_dash']) {
-                const contour = restraintContours[contourKey + '_dash'];
-                const yKey = contourKey === 'xy' ? 'y' : 'z';
-                traces.push({
-                    x: contour.x,
-                    y: contour[yKey],
-                    name: restraint + ' (0.2s)',
-                    mode: 'lines',
-                    line: { color: 'red', width: 2, dash: 'dash' }
-                });
-            }
-        }
-        
-        layout = {
-            title: { text: `${currentASTMPlot.toUpperCase()} Egg Contour`, font: { size: 14 } },
-            xaxis: { title: egg.xLabel, range: egg.range },
-            yaxis: { title: egg.yLabel, range: egg.range },
-            hovermode: 'closest',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 }
-        };
+    const cached = state.caches.astm;
+    if (!cached?.astm) {
+        renderPlotMessage('astmPlot', 'Select a dataset to view ASTM analysis.');
+        return;
     }
-    
-    layout.plot_bgcolor = '#fafafa';
-    Plotly.newPlot('astmPlot', traces, layout);
+
+    const astm = cached.astm;
+    const view = state.currentASTMView;
+    let traces = [];
+    let layout = {
+        margin: { t: 48, r: 18, b: 54, l: 64 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: '#ffffff',
+        showlegend: true,
+    };
+
+    if (view === 'ax') {
+        traces = [
+            lineTrace(astm.time_axis, astm.ax_positive, 'Measured ax (+)', '#2563eb'),
+            lineTrace(astm.time_axis, astm.ax_negative, 'Measured ax (-)', '#16a34a'),
+            lineTrace(astm.base_limits.ax_negative.x, astm.base_limits.ax_negative.y, 'ASTM', '#dc2626', 'lines'),
+            lineTrace(astm.base_limits.ax_positive.x, astm.base_limits.ax_positive.y, '', '#dc2626', 'lines'),
+        ];
+        if (astm.restraint_limits.ax_negative) {
+            traces.push(lineTrace(astm.restraint_limits.ax_negative.x, astm.restraint_limits.ax_negative.y, astm.restraint, '#111827', 'lines'));
+            traces.push(lineTrace(astm.restraint_limits.ax_positive.x, astm.restraint_limits.ax_positive.y, '', '#111827', 'lines'));
+        }
+        layout.title = 'ASTM ax vs dt';
+        layout.xaxis = { title: 'dt (s)', gridcolor: '#e2e8f0' };
+        layout.yaxis = { title: 'ax (g)', gridcolor: '#e2e8f0' };
+    } else if (view === 'ay') {
+        traces = [
+            lineTrace(astm.time_axis, astm.ay_positive, 'Measured ay (Right)', '#2563eb'),
+            lineTrace(astm.time_axis, astm.ay_left, 'Measured ay (Left)', '#16a34a'),
+            lineTrace(astm.base_limits.ay_positive.x, astm.base_limits.ay_positive.y, 'ASTM', '#dc2626', 'lines'),
+        ];
+        if (astm.restraint_limits.ay_positive) {
+            traces.push(lineTrace(astm.restraint_limits.ay_positive.x, astm.restraint_limits.ay_positive.y, astm.restraint, '#111827', 'lines'));
+        }
+        layout.title = 'ASTM ay vs dt';
+        layout.xaxis = { title: 'dt (s)', gridcolor: '#e2e8f0' };
+        layout.yaxis = { title: 'ay (g)', gridcolor: '#e2e8f0', range: [0, 3.2] };
+    } else if (view === 'az') {
+        traces = [
+            lineTrace(astm.time_axis, astm.az_positive, 'Measured az (Down)', '#2563eb'),
+            lineTrace(astm.time_axis, astm.az_negative, 'Measured az (Up)', '#16a34a'),
+            lineTrace(astm.base_limits.az_negative.x, astm.base_limits.az_negative.y, 'ASTM', '#dc2626', 'lines'),
+            lineTrace(astm.base_limits.az_positive.x, astm.base_limits.az_positive.y, '', '#dc2626', 'lines'),
+        ];
+        if (astm.restraint_limits.az_negative) {
+            traces.push(lineTrace(astm.restraint_limits.az_negative.x, astm.restraint_limits.az_negative.y, astm.restraint, '#111827', 'lines'));
+            traces.push(lineTrace(astm.restraint_limits.az_positive.x, astm.restraint_limits.az_positive.y, '', '#111827', 'lines'));
+        }
+        layout.title = 'ASTM az vs dt';
+        layout.xaxis = { title: 'dt (s)', gridcolor: '#e2e8f0' };
+        layout.yaxis = { title: 'az (g)', gridcolor: '#e2e8f0' };
+    } else {
+        const map = {
+            xy: { x: astm.raw_x, y: astm.raw_y, xLabel: 'Front <=> Back', yLabel: 'Left <=> Right', base: astm.base_contours.xy, solid: astm.restraint_contours.xy, dash: astm.restraint_contours.xy_dash },
+            xz: { x: astm.raw_x, y: astm.raw_z, xLabel: 'Front <=> Back', yLabel: 'Up <=> Down', base: astm.base_contours.xz, solid: astm.restraint_contours.xz, dash: astm.restraint_contours.xz_dash },
+            yz: { x: astm.raw_y, y: astm.raw_z, xLabel: 'Left <=> Right', yLabel: 'Up <=> Down', base: astm.base_contours.yz, solid: astm.restraint_contours.yz, dash: astm.restraint_contours.yz_dash },
+        };
+        const config = map[view];
+        const contourAxes = {
+            xy: { xKey: 'x', yKey: 'y' },
+            xz: { xKey: 'x', yKey: 'z' },
+            yz: { xKey: 'y', yKey: 'z' },
+        }[view];
+        traces = [{
+            x: config.x,
+            y: config.y,
+            mode: 'markers',
+            type: 'scattergl',
+            name: cached.dataset.name,
+            marker: { color: '#06b6d4', size: 4, opacity: 0.6 },
+        }];
+        const baseX = config.base[contourAxes.xKey];
+        const baseY = config.base[contourAxes.yKey];
+        traces.push(lineTrace(baseX, baseY, 'ASTM (0.2s)', '#dc2626', 'lines', 'dash'));
+        if (config.solid) {
+            const solidX = config.solid[contourAxes.xKey];
+            const solidY = config.solid[contourAxes.yKey];
+            traces.push(lineTrace(solidX, solidY, `${astm.restraint} (0s)`, '#111827', 'lines'));
+        }
+        if (config.dash) {
+            const dashX = config.dash[contourAxes.xKey];
+            const dashY = config.dash[contourAxes.yKey];
+            traces.push(lineTrace(dashX, dashY, `${astm.restraint} (0.2s)`, '#111827', 'lines', 'dash'));
+        }
+        layout.title = `ASTM ${view.toUpperCase()} contour`;
+        layout.xaxis = { title: config.xLabel, gridcolor: '#e2e8f0' };
+        layout.yaxis = { title: config.yLabel, gridcolor: '#e2e8f0' };
+        layout.shapes = [
+            { type: 'line', x0: -10, x1: 10, y0: 0, y1: 0, line: { color: '#111827', width: 1 } },
+            { type: 'line', x0: 0, x1: 0, y0: -10, y1: 10, line: { color: '#111827', width: 1 } },
+        ];
+    }
+
+    drawPlot('astmPlot', traces, layout, (point) => `${point.data.name}<br>x=${Number(point.x).toFixed(4)}<br>y=${Number(point.y).toFixed(4)}`);
+    document.getElementById('astmSummary').textContent =
+        `${cached.dataset.name} | Restraint: ${astm.restraint} | Condition: ${astm.condition} | Height: ${astm.height}"`;
 }
 
 async function loadGBData() {
-    if (!currentFile) return;
-    
-    document.getElementById('gbLoading').style.display = 'flex';
-    
+    const dataset = activeDataset();
+    if (!dataset) {
+        renderPlotMessage('gbPlot', 'Select a dataset to view GB analysis.');
+        document.getElementById('gbSummary').textContent = 'Select a dataset to view GB analysis.';
+        return;
+    }
+
     try {
-        const response = await fetch('/acceleration/gb-fit/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({
-                filename: currentFile,
-                cutoff: cutoff
-            })
+        state.caches.gb = await apiJson('gb-fit/', {
+            dataset_id: dataset.id,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
         });
-        const data = await response.json();
-        
-        if (data.success) {
-            cachedGBData = data;
-            renderGBPlot();
-        } else {
-            alert('GB analysis error: ' + data.error);
-        }
-    } catch (err) {
-        console.error('Error:', err);
-    } finally {
-        document.getElementById('gbLoading').style.display = 'none';
+        renderGBPlot();
+    } catch (error) {
+        renderPlotMessage('gbPlot', error.message);
     }
 }
 
 function renderGBPlot() {
-    if (!cachedGBData || !cachedGBData.gb_data) return;
-    
-    const gb = cachedGBData.gb_data;
-    const limits = cachedGBData.gb_limits || {};
-    const contour = cachedGBData.gb_contour || {};
-    
-    let traces = [];
-    let layout = {};
-    
-    if (currentGBPlot === 'ay') {
-        traces = [
-            { x: gb.time_axis, y: gb.ay_positive, name: 'ay(+)', type: 'scatter', line: { color: '#27ae60', width: 2 } },
-            { x: gb.time_axis, y: gb.ay_negative, name: 'ay(-)', type: 'scatter', line: { color: '#1e8449', width: 2, dash: 'dash' } }
-        ];
-        
-        if (limits.ay_positive) {
-            traces.push({ x: limits.ay_positive.x, y: limits.ay_positive.y, name: 'GB Limit(+)', line: { color: 'red', width: 3 } });
-        }
-        if (limits.ay_negative) {
-            traces.push({ x: limits.ay_negative.x, y: limits.ay_negative.y, name: 'GB Limit(-)', line: { color: 'red', width: 3 } });
-        }
-        
-        layout = {
-            title: { text: 'ay vs dt (Lateral)', font: { size: 14 } },
-            xaxis: { title: 'dt (s)' },
-            yaxis: { title: 'ay (g)' },
-            hovermode: 'x unified',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 }
-        };
-        
-    } else if (currentGBPlot === 'az') {
-        traces = [
-            { x: gb.time_axis, y: gb.az_positive, name: 'az(+)', type: 'scatter', line: { color: '#3498db', width: 2 } },
-            { x: gb.time_axis, y: gb.az_negative, name: 'az(-)', type: 'scatter', line: { color: '#2980b9', width: 2, dash: 'dash' } }
-        ];
-        
-        if (limits.az_positive) {
-            traces.push({ x: limits.az_positive.x, y: limits.az_positive.y, name: 'GB Limit(+)', line: { color: 'red', width: 3 } });
-        }
-        if (limits.az_negative) {
-            traces.push({ x: limits.az_negative.x, y: limits.az_negative.y, name: 'GB Limit(-)', line: { color: 'red', width: 3 } });
-        }
-        
-        layout = {
-            title: { text: 'az vs dt (Vertical)', font: { size: 14 } },
-            xaxis: { title: 'dt (s)' },
-            yaxis: { title: 'az (g)' },
-            hovermode: 'x unified',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 }
-        };
-        
-    } else if (currentGBPlot === 'combined') {
-        traces = [{
-            x: gb.raw_z,
-            y: gb.raw_y,
-            name: 'Data',
-            mode: 'markers',
-            type: USE_WEBGL ? 'scattergl' : 'scatter',
-            marker: { color: '#17becf', size: 3, opacity: 0.5 }
-        }];
-        
-        if (contour.x) {
-            traces.push({
-                x: contour.x,
-                y: contour.y_pos,
-                name: 'GB Limit(+)',
-                mode: 'lines',
-                line: { color: 'orange', width: 2 }
-            });
-            traces.push({
-                x: contour.x,
-                y: contour.y_neg,
-                name: 'GB Limit(-)',
-                mode: 'lines',
-                line: { color: 'orange', width: 2 }
-            });
-        }
-        
-        layout = {
-            title: { text: 'Combined (az vs ay)', font: { size: 14 } },
-            xaxis: { title: 'az (g)', range: [-3, 7] },
-            yaxis: { title: 'ay (g)', range: [-4, 4] },
-            hovermode: 'closest',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 }
-        };
+    const cached = state.caches.gb;
+    if (!cached?.gb) {
+        renderPlotMessage('gbPlot', 'Select a dataset to view GB analysis.');
+        return;
     }
-    
-    layout.plot_bgcolor = '#fafafa';
-    Plotly.newPlot('gbPlot', traces, layout);
+
+    const gb = cached.gb;
+    const view = state.currentGBView;
+    let traces = [];
+    let layout = {
+        margin: { t: 48, r: 18, b: 54, l: 64 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: '#ffffff',
+        showlegend: true,
+    };
+
+    if (view === 'az') {
+        traces = [
+            lineTrace(gb.time_axis, gb.az_positive, 'Measured az (+)', '#2563eb'),
+            lineTrace(gb.time_axis, gb.az_negative, 'Measured az (-)', '#111827'),
+            lineTrace(gb.limits.az_positive.x, gb.limits.az_positive.y, 'Allowable az', '#dc2626', 'lines'),
+            lineTrace(gb.limits.az_negative.x, gb.limits.az_negative.y, '', '#dc2626', 'lines'),
+        ];
+        layout.title = 'GB az vs dt';
+        layout.xaxis = { title: 'dt (s)', gridcolor: '#e2e8f0' };
+        layout.yaxis = { title: 'az (g)', gridcolor: '#e2e8f0' };
+    } else if (view === 'combined') {
+        traces = [
+            {
+                x: gb.raw_z,
+                y: gb.raw_y,
+                mode: 'lines+markers',
+                type: 'scattergl',
+                name: cached.dataset.name,
+                line: { color: '#06b6d4', width: 1.1 },
+                marker: { size: 4, opacity: 0.55 },
+            },
+            lineTrace(gb.combined_limits.dt_005.x, gb.combined_limits.dt_005.y_pos, 'dt=0.05s', '#facc15', 'lines'),
+            lineTrace(gb.combined_limits.dt_005.x, gb.combined_limits.dt_005.y_pos.map((value) => -value), '', '#facc15', 'lines'),
+            lineTrace(gb.combined_limits.dt_010.x, gb.combined_limits.dt_010.y_pos, 'dt=0.1s', '#fb923c', 'lines'),
+            lineTrace(gb.combined_limits.dt_010.x, gb.combined_limits.dt_010.y_pos.map((value) => -value), '', '#fb923c', 'lines'),
+            lineTrace(gb.combined_limits.dt_020.x, gb.combined_limits.dt_020.y_pos, 'dt=0.2s', '#ef4444', 'lines'),
+            lineTrace(gb.combined_limits.dt_020.x, gb.combined_limits.dt_020.y_pos.map((value) => -value), '', '#ef4444', 'lines'),
+        ];
+        layout.title = 'GB combined ay vs az';
+        layout.xaxis = { title: 'az (g)', gridcolor: '#e2e8f0' };
+        layout.yaxis = { title: 'ay (g)', gridcolor: '#e2e8f0' };
+    } else {
+        traces = [
+            lineTrace(gb.time_axis, gb.ay_positive, 'Measured ay (+)', '#2563eb'),
+            lineTrace(gb.time_axis, gb.ay_negative, 'Measured ay (-)', '#111827'),
+            lineTrace(gb.limits.ay_positive.x, gb.limits.ay_positive.y, 'Allowable ay', '#dc2626', 'lines'),
+            lineTrace(gb.limits.ay_negative.x, gb.limits.ay_negative.y, '', '#dc2626', 'lines'),
+        ];
+        layout.title = 'GB ay vs dt';
+        layout.xaxis = { title: 'dt (s)', gridcolor: '#e2e8f0' };
+        layout.yaxis = { title: 'ay (g)', gridcolor: '#e2e8f0' };
+    }
+
+    drawPlot('gbPlot', traces, layout, (point) => `${point.data.name}<br>x=${Number(point.x).toFixed(4)}<br>y=${Number(point.y).toFixed(4)}`);
+    document.getElementById('gbSummary').textContent = `${cached.dataset.name} | Current view: ${view}`;
 }
 
 async function loadZoneData() {
-    if (!currentFile) return;
-    
-    document.getElementById('zoneLoading').style.display = 'flex';
-    
+    const dataset = activeDataset();
+    if (!dataset) {
+        renderPlotMessage('zonePlot', 'Select a dataset to view zone analysis.');
+        document.getElementById('zoneSummary').textContent = 'Select a dataset to view acceleration zone classification.';
+        return;
+    }
+
     try {
-        const response = await fetch('/acceleration/zone-analysis/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({
-                filename: currentFile,
-                cutoff: cutoff
-            })
+        state.caches.zone = await apiJson('zone-analysis/', {
+            dataset_id: dataset.id,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
         });
-        const data = await response.json();
-        
-        if (data.success) {
-            cachedZoneData = data;
-            renderZonePlot();
-        } else {
-            alert('Zone analysis error: ' + data.error);
-        }
-    } catch (err) {
-        console.error('Error:', err);
-    } finally {
-        document.getElementById('zoneLoading').style.display = 'none';
+        renderZonePlot();
+    } catch (error) {
+        renderPlotMessage('zonePlot', error.message);
     }
 }
 
 function renderZonePlot() {
-    if (!cachedZoneData || !cachedZoneData.zone_data) return;
-    
-    const zone = cachedZoneData.zone_data;
-    const boundaries = cachedZoneData.zone_boundaries || {};
-    
-    let traces = [];
-    
-    // Add zone boundary polygons
-    const zoneOrder = ['zone1', 'zone2', 'zone3', 'zone4', 'zone5'];
-    const zoneNames = {'zone1': 'Zone 1', 'zone2': 'Zone 2', 'zone3': 'Zone 3', 'zone4': 'Zone 4', 'zone5': 'Zone 5'};
-    
-    zoneOrder.forEach(zoneKey => {
-        if (boundaries[zoneKey]) {
-            boundaries[zoneKey].forEach(region => {
-                traces.push({
-                    x: region.x,
-                    y: region.y,
-                    fill: 'toself',
-                    fillcolor: region.color || 'rgba(0,0,0,0.1)',
-                    line: { width: 0 },
-                    name: zoneNames[zoneKey],
-                    showlegend: true,
-                    hoverinfo: 'none',
-                    type: 'scatter',
-                    mode: 'lines'
-                });
+    const cached = state.caches.zone;
+    if (!cached?.zone_data) {
+        renderPlotMessage('zonePlot', 'Select a dataset to view zone analysis.');
+        return;
+    }
+
+    const traces = [];
+    ['zone5', 'zone4', 'zone3', 'zone2', 'zone1'].forEach((zoneKey) => {
+        (cached.zone_boundaries[zoneKey] || []).forEach((zone) => {
+            traces.push({
+                x: zone.x,
+                y: zone.y,
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'toself',
+                fillcolor: zone.color,
+                line: { color: 'rgba(0,0,0,0)' },
+                hoverinfo: 'skip',
+                showlegend: false,
             });
-        }
-    });
-    
-    // Add zone boundary lines
-    traces.push({
-        x: [-0.7, 0, 0.7],
-        y: [0.2, 0, -0.2],
-        mode: 'lines',
-        line: { color: 'black', width: 2 },
-        name: 'Zone Boundary',
-        showlegend: true,
-        hoverinfo: 'none'
-    });
-    
-    // Vertical lines
-    [-1.2, -0.7, -0.2, 0.2, 0.7].forEach(x => {
-        traces.push({
-            x: [x, x],
-            y: [-4, 4],
-            mode: 'lines',
-            line: { color: 'black', width: 1, dash: 'dot' },
-            showlegend: false,
-            hoverinfo: 'none'
         });
     });
-    
-    // Horizontal lines
-    [-0.2, 0, 0.2, 0.7].forEach(y => {
+
+    (cached.zone_boundaries.boundary_lines || []).forEach((line) => {
         traces.push({
-            x: [-6, 6],
-            y: [y, y],
+            x: line.x,
+            y: line.y,
+            type: 'scatter',
             mode: 'lines',
-            line: { color: 'black', width: 1, dash: 'dot' },
+            line: { color: line.color, width: line.width, dash: line.dash || 'solid' },
+            hoverinfo: 'skip',
             showlegend: false,
-            hoverinfo: 'none'
         });
     });
-    
-    // Add data points with zone colors
+
     traces.push({
-        x: zone.x,
-        y: zone.z,
-        name: 'Data',
+        x: cached.zone_data.x,
+        y: cached.zone_data.z,
         mode: 'markers',
-        type: USE_WEBGL ? 'scattergl' : 'scatter',
-        marker: {
-            color: zone.colors || '#3498db',
-            size: 3,
-            opacity: 0.8,
-            line: { color: 'black', width: 0.5 }
+        type: 'scattergl',
+        name: cached.dataset.name,
+        marker: { color: cached.zone_data.colors, size: 5, opacity: 0.75 },
+        customdata: cached.zone_data.zone_labels,
+        hovertemplate: 'x=%{x:.4f}<br>z=%{y:.4f}<br>%{customdata}<extra></extra>',
+    });
+
+    drawPlot('zonePlot', traces, {
+        title: 'Acceleration zones',
+        margin: { t: 48, r: 18, b: 54, l: 64 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: '#ffffff',
+        xaxis: {
+            title: 'Front <=> Back (X)',
+            range: [cached.zone_boundaries.limits?.x_min ?? -6, cached.zone_boundaries.limits?.x_max ?? 6],
+            gridcolor: '#e2e8f0'
         },
-        hovertemplate: 't: %{customdata[0]:.3f}s<br>X: %{x:.3f}g<br>Z: %{y:.3f}g<br>Zone: %{customdata[1]}<extra></extra>',
-        customdata: zone.time.map((t, i) => [t, zone.zone_labels[i] || 'Unknown'])
-    });
-    
-    const layout = {
-        title: { text: 'Acceleration Zone Analysis', font: { size: 14 } },
-        xaxis: { title: 'Front <=> Back (X, g)', range: [-6, 6] },
-        yaxis: { title: 'Up <=> Down (Z, g)', range: [-4, 4] },
-        hovermode: 'closest',
-        showlegend: true,
-        margin: { t: 50, r: 30, b: 50, l: 60 },
-        plot_bgcolor: '#fafafa'
-    };
-    
-    Plotly.newPlot('zonePlot', traces, layout);
-    updateAnalysisResults('Zone Analysis', {
-        zone_data: zone,
-        most_severe: cachedZoneData.zone_analysis?.most_severe,
-        zone_durations: cachedZoneData.zone_analysis?.zone_durations
-    });
+        yaxis: {
+            title: 'Up <=> Down (Z)',
+            range: [cached.zone_boundaries.limits?.y_min ?? -4, cached.zone_boundaries.limits?.y_max ?? 4],
+            gridcolor: '#e2e8f0',
+            scaleanchor: 'x',
+            scaleratio: 1
+        },
+        annotations: (cached.zone_boundaries.labels || []).map((label) => ({
+            x: label.x,
+            y: label.y,
+            text: label.text,
+            showarrow: false,
+            font: { size: 14, color: '#111827' }
+        })),
+        showlegend: false,
+    }, (point) => `${point.customdata}<br>x=${Number(point.x).toFixed(4)}<br>z=${Number(point.y).toFixed(4)}`);
+
+    const mostSevere = cached.zone_analysis.most_severe;
+    if (mostSevere) {
+        document.getElementById('zoneSummary').textContent =
+            `${cached.dataset.name} | Classified Zone: ${mostSevere.zone} | Qualified segments: ${mostSevere.durations.length}`;
+    } else {
+        document.getElementById('zoneSummary').textContent =
+            `${cached.dataset.name} | No zone exceeded the 0.2s duration threshold.`;
+    }
 }
 
 async function loadReversalData() {
-    if (!currentFile) return;
-    
-    document.getElementById('reversalLoading').style.display = 'flex';
-    
+    const dataset = activeDataset();
+    if (!dataset) {
+        renderPlotMessage('zReversalPlot', 'Select a dataset to view reversal analysis.');
+        renderPlotMessage('xyReversalPlot', 'Select a dataset to view reversal analysis.');
+        document.getElementById('zReversalSummary').textContent = 'Select a dataset to view Z-axis reversal detection.';
+        document.getElementById('xyReversalSummary').textContent = 'Select a dataset to view X/Y reversal detection.';
+        return;
+    }
+
     try {
-        const response = await fetch('/acceleration/reversal-analysis/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({
-                filename: currentFile,
-                cutoff: cutoff
-            })
+        state.caches.reversal = await apiJson('reversal-analysis/', {
+            dataset_id: dataset.id,
+            plot_type: state.currentPlotType,
+            cutoff: state.cutoff,
         });
-        const data = await response.json();
-        
-        if (data.success) {
-            cachedReversalData = data;
-            renderReversalPlot();
-        } else {
-            alert('Reversal analysis error: ' + data.error);
-        }
-    } catch (err) {
-        console.error('Error:', err);
-    } finally {
-        document.getElementById('reversalLoading').style.display = 'none';
+        renderZReversalPlot();
+        renderXYReversalPlot();
+    } catch (error) {
+        renderPlotMessage('zReversalPlot', error.message);
+        renderPlotMessage('xyReversalPlot', error.message);
     }
 }
 
-function renderReversalPlot() {
-    if (!cachedReversalData || !cachedReversalData.data) return;
-    
-    const rev = cachedReversalData.data;
-    const zReversals = cachedReversalData.z_reversals || [];
-    const xyReversals = cachedReversalData.xy_reversals || { x_reversals: [], y_reversals: [] };
-    
-    let traces = [];
-    let layout = {};
-    
-    if (currentReversalPlot === 'z') {
-        traces = [{
-            x: rev.time,
-            y: rev.z,
-            name: 'Z',
-            type: USE_WEBGL ? 'scattergl' : 'scatter',
-            line: { color: '#3498db', width: 1 }
-        }];
-        
-        // Add Z reversal markers
-        const colors = ['red', 'orange', 'purple', 'cyan', 'magenta', 'brown'];
-        zReversals.forEach((r, i) => {
-            const color = colors[i % colors.length];
-            traces.push({
-                x: [r.window_start, r.window_end],
-                y: [r.min_value, r.max_value],
-                name: 'Z Reversal',
-                mode: 'markers',
-                type: 'scatter',
-                marker: { color: color, size: 10, symbol: 'star' },
-                line: { color: color, width: 2, dash: 'dot' },
-                showlegend: false
-            });
-        });
-        
-        layout = {
-            title: { text: 'Z-Axis Reversal Analysis', font: { size: 14 } },
-            xaxis: { title: 'Time (s)' },
-            yaxis: { title: 'Z Acceleration (g)' },
-            hovermode: 'x unified',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 },
-            plot_bgcolor: '#fafafa'
-        };
-        
-    } else if (currentReversalPlot === 'xy') {
-        traces = [
-            { x: rev.time, y: rev.x, name: 'X', type: USE_WEBGL ? 'scattergl' : 'scatter', line: { color: '#e74c3c', width: 1 } },
-            { x: rev.time, y: rev.y, name: 'Y', type: USE_WEBGL ? 'scattergl' : 'scatter', line: { color: '#27ae60', width: 1 } }
-        ];
-        
-        // Add XY reversal markers
-        const colors = ['red', 'orange', 'purple', 'cyan', 'magenta', 'brown'];
-        
-        xyReversals.x_reversals.forEach((r, i) => {
-            const color = colors[i % colors.length];
-            traces.push({
-                x: [r.min_time, r.max_time],
-                y: [r.min_value, r.max_value],
-                name: 'X Reversal',
-                mode: 'lines+markers',
-                type: 'scatter',
-                marker: { color: color, size: 10, symbol: 'diamond' },
-                line: { color: color, width: 2, dash: 'dot' },
-                showlegend: false
-            });
-        });
-        
-        xyReversals.y_reversals.forEach((r, i) => {
-            const color = colors[i % colors.length];
-            traces.push({
-                x: [r.min_time, r.max_time],
-                y: [r.min_value, r.max_value],
-                name: 'Y Reversal',
-                mode: 'lines+markers',
-                type: 'scatter',
-                marker: { color: color, size: 10, symbol: 'diamond' },
-                line: { color: color, width: 2, dash: 'dot' },
-                showlegend: false
-            });
-        });
-        
-        layout = {
-            title: { text: 'X/Y-Axis Reversal Analysis', font: { size: 14 } },
-            xaxis: { title: 'Time (s)' },
-            yaxis: { title: 'Acceleration (g)' },
-            hovermode: 'x unified',
-            showlegend: true,
-            margin: { t: 50, r: 30, b: 50, l: 60 },
-            plot_bgcolor: '#fafafa'
-        };
+function renderZReversalPlot() {
+    const cached = state.caches.reversal;
+    if (!cached?.data) {
+        renderPlotMessage('zReversalPlot', 'Select a dataset to view reversal analysis.');
+        return;
     }
-    
-    Plotly.newPlot('reversalPlot', traces, layout);
-    updateAnalysisResults('Reversal Analysis', {
-        reversals: cachedReversalData.reversals || [],
-        xy_reversals: cachedReversalData.xy_reversals || []
+
+    const shapes = cached.z_reversals.map((reversal) => ({
+        type: 'rect',
+        x0: reversal.window_start,
+        x1: reversal.window_end,
+        y0: Math.min(...cached.data.z),
+        y1: Math.max(...cached.data.z),
+        fillcolor: 'rgba(239, 68, 68, 0.12)',
+        line: { width: 0 },
+    }));
+
+    const traces = [{
+        x: cached.data.time,
+        y: cached.data.z,
+        type: 'scattergl',
+        mode: 'lines',
+        name: cached.dataset.name,
+        line: { color: '#2563eb', width: 1.2 },
+    }];
+
+    cached.z_reversals.forEach((reversal, index) => {
+        traces.push({
+            x: [reversal.min_time, reversal.max_time],
+            y: [reversal.min_value, reversal.max_value],
+            type: 'scatter',
+            mode: 'markers',
+            name: index === 0 ? 'Detected reversal' : '',
+            marker: { color: ['#ef4444', '#22c55e'], size: 10, symbol: ['triangle-down', 'triangle-up'] },
+            showlegend: index === 0,
+        });
+    });
+
+    drawPlot('zReversalPlot', traces, {
+        title: 'Z acceleration reversals',
+        margin: { t: 48, r: 18, b: 54, l: 64 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: '#ffffff',
+        xaxis: { title: 'Time (s)', gridcolor: '#e2e8f0' },
+        yaxis: { title: 'Z (g)', gridcolor: '#e2e8f0' },
+        shapes,
+    }, (point) => `${point.data.name || 'Reversal'}<br>t=${Number(point.x).toFixed(4)}s<br>z=${Number(point.y).toFixed(4)}g`);
+
+    document.getElementById('zReversalSummary').textContent =
+        cached.z_reversals.length > 0
+            ? `${cached.dataset.name} | ${cached.z_reversals.length} Z reversal window(s) detected.`
+            : `${cached.dataset.name} | No excessive Z reversals detected.`;
+}
+
+function renderXYReversalPlot() {
+    const cached = state.caches.reversal;
+    if (!cached?.data) {
+        renderPlotMessage('xyReversalPlot', 'Select a dataset to view reversal analysis.');
+        return;
+    }
+
+    const shapes = [];
+    cached.xy_reversals.x_reversals.forEach((reversal) => {
+        shapes.push({
+            type: 'rect',
+            x0: reversal.window_start,
+            x1: reversal.window_end,
+            y0: Math.min(...cached.data.x, ...cached.data.y),
+            y1: Math.max(...cached.data.x, ...cached.data.y),
+            fillcolor: 'rgba(59, 130, 246, 0.08)',
+            line: { width: 0 },
+        });
+    });
+    cached.xy_reversals.y_reversals.forEach((reversal) => {
+        shapes.push({
+            type: 'rect',
+            x0: reversal.window_start,
+            x1: reversal.window_end,
+            y0: Math.min(...cached.data.x, ...cached.data.y),
+            y1: Math.max(...cached.data.x, ...cached.data.y),
+            fillcolor: 'rgba(16, 185, 129, 0.08)',
+            line: { width: 0 },
+        });
+    });
+
+    const traces = [
+        {
+            x: cached.data.time,
+            y: cached.data.x,
+            type: 'scattergl',
+            mode: 'lines',
+            name: 'X acceleration',
+            line: { color: '#2563eb', width: 1.2 },
+        },
+        {
+            x: cached.data.time,
+            y: cached.data.y,
+            type: 'scattergl',
+            mode: 'lines',
+            name: 'Y acceleration',
+            line: { color: '#16a34a', width: 1.2 },
+        },
+    ];
+
+    cached.xy_reversals.x_reversals.forEach((reversal, index) => {
+        traces.push({
+            x: [reversal.min_time, reversal.max_time],
+            y: [reversal.min_value, reversal.max_value],
+            type: 'scatter',
+            mode: 'markers',
+            name: index === 0 ? 'X reversal peaks' : '',
+            marker: { color: '#2563eb', size: 9, symbol: ['triangle-down', 'triangle-up'] },
+            showlegend: index === 0,
+        });
+    });
+    cached.xy_reversals.y_reversals.forEach((reversal, index) => {
+        traces.push({
+            x: [reversal.min_time, reversal.max_time],
+            y: [reversal.min_value, reversal.max_value],
+            type: 'scatter',
+            mode: 'markers',
+            name: index === 0 ? 'Y reversal peaks' : '',
+            marker: { color: '#16a34a', size: 9, symbol: ['triangle-down', 'triangle-up'] },
+            showlegend: index === 0,
+        });
+    });
+
+    drawPlot('xyReversalPlot', traces, {
+        title: 'X/Y acceleration reversals',
+        margin: { t: 48, r: 18, b: 54, l: 64 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: '#ffffff',
+        xaxis: { title: 'Time (s)', gridcolor: '#e2e8f0' },
+        yaxis: { title: 'Acceleration (g)', gridcolor: '#e2e8f0' },
+        shapes,
+    }, (point) => `${point.data.name}<br>t=${Number(point.x).toFixed(4)}s<br>a=${Number(point.y).toFixed(4)}g`);
+
+    document.getElementById('xyReversalSummary').textContent =
+        `${cached.dataset.name} | X reversals: ${cached.xy_reversals.x_reversals.length} | Y reversals: ${cached.xy_reversals.y_reversals.length}`;
+}
+
+function clearAnalysisViews() {
+    ['astmPlot', 'gbPlot', 'zonePlot', 'zReversalPlot', 'xyReversalPlot'].forEach((plotId) => renderPlotMessage(plotId, 'No dataset selected.'));
+    document.getElementById('astmSummary').textContent = 'Select a dataset to view ASTM analysis.';
+    document.getElementById('gbSummary').textContent = 'Select a dataset to view GB analysis.';
+    document.getElementById('zoneSummary').textContent = 'Select a dataset to view acceleration zone classification.';
+    document.getElementById('zReversalSummary').textContent = 'Select a dataset to view Z-axis reversal detection.';
+    document.getElementById('xyReversalSummary').textContent = 'Select a dataset to view X/Y reversal detection.';
+}
+
+function lineTrace(x, y, name, color, mode = 'lines', dash = 'solid') {
+    return {
+        x,
+        y,
+        mode,
+        type: 'scatter',
+        name,
+        line: { color, width: 2, dash },
+    };
+}
+
+function renderPlotMessage(plotId, message) {
+    const plot = document.getElementById(plotId);
+    if (!message) {
+        return;
+    }
+    Plotly.newPlot(plot, [], {
+        margin: { t: 20, r: 10, b: 20, l: 10 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(255,255,255,0.9)',
+        annotations: [{
+            text: message,
+            x: 0.5,
+            y: 0.5,
+            xref: 'paper',
+            yref: 'paper',
+            showarrow: false,
+            font: { size: 15, color: '#475569' },
+        }],
+        xaxis: { visible: false },
+        yaxis: { visible: false },
+    }, { displaylogo: false, responsive: true });
+}
+
+function drawPlot(plotId, traces, layout, annotationFormatter) {
+    plotAnnotations[plotId] = [];
+    Plotly.newPlot(plotId, traces, layout, { displaylogo: false, responsive: true }).then((plot) => {
+        if (typeof plot.removeAllListeners === 'function') {
+            plot.removeAllListeners('plotly_click');
+        }
+        plot.on('plotly_click', (event) => {
+            const point = event.points?.[0];
+            if (!point) {
+                return;
+            }
+            const next = state.annotationMode === 'Single' ? [] : [...(plotAnnotations[plotId] || [])];
+            next.push({
+                x: point.x,
+                y: point.y,
+                text: annotationFormatter(point),
+                showarrow: true,
+                arrowcolor: '#111827',
+                bgcolor: 'rgba(255,255,255,0.92)',
+                bordercolor: '#94a3b8',
+                align: 'left',
+            });
+            plotAnnotations[plotId] = next;
+            Plotly.relayout(plotId, { annotations: next });
+        });
     });
 }
 
-function updateAnalysisResults(title, data) {
-    let html = `<h6>${title}</h6>`;
-    
-    if (title === 'Zone Analysis') {
-        const mostSevere = data.most_severe;
-        const zoneDurations = data.zone_durations || {};
-        
-        if (mostSevere) {
-            html += `
-                <div class="alert alert-danger py-2 mb-2">
-                    <small><strong>Most Severe Zone: ${mostSevere[1]}</strong></small>
-                </div>
-            `;
-            
-            if (zoneDurations[mostSevere[1]]) {
-                html += '<table class="table table-sm"><tr><th>#</th><th>Start Time</th><th>End Time</th><th>Duration</th></tr>';
-                zoneDurations[mostSevere[1]].slice(0, 5).forEach((d, i) => {
-                    html += `<tr><td>${i+1}</td><td>${d.start_time.toFixed(3)}s</td><td>${d.end_time.toFixed(3)}s</td><td>${d.duration.toFixed(3)}s</td></tr>`;
-                });
-                html += '</table>';
-            }
-        } else {
-            html += `
-                <div class="alert alert-success py-2">
-                    <small>No zone meets the 0.2s duration threshold.</small>
-                </div>
-            `;
-        }
-    } else if (title === 'Reversal Analysis') {
-        const reversals = data.reversals || [];
-        const xyReversals = data.xy_reversals || [];
-        
-        html += `
-            <div class="alert alert-warning py-2 mb-2">
-                <small><strong>Z Reversals:</strong> ${reversals.length} detected</small>
-            </div>
-        `;
-        
-        html += `
-            <div class="alert alert-info py-2 mb-2">
-                <small><strong>X/Y Reversals:</strong> ${xyReversals.length} detected</small>
-            </div>
-        `;
-    }
-    
-    document.getElementById('analysisContent').innerHTML = html;
-}
-
-function showLoading(show) {
-    // Show loading on trend plot (main visible plot)
-    const trendLoading = document.getElementById('trendLoading');
-    if (trendLoading) {
-        trendLoading.style.display = show ? 'flex' : 'none';
-    }
-}
-
-function updateStatus(text) {
-    document.getElementById('statusText').textContent = text;
-}
-
-function getCSRFToken() {
-    // Try multiple methods to get CSRF token
-    // Method 1: From hidden input in form
-    let token = document.querySelector('#uploadForm [name=csrfmiddlewaretoken]')?.value;
-    if (token) return token;
-    
-    // Method 2: From cookie
-    const cookieValue = document.cookie.split('; ')
-        .find(row => row.startsWith('csrftoken='))?.split('=')[1];
-    if (cookieValue) return cookieValue;
-    
-    // Method 3: From meta tag (if available)
-    token = document.querySelector('meta[name=csrf-token]')?.content;
-    if (token) return token;
-    
-    console.warn('CSRF token not found!');
-    return '';
+function escapeHtml(value) {
+    return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
 }
 </script>
 {% endblock %}

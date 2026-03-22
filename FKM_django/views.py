@@ -1188,23 +1188,36 @@ def calculate_static_step5(request):
         KT = float(data.get('KT', 1))
         
         # Safety factors based on probability and consequence
+        # prob: 0=High, 1=Low; conseq: 0=High, 1=Mean, 2=Moderate
         jm_values = {
-            (0, 0): 2, (0, 1): 1.5, (0, 2): 1.5,
-            (1, 0): 1.8, (1, 1): 1.35, (1, 2): 1.3
+            (0, 0): 2.0,   # High, High
+            (0, 1): 1.85,  # High, Mean
+            (0, 2): 1.75,  # High, Moderate
+            (1, 0): 1.8,   # Low, High
+            (1, 1): 1.7,   # Low, Mean
+            (1, 2): 1.6,   # Low, Moderate
         }
         jp_values = {
-            (0, 0): 1.5, (0, 1): 1.5, (0, 2): 1.3,
-            (1, 0): 1.35, (1, 1): 1.25, (1, 2): 1.2
+            (0, 0): 1.5,   # High, High
+            (0, 1): 1.4,   # High, Mean
+            (0, 2): 1.3,   # High, Moderate
+            (1, 0): 1.35,  # Low, High
+            (1, 1): 1.25,  # Low, Mean
+            (1, 2): 1.2,   # Low, Moderate
         }
         jmt_values = {
-            (0, 0): 1.5, (0, 1): 1.5, (0, 2): 1.3,
-            (1, 0): 1.35, (1, 1): 1.25, (1, 2): 1.2
+            (0, 0): 1.5,   # High, High
+            (0, 1): 1.4,   # High, Mean
+            (0, 2): 1.3,   # High, Moderate
+            (1, 0): 1.35,  # Low, High
+            (1, 1): 1.25,  # Low, Mean
+            (1, 2): 1.2,   # Low, Moderate
         }
         jpt_values = {
             (0, 0): 1, (0, 1): 1, (0, 2): 1,
             (1, 0): 1, (1, 1): 1, (1, 2): 1
         }
-        
+
         jm = jm_values.get((prob, conseq), 1.5)
         jp = jp_values.get((prob, conseq), 1.25)
         jmt = jmt_values.get((prob, conseq), 1.25)

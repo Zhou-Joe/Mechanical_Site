@@ -686,9 +686,42 @@
                 </a>
             </div>
 
-            <div class="menu-category">Modules</div>
-            
-            <!-- 停机报告模块 -->
+            <div class="menu-category">Engineering Tools</div>
+
+            <!-- Acceleration Analysis Module -->
+            <div class="nav-item">
+                <a href="{% url 'acceleration_reader:home' %}" class="nav-link {% if 'acceleration' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span class="nav-text">Acceleration Analysis</span>
+                </a>
+            </div>
+
+            <!-- FKM Calculator Module -->
+            <div class="nav-item has-submenu">
+                <a href="#" class="nav-link {% if 'fkm' in request.resolver_match.url_name %}active{% endif %}" onclick="toggleSubmenu(event, 'fkm-submenu'); return false;">
+                    <i class="bi bi-calculator"></i>
+                    <span class="nav-text">FKM Calculator</span>
+                    <i class="bi bi-chevron-right arrow"></i>
+                </a>
+            </div>
+            <div class="submenu {% if 'fkm' in request.resolver_match.url_name %}show{% endif %}" id="fkm-submenu">
+                <a href="{% url 'fkm:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                    <i class="bi bi-house"></i>
+                    <span class="nav-text">FKM Home</span>
+                </a>
+                <a href="{% url 'fkm:fatigue' %}" class="nav-link {% if request.resolver_match.url_name == 'fatigue' %}active{% endif %}">
+                    <i class="bi bi-activity"></i>
+                    <span class="nav-text">Fatigue Strength</span>
+                </a>
+                <a href="{% url 'fkm:static' %}" class="nav-link {% if request.resolver_match.url_name == 'static' %}active{% endif %}">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span class="nav-text">Static Strength</span>
+                </a>
+            </div>
+
+            <div class="menu-category">Reports</div>
+
+            <!-- Downtime Report -->
             <div class="nav-item">
                 <a href="{% url 'oil_records:downtime_report' %}" class="nav-link {% if request.resolver_match.url_name == 'downtime_report' or request.resolver_match.url_name == 'generate_downtime_report' %}active{% endif %}">
                     <i class="bi bi-clock-history"></i>
@@ -696,7 +729,7 @@
                 </a>
             </div>
 
-            <!-- ECR 模块 -->
+            <!-- ECR Module -->
             <div class="nav-item has-submenu">
                 <a href="#" class="nav-link {% if 'ecr' in request.resolver_match.url_name %}active{% endif %}" onclick="toggleSubmenu(event, 'ecr-submenu'); return false;">
                     <i class="bi bi-file-earmark-text"></i>
@@ -715,9 +748,9 @@
                 </a>
             </div>
 
-            <div class="menu-category">Analysis</div>
-            
-            <!-- 油品检测模块 -->
+            <div class="menu-category">Oil & Wear Analysis</div>
+
+            <!-- Oil Analysis Module -->
             <div class="nav-item has-submenu">
                 <a href="#" class="nav-link {% if 'oil' in request.resolver_match.url_name or request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'upload_report' or request.resolver_match.url_name == 'upload_report_simple' or request.resolver_match.url_name == 'export_data' %}active{% endif %}" onclick="toggleSubmenu(event, 'oil-submenu'); return false;">
                     <i class="bi bi-droplet-fill"></i>
@@ -760,39 +793,6 @@
                 <a href="{% url 'ferrography_reports:list' %}" class="nav-link {% if request.resolver_match.url_name == 'list' %}active{% endif %}">
                     <i class="bi bi-list-ul"></i>
                     <span class="nav-text">Reports</span>
-                </a>
-            </div>
-
-            <div class="menu-category">Engineering Tools</div>
-
-            <!-- Acceleration Analysis Module -->
-            <div class="nav-item">
-                <a href="{% url 'acceleration_reader:home' %}" class="nav-link {% if 'acceleration' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="bi bi-graph-up-arrow"></i>
-                    <span class="nav-text">Acceleration Analysis</span>
-                </a>
-            </div>
-            
-            <!-- FKM Calculator Module -->
-            <div class="nav-item has-submenu">
-                <a href="#" class="nav-link {% if 'fkm' in request.resolver_match.url_name %}active{% endif %}" onclick="toggleSubmenu(event, 'fkm-submenu'); return false;">
-                    <i class="bi bi-calculator"></i>
-                    <span class="nav-text">FKM Calculator</span>
-                    <i class="bi bi-chevron-right arrow"></i>
-                </a>
-            </div>
-            <div class="submenu {% if 'fkm' in request.resolver_match.url_name %}show{% endif %}" id="fkm-submenu">
-                <a href="{% url 'fkm:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                    <i class="bi bi-house"></i>
-                    <span class="nav-text">FKM Home</span>
-                </a>
-                <a href="{% url 'fkm:fatigue' %}" class="nav-link {% if request.resolver_match.url_name == 'fatigue' %}active{% endif %}">
-                    <i class="bi bi-activity"></i>
-                    <span class="nav-text">Fatigue Strength</span>
-                </a>
-                <a href="{% url 'fkm:static' %}" class="nav-link {% if request.resolver_match.url_name == 'static' %}active{% endif %}">
-                    <i class="bi bi-bar-chart-line"></i>
-                    <span class="nav-text">Static Strength</span>
                 </a>
             </div>
 

@@ -76,6 +76,8 @@ def sustained_acc(data, window_size, use_numba=True):
         Positive and negative sustained acceleration values
     """
     data = np.asarray(data)
+    if window_size <= 0 or len(data) == 0 or window_size > len(data):
+        return 0.0, 0.0
     
     # Use numba if available and requested
     if use_numba and HAS_NUMBA:
@@ -100,7 +102,9 @@ def sustained_acc(data, window_size, use_numba=True):
 def butter_lowpass(cutoff, fs, order=5):
     """Design a lowpass butterworth filter"""
     nyq = 0.5 * fs
-    normal_cutoff = cutoff / nyq
+    if nyq <= 0:
+        raise ValueError("Sampling frequency must be positive")
+    normal_cutoff = min(cutoff / nyq, 0.999999)
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
     zi = lfilter_zi(b, a)
     return b, a, zi
@@ -108,8 +112,11 @@ def butter_lowpass(cutoff, fs, order=5):
 
 def butter_lowpass_filter(data, cutoff, fs, zeropoint=0, order=4):
     """Apply a lowpass butterworth filter to data"""
-    if cutoff == 500:
+    if cutoff >= 500 or cutoff <= 0 or fs <= 0:
         return data
+    nyq = 0.5 * fs
+    if cutoff >= nyq:
+        return np.round(np.asarray(data), decimals=4)
     else:
         b, a, zi = butter_lowpass(cutoff, fs, order=order)
         y = np.round(lfilter(b, a, data, zi=zeropoint*zi)[0], decimals=4)
@@ -458,8 +465,150 @@ def detect_xy_acceleration_reversal(x_data, y_data, time_data, fs):
     
     x_reversals_dedup = deduplicate_reversals(x_reversals)
     y_reversals_dedup = deduplicate_reversals(y_reversals)
-    
+
     return {
         'x_reversals': x_reversals_dedup,
         'y_reversals': y_reversals_dedup
     }
+
+
+def append4(x1, x2, x3, x4):
+    """Append four arrays together"""
+    x = np.append(x1, x2)
+    x = np.append(x, x3)
+    x = np.append(x, x4)
+    return x
+
+
+def eggXY(x1, x2, y_max):
+    """
+    Generate egg-shaped contour for XY plane.
+
+    Parameters:
+    -----------
+    x1 : float
+        X-axis limit 1 (typically negative side)
+    x2 : float
+        X-axis limit 2 (typically positive side)
+    y_max : float
+        Y-axis maximum value
+
+    Returns:
+    --------
+    x_coords, y_coords : ndarray
+        Arrays of x and y coordinates for the egg-shaped contour
+    """
+    x1 = min(x1, 2)
+    y_max = min(y_max, 3)
+
+    x11 = np.cos(np.arange(0, math.pi * 0.5, 0.01)) * x2
+    x22 = np.cos(np.arange(math.pi * 0.5, math.pi, 0.01)) * x1
+    x33 = np.cos(np.arange(math.pi, math.pi * 1.5, 0.01)) * x1
+    x44 = np.cos(np.arange(math.pi * 1.5, math.pi * 2 + 0.01, 0.01)) * x2
+    y11 = np.sin(np.arange(0, math.pi * 0.5, 0.01)) * y_max
+    y22 = np.sin(np.arange(math.pi * 0.5, math.pi, 0.01)) * y_max
+    y33 = np.sin(np.arange(math.pi, math.pi * 1.5, 0.01)) * y_max
+    y44 = np.sin(np.arange(math.pi * 1.5, math.pi * 2 + 0.01, 0.01)) * y_max
+    return append4(x11, x22, x33, x44), append4(y11, y22, y33, y44)
+
+
+def eggXZ(x1, x2, y1, y2):
+    """
+    Generate egg-shaped contour for XZ plane.
+
+    Parameters:
+    -----------
+    x1 : float
+        X-axis limit 1 (typically negative side)
+    x2 : float
+        X-axis limit 2 (typically positive side)
+    y1 : float
+        Z-axis limit 1 (typically negative side)
+    y2 : float
+        Z-axis limit 2 (typically positive side)
+
+    Returns:
+    --------
+    x_coords, z_coords : ndarray
+        Arrays of x and z coordinates for the egg-shaped contour
+    """
+    x1 = min(x1, 2)
+    y1 = min(y1, 2)
+    y2 = min(y2, 6)
+    x11 = np.cos(np.arange(0, math.pi * 0.5, 0.01)) * x2
+    x22 = np.cos(np.arange(math.pi * 0.5, math.pi, 0.01)) * x1
+    x33 = np.cos(np.arange(math.pi, math.pi * 1.5, 0.01)) * x1
+    x44 = np.cos(np.arange(math.pi * 1.5, math.pi * 2 + 0.01, 0.01)) * x2
+    y11 = np.sin(np.arange(0, math.pi * 0.5, 0.01)) * y2
+    y22 = np.sin(np.arange(math.pi * 0.5, math.pi, 0.01)) * y2
+    y33 = np.sin(np.arange(math.pi, math.pi * 1.5, 0.01)) * y1
+    y44 = np.sin(np.arange(math.pi * 1.5, math.pi * 2 + 0.01, 0.01)) * y1
+
+    return append4(x11, x22, x33, x44), append4(y11, y22, y33, y44)
+
+
+def eggYZ(x, y1, y2):
+    """
+    Generate egg-shaped contour for YZ plane.
+
+    Parameters:
+    -----------
+    x : float
+        Y-axis value
+    y1 : float
+        Z-axis limit 1 (typically negative side)
+    y2 : float
+        Z-axis limit 2 (typically positive side)
+
+    Returns:
+    --------
+    y_coords, z_coords : ndarray
+        Arrays of y and z coordinates for the egg-shaped contour
+    """
+    y1 = min(2, y1)
+    y2 = min(6, y2)
+    x = min(3, x)
+    x11 = np.cos(np.arange(0, math.pi * 0.5, 0.01)) * x
+    x22 = np.cos(np.arange(math.pi * 0.5, math.pi, 0.01)) * x
+    x33 = np.cos(np.arange(math.pi, math.pi * 1.5, 0.01)) * x
+    x44 = np.cos(np.arange(math.pi * 1.5, math.pi * 2 + 0.01, 0.01)) * x
+    y11 = np.sin(np.arange(0, math.pi * 0.5, 0.01)) * y2
+    y22 = np.sin(np.arange(math.pi * 0.5, math.pi, 0.01)) * y2
+    y33 = np.sin(np.arange(math.pi, math.pi * 1.5, 0.01)) * y1
+    y44 = np.sin(np.arange(math.pi * 1.5, math.pi * 2 + 0.01, 0.01)) * y1
+    return append4(x11, x22, x33, x44), append4(y11, y22, y33, y44)
+
+
+def coef(height, condition):
+    """
+    Calculate height coefficient for ASTM limits.
+
+    Parameters:
+    -----------
+    height : float
+        Patron height in inches
+    condition : str
+        Axis condition ('x', 'y', or 'z')
+
+    Returns:
+    --------
+    coefficient : float
+        Height coefficient value
+    """
+    if condition == 'x' or condition == 'y':
+        if height <= 32:
+            return 0.6
+        elif height <= 48:
+            return height * 0.025 - 0.2
+        else:
+            return 1
+
+    if condition == 'z':
+        if height <= 32:
+            return 0.6
+        elif height <= 48:
+            return height * 0.025 - 0.2
+        else:
+            return 1
+
+    return 1.0

@@ -10,7 +10,7 @@ DEFAULT_SAMPLING_FREQUENCY = 500
 DEFAULT_CUTOFF_FREQUENCY = 5
 
 # Maximum allowed cutoff frequency (Hz)
-MAX_CUTOFF_FREQUENCY = 10
+MAX_CUTOFF_FREQUENCY = 249
 
 # Time interval for annotation calculations (seconds)
 # This will be calculated dynamically as 1/sampling_frequency
