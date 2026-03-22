@@ -173,32 +173,31 @@
 {% endblock %}
 
 {% block content %}
-<!-- Modules Section -->
+<!-- Engineering Tools Section -->
 <div class="modules-section">
     <div class="section-header">
-        <i class="bi bi-grid-3x3-gap"></i>
-        Modules
+        <i class="bi bi-tools"></i>
+        Engineering Tools
     </div>
-    
+
     <div class="module-grid">
-        <!-- Combined Oil & Ferrography Analysis -->
-        <a href="{% url 'oil_records:dashboard' %}" class="module-card">
+        <!-- Acceleration Analysis -->
+        <a href="{% url 'acceleration_reader:home' %}" class="module-card">
             <div class="module-header">
-                <div class="module-icon blue">
-                    <i class="bi bi-droplet-fill"></i>
+                <div class="module-icon orange">
+                    <i class="bi bi-graph-up-arrow"></i>
                 </div>
                 <div class="module-info">
-                    <h3 class="module-title">Oil & Wear Analysis</h3>
-                    <p class="module-subtitle">Oil inspection and ferrography analysis</p>
+                    <h3 class="module-title">Acceleration Analysis</h3>
+                    <p class="module-subtitle">Vibration data visualization</p>
                 </div>
             </div>
             <div class="module-body">
-                <p class="module-description">Combined oil inspection and ferrography report management with trend analysis and wear particle detection.</p>
+                <p class="module-description">Acceleration data visualization with ASTM/GB standard analysis.</p>
                 <div class="module-tags">
-                    <span class="tag">Oil Reports</span>
-                    <span class="tag">Ferrography</span>
-                    <span class="tag">Trends</span>
-                    <span class="tag">Wear</span>
+                    <span class="tag">ASTM</span>
+                    <span class="tag">GB</span>
+                    <span class="tag">Egg Plot</span>
                 </div>
             </div>
             <div class="module-footer">
@@ -212,6 +211,46 @@
             </div>
         </a>
 
+        <!-- FKM Calculator -->
+        <a href="{% url 'fkm:index' %}" class="module-card">
+            <div class="module-header">
+                <div class="module-icon blue">
+                    <i class="bi bi-calculator-fill"></i>
+                </div>
+                <div class="module-info">
+                    <h3 class="module-title">FKM Calculator</h3>
+                    <p class="module-subtitle">Strength analysis per FKM standard</p>
+                </div>
+            </div>
+            <div class="module-body">
+                <p class="module-description">FKM specification fatigue and static strength calculations, including material properties, safety factors, and damage assessment.</p>
+                <div class="module-tags">
+                    <span class="tag">Fatigue</span>
+                    <span class="tag">Static</span>
+                    <span class="tag">FKM</span>
+                </div>
+            </div>
+            <div class="module-footer">
+                <span class="status-indicator">
+                    <span class="status-dot"></span>
+                    Active
+                </span>
+                <span class="module-link">
+                    Open <i class="bi bi-arrow-right"></i>
+                </span>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Reports Section -->
+<div class="modules-section">
+    <div class="section-header">
+        <i class="bi bi-file-earmark-text"></i>
+        Reports
+    </div>
+
+    <div class="module-grid">
         <!-- Downtime Report -->
         <a href="{% url 'oil_records:downtime_report' %}" class="module-card">
             <div class="module-header">
@@ -271,54 +310,35 @@
                 </span>
             </div>
         </a>
+    </div>
+</div>
 
-        <!-- Acceleration -->
-        <a href="{% url 'acceleration_reader:home' %}" class="module-card">
-            <div class="module-header">
-                <div class="module-icon orange">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-                <div class="module-info">
-                    <h3 class="module-title">Acceleration Analysis</h3>
-                    <p class="module-subtitle">Vibration data visualization</p>
-                </div>
-            </div>
-            <div class="module-body">
-                <p class="module-description">Acceleration data visualization with ASTM/GB standard analysis.</p>
-                <div class="module-tags">
-                    <span class="tag">ASTM</span>
-                    <span class="tag">GB</span>
-                    <span class="tag">Egg Plot</span>
-                </div>
-            </div>
-            <div class="module-footer">
-                <span class="status-indicator">
-                    <span class="status-dot"></span>
-                    Active
-                </span>
-                <span class="module-link">
-                    Open <i class="bi bi-arrow-right"></i>
-                </span>
-            </div>
-        </a>
+<!-- Oil & Wear Analysis Section -->
+<div class="modules-section">
+    <div class="section-header">
+        <i class="bi bi-droplet-fill"></i>
+        Oil & Wear Analysis
+    </div>
 
-        <!-- FKM Calculator -->
-        <a href="{% url 'fkm:index' %}" class="module-card">
+    <div class="module-grid">
+        <!-- Combined Oil & Ferrography Analysis -->
+        <a href="{% url 'oil_records:dashboard' %}" class="module-card">
             <div class="module-header">
                 <div class="module-icon blue">
-                    <i class="bi bi-calculator-fill"></i>
+                    <i class="bi bi-droplet-fill"></i>
                 </div>
                 <div class="module-info">
-                    <h3 class="module-title">FKM Calculator</h3>
-                    <p class="module-subtitle">Strength analysis per FKM standard</p>
+                    <h3 class="module-title">Oil & Ferrography Analysis</h3>
+                    <p class="module-subtitle">Oil inspection and ferrography analysis</p>
                 </div>
             </div>
             <div class="module-body">
-                <p class="module-description">FKM specification fatigue and static strength calculations, including material properties, safety factors, and damage assessment.</p>
+                <p class="module-description">Combined oil inspection and ferrography report management with trend analysis and wear particle detection.</p>
                 <div class="module-tags">
-                    <span class="tag">Fatigue</span>
-                    <span class="tag">Static</span>
-                    <span class="tag">FKM</span>
+                    <span class="tag">Oil Reports</span>
+                    <span class="tag">Ferrography</span>
+                    <span class="tag">Trends</span>
+                    <span class="tag">Wear</span>
                 </div>
             </div>
             <div class="module-footer">
