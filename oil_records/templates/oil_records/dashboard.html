@@ -9,6 +9,49 @@
 
 {% block extra_css %}
 <style>
+    /* Sub-navigation tabs */
+    .sub-nav {
+        background: var(--bg-primary);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+        border: 1px solid var(--border-primary);
+    }
+
+    .sub-nav-tabs {
+        display: flex;
+        gap: 8px;
+    }
+
+    .sub-nav-tab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .sub-nav-tab:hover {
+        border-color: var(--accent-blue);
+        color: var(--text-primary);
+    }
+
+    .sub-nav-tab.active {
+        background: var(--accent-blue);
+        border-color: var(--accent-blue);
+        color: white;
+    }
+
+    .sub-nav-tab i {
+        font-size: 1rem;
+    }
+
     .dashboard-filters {
         background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
         border-radius: 16px;
@@ -169,6 +212,20 @@
 {% endblock %}
 
 {% block content %}
+<!-- Sub-navigation -->
+<div class="sub-nav">
+    <div class="sub-nav-tabs">
+        <a href="{% url 'oil_records:dashboard' %}" class="sub-nav-tab active">
+            <i class="bi bi-droplet-fill"></i>
+            Oil Inspection
+        </a>
+        <a href="{% url 'ferrography_reports:home' %}" class="sub-nav-tab">
+            <i class="bi bi-microscope"></i>
+            Ferrography Analysis
+        </a>
+    </div>
+</div>
+
 <!-- 操作按钮 -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
