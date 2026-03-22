@@ -20,11 +20,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.i18n import set_language
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("i18n/setlang/", set_language, name="set_language"),
     path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/profile/", RedirectView.as_view(url='/'), name="profile"),
     path("", include("oil_records.urls")),
     path("ecr/", include("ecr.urls")),
     path("ferrography/", include("ferrography_reports.urls")),
