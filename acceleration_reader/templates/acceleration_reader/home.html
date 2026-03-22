@@ -338,6 +338,61 @@
         padding: 1rem;
     }
 
+    .acc-drilldown {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        margin-bottom: 0.9rem;
+        padding: 0.85rem 1rem;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+    }
+
+    .acc-drilldown-copy {
+        min-width: 220px;
+    }
+
+    .acc-drilldown-title {
+        margin: 0 0 0.2rem;
+        color: var(--acc-ink);
+        font-size: 0.92rem;
+        font-weight: 700;
+    }
+
+    .acc-drilldown-note {
+        margin: 0;
+        color: var(--acc-muted);
+        font-size: 0.82rem;
+    }
+
+    .acc-drilldown-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+    }
+
+    .acc-drilldown-controls label {
+        margin: 0;
+        color: var(--acc-muted);
+        font-size: 0.83rem;
+        font-weight: 700;
+    }
+
+    .acc-drilldown-controls select {
+        min-width: 280px;
+        max-width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.96);
+        color: var(--acc-ink);
+        padding: 0.58rem 0.75rem;
+    }
+
     .acc-plot-grid-trend {
         display: grid;
         gap: 0.9rem;
@@ -566,6 +621,19 @@
                     </li>
                 </ul>
 
+                <div class="acc-drilldown">
+                    <div class="acc-drilldown-copy">
+                        <h3 class="acc-drilldown-title">Dataset Drilldown</h3>
+                        <p class="acc-drilldown-note" id="datasetDrilldownNote">Choose the active dataset for ASTM, GB, Zone, and reversal analysis. Trend keeps all loaded files overlaid.</p>
+                    </div>
+                    <div class="acc-drilldown-controls">
+                        <label for="analysisDatasetSelect">Current Dataset</label>
+                        <select id="analysisDatasetSelect">
+                            <option value="">No dataset loaded</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="trendTab" role="tabpanel">
                         <div class="acc-pane">
@@ -720,6 +788,7 @@ function setActiveDataset(id) {
     const active = state.datasets.find((dataset) => dataset.id === id);
     document.getElementById('activeDatasetLabel').textContent = active ? active.name : 'None selected';
     renderDatasetList();
+    renderDatasetDrilldown();
     state.caches.astm = null;
     state.caches.gb = null;
     state.caches.zone = null;
@@ -764,8 +833,10 @@ function wireGlobalControls() {
         state.activeDatasetId = null;
         resetCaches();
         renderDatasetList();
+        renderDatasetDrilldown();
         renderTrendPlots();
         clearAnalysisViews();
+        document.getElementById('activeDatasetLabel').textContent = 'None selected';
         setStatus('All datasets cleared.');
     });
 
@@ -830,6 +901,11 @@ function wireGlobalControls() {
 
     document.getElementById('datasetList').addEventListener('click', handleDatasetListClick);
     document.getElementById('datasetList').addEventListener('submit', handleDatasetFormSubmit);
+    document.getElementById('analysisDatasetSelect').addEventListener('change', (event) => {
+        if (event.target.value) {
+            setActiveDataset(event.target.value);
+        }
+    });
 }
 
 function currentTabId() {
@@ -910,10 +986,35 @@ function applyDashboard(data) {
     }
 
     renderDatasetList();
+    renderDatasetDrilldown();
     renderTrendPlots();
     document.getElementById('activeDatasetLabel').textContent =
         state.datasets.find((dataset) => dataset.id === state.activeDatasetId)?.name || 'None selected';
     loadCurrentAnalysis();
+}
+
+function renderDatasetDrilldown() {
+    const select = document.getElementById('analysisDatasetSelect');
+    const note = document.getElementById('datasetDrilldownNote');
+
+    if (state.datasets.length === 0) {
+        select.innerHTML = '<option value="">No dataset loaded</option>';
+        select.disabled = true;
+        note.textContent = 'Choose the active dataset for ASTM, GB, Zone, and reversal analysis. Trend keeps all loaded files overlaid.';
+        return;
+    }
+
+    select.disabled = false;
+    select.innerHTML = state.datasets.map((dataset) => `
+        <option value="${dataset.id}" ${dataset.id === state.activeDatasetId ? 'selected' : ''}>
+            ${escapeHtml(dataset.name)} [${dataset.dataset_type}]
+        </option>
+    `).join('');
+
+    const active = state.datasets.find((dataset) => dataset.id === state.activeDatasetId);
+    note.textContent = active
+        ? `Analysis tabs are focused on ${active.name}. Trend still overlays all loaded datasets.`
+        : 'Choose the active dataset for ASTM, GB, Zone, and reversal analysis. Trend keeps all loaded files overlaid.';
 }
 
 function renderDatasetList() {
