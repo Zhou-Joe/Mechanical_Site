@@ -1,7 +1,7 @@
 {% extends 'oil_records/base_me.html' %}
 
 {% block title %}{% if record %}Edit{% else %}Create{% endif %} ECR - RSE Mechanical Engineering{% endblock %}
-{% block page_title %}{% if record %}Edit{% else %}Create New{% endif %} ECR{% endblock %}
+{% block page_title %}{% if record %}Edit ECR #{{ record.form_number }}{% else %}Create New ECR{% endif %}{% endblock %}
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{% url 'oil_records:me_home' %}">Home</a></li>
@@ -9,80 +9,377 @@
 <li class="breadcrumb-item active">{% if record %}Edit{% else %}Create{% endif %}</li>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --ecr-bg: linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #fef3c7 100%);
+        --ecr-card: rgba(255, 255, 255, 0.88);
+        --ecr-border: rgba(15, 23, 42, 0.09);
+        --ecr-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --ecr-ink: #0f172a;
+        --ecr-muted: #475569;
+        --ecr-blue: #1d4ed8;
+        --ecr-green: #15803d;
+        --ecr-red: #dc2626;
+        --ecr-amber: #d97706;
+        --ecr-purple: #7c3aed;
+    }
+
+    .ecr-page {
+        background: var(--ecr-bg);
+        min-height: calc(100vh - 3rem);
+        padding: 1.25rem 0;
+    }
+
+    .ecr-card {
+        background: var(--ecr-card);
+        border: 1px solid var(--ecr-border);
+        border-radius: 18px;
+        box-shadow: var(--ecr-shadow);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .ecr-card-header {
+        padding: 0.95rem 1.1rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .ecr-card-body {
+        padding: 1rem 1.1rem 1.1rem;
+    }
+
+    .ecr-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ecr-ink);
+        margin: 0;
+    }
+
+    /* Form Styles */
+    .ecr-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .ecr-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ecr-form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--ecr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .ecr-form-label .required {
+        color: var(--ecr-red);
+        margin-left: 4px;
+    }
+
+    .ecr-form-control {
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        font-family: 'IBM Plex Sans', sans-serif;
+        background: rgba(255, 255, 255, 0.95);
+        transition: all 0.2s ease;
+    }
+
+    .ecr-form-control:focus {
+        outline: none;
+        border-color: var(--ecr-blue);
+        box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
+    }
+
+    .ecr-form-control::placeholder {
+        color: var(--ecr-muted);
+        opacity: 0.6;
+    }
+
+    .ecr-textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .ecr-select {
+        cursor: pointer;
+    }
+
+    /* Section Dividers */
+    .ecr-section {
+        margin: 24px 0;
+        padding-top: 20px;
+        border-top: 1px dashed rgba(15, 23, 42, 0.12);
+    }
+
+    .ecr-section-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--ecr-ink);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ecr-section-title i {
+        color: var(--ecr-blue);
+    }
+
+    /* Approval Cards */
+    .approval-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .approval-card {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .approval-card-header {
+        padding: 12px 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: white;
+    }
+
+    .approval-card-header.lob {
+        background: linear-gradient(135deg, var(--ecr-blue), var(--ecr-purple));
+    }
+
+    .approval-card-header.qe {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+    }
+
+    .approval-card-header.me {
+        background: linear-gradient(135deg, var(--ecr-green), #047857);
+    }
+
+    .approval-card-body {
+        padding: 14px;
+    }
+
+    .approval-form-group {
+        margin-bottom: 12px;
+    }
+
+    .approval-form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .approval-form-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--ecr-muted);
+        margin-bottom: 6px;
+    }
+
+    .approval-form-control {
+        width: 100%;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .approval-form-control:focus {
+        outline: none;
+        border-color: var(--ecr-blue);
+    }
+
+    /* Image Preview */
+    .image-preview {
+        margin-top: 12px;
+    }
+
+    .image-preview-label {
+        font-size: 0.8rem;
+        color: var(--ecr-muted);
+        margin-bottom: 8px;
+    }
+
+    .image-preview img {
+        max-width: 200px;
+        max-height: 150px;
+        border-radius: 8px;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+    }
+
+    /* Action Buttons */
+    .ecr-form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .ecr-btn-primary {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.65rem 1.25rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(37, 99, 246, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .ecr-btn-primary:hover {
+        filter: brightness(1.05);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 99, 246, 0.4);
+        color: #fff;
+    }
+
+    .ecr-btn-secondary {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ecr-muted);
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 12px;
+        padding: 0.65rem 1.25rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .ecr-btn-secondary:hover {
+        border-color: var(--ecr-blue);
+        color: var(--ecr-blue);
+    }
+
+    /* Full Width */
+    .full-width {
+        grid-column: 1 / -1;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">{% if record %}Edit ECR #{{ record.form_number }}{% else %}Create New ECR Record{% endif %}</h5>
+<div class="ecr-page">
+    <div class="container-fluid">
+        <form method="post" action="{% if record %}{% url 'ecr:ecr_edit' record.pk %}{% else %}{% url 'ecr:ecr_create' %}{% endif %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Basic Information Card -->
+            <div class="ecr-card mb-4">
+                <div class="ecr-card-header">
+                    <h6 class="ecr-title">
+                        <i class="bi bi-info-circle" style="color: var(--ecr-blue);"></i>
+                        Basic Information
+                    </h6>
+                </div>
+                <div class="ecr-card-body">
+                    <div class="ecr-form-grid">
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Form Number <span class="required">*</span></label>
+                            <input type="number" name="form_number" class="ecr-form-control" value="{{ record.form_number|default:next_form_number }}" required>
+                        </div>
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Progress</label>
+                            <input type="text" name="progress" class="ecr-form-control" value="{{ record.progress|default:'In Progress' }}" placeholder="e.g., In Progress, Completed">
+                        </div>
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Completion Date</label>
+                            <input type="date" name="completion_date" class="ecr-form-control" value="{{ record.completion_date|date:'Y-m-d'|default:'' }}">
+                        </div>
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Request Date</label>
+                            <input type="date" name="request_date" class="ecr-form-control" value="{{ record.request_date|date:'Y-m-d'|default:today }}">
+                        </div>
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Requestor</label>
+                            <input type="text" name="requestor" class="ecr-form-control" value="{{ record.requestor|default:'' }}">
+                        </div>
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Contact</label>
+                            <input type="text" name="contact" class="ecr-form-control" value="{{ record.contact|default:'' }}">
+                        </div>
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Expected Completion Date</label>
+                            <input type="date" name="expected_completion_date" class="ecr-form-control" value="{{ record.expected_completion_date|date:'Y-m-d'|default:default_expected_date }}">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="post" action="{% if record %}{% url 'ecr:ecr_edit' record.pk %}{% else %}{% url 'ecr:ecr_create' %}{% endif %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <!-- 基本信息 -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Form Number <span class="text-danger">*</span></label>
-                            <input type="number" name="form_number" class="form-control" value="{{ record.form_number|default:next_form_number }}" required>
+
+            <!-- Document Information Card -->
+            <div class="ecr-card mb-4">
+                <div class="ecr-card-header">
+                    <h6 class="ecr-title">
+                        <i class="bi bi-file-earmark-text" style="color: var(--ecr-blue);"></i>
+                        Document Information
+                    </h6>
+                </div>
+                <div class="ecr-card-body">
+                    <div class="ecr-form-grid">
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Doc Number</label>
+                            <input type="text" name="doc_number" class="ecr-form-control" value="{{ record.doc_number|default:'' }}">
                         </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Progress</label>
-                            <input type="text" name="progress" class="form-control" value="{{ record.progress|default:'In Progress' }}" placeholder="e.g., In Progress, Completed">
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Rev Number</label>
+                            <input type="text" name="rev_number" class="ecr-form-control" value="{{ record.rev_number|default:'' }}">
                         </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Completion Date</label>
-                            <input type="date" name="completion_date" class="form-control" value="{{ record.completion_date|date:'Y-m-d'|default:'' }}">
+
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Engineering Change Type</label>
+                            <input type="text" name="engineering_change_type" class="ecr-form-control" value="{{ record.engineering_change_type|default:'' }}" placeholder="e.g., MM, OM">
                         </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Request Date</label>
-                            <input type="date" name="request_date" class="form-control" value="{{ record.request_date|date:'Y-m-d'|default:today }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title and Location Card -->
+            <div class="ecr-card mb-4">
+                <div class="ecr-card-header">
+                    <h6 class="ecr-title">
+                        <i class="bi bi-geo-alt" style="color: var(--ecr-blue);"></i>
+                        Title & Location
+                    </h6>
+                </div>
+                <div class="ecr-card-body">
+                    <div class="ecr-form-grid">
+                        <div class="ecr-form-group full-width">
+                            <label class="ecr-form-label">Title</label>
+                            <input type="text" name="title" class="ecr-form-control" value="{{ record.title|default:'' }}">
                         </div>
-                        
-                        <!-- 请求信息 -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Requestor</label>
-                            <input type="text" name="requestor" class="form-control" value="{{ record.requestor|default:'' }}">
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Contact</label>
-                            <input type="text" name="contact" class="form-control" value="{{ record.contact|default:'' }}">
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Expected Completion Date</label>
-                            <input type="date" name="expected_completion_date" class="form-control" value="{{ record.expected_completion_date|date:'Y-m-d'|default:default_expected_date }}">
-                        </div>
-                        
-                        <!-- 文档信息 -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Doc Number</label>
-                            <input type="text" name="doc_number" class="form-control" value="{{ record.doc_number|default:'' }}">
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Rev Number</label>
-                            <input type="text" name="rev_number" class="form-control" value="{{ record.rev_number|default:'' }}">
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Engineering Change Type</label>
-                            <input type="text" name="engineering_change_type" class="form-control" value="{{ record.engineering_change_type|default:'' }}" placeholder="e.g., MM, OM">
-                        </div>
-                        
-                        <!-- 标题和位置 -->
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Title</label>
-                            <input type="text" name="title" class="form-control" value="{{ record.title|default:'' }}">
-                        </div>
-                        
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Attraction or Location</label>
-                            <select name="attraction_or_location" class="form-select">
+
+                        <div class="ecr-form-group full-width">
+                            <label class="ecr-form-label">Attraction or Location</label>
+                            <select name="attraction_or_location" class="ecr-form-control ecr-select">
                                 <option value="">-- Select Attraction --</option>
                                 <option value="Alice in Wonderland Maze" {% if record.attraction_or_location == 'Alice in Wonderland Maze' %}selected{% endif %}>Alice in Wonderland Maze</option>
                                 <option value="Baymax Super Exercise Expo" {% if record.attraction_or_location == 'Baymax Super Exercise Expo' %}selected{% endif %}>Baymax Super Exercise Expo</option>
@@ -114,163 +411,179 @@
                                 <option value="Zootopia Hot Pursuit" {% if record.attraction_or_location == 'Zootopia Hot Pursuit' %}selected{% endif %}>Zootopia Hot Pursuit</option>
                             </select>
                         </div>
-                        
-                        <!-- 详细描述 -->
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Detail Description</label>
-                            <textarea name="detail_description" class="form-control" rows="4">{{ record.detail_description|default:'' }}</textarea>
-                        </div>
-                        
-                        <!-- 变更前后 -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Before Change</label>
-                            <textarea name="before_change" class="form-control mb-2" rows="4">{{ record.before_change|default:'' }}</textarea>
-                            <label class="form-label">Before Change Image</label>
-                            <input type="file" name="before_change_image" class="form-control" accept="image/*">
-                            {% if record and record.before_change_image %}
-                            <div class="mt-2">
-                                <small class="text-muted">Current image:</small><br>
-                                <img src="{{ record.before_change_image.url }}" alt="Before Change" style="max-width: 200px; max-height: 150px;" class="img-thumbnail">
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">After Change</label>
-                            <textarea name="after_change" class="form-control mb-2" rows="4">{{ record.after_change|default:'' }}</textarea>
-                            <label class="form-label">After Change Image</label>
-                            <input type="file" name="after_change_image" class="form-control" accept="image/*">
-                            {% if record and record.after_change_image %}
-                            <div class="mt-2">
-                                <small class="text-muted">Current image:</small><br>
-                                <img src="{{ record.after_change_image.url }}" alt="After Change" style="max-width: 200px; max-height: 150px;" class="img-thumbnail">
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 变更理由 -->
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Justification</label>
-                            <textarea name="justification" class="form-control" rows="4">{{ record.justification|default:'' }}</textarea>
-                        </div>
-                        
-                        <!-- 审批信息 -->
-                        <hr class="my-4">
-                        <div class="col-12 mb-3">
-                            <h5 class="text-muted">Approval Information</h5>
-                        </div>
-                        
-                        <div class="row">
-                            <!-- LOB Manager -->
-                            <div class="col-md-4 mb-3">
-                                <div class="card border-primary h-100">
-                                    <div class="card-header bg-primary text-white">
-                                        <strong>LOB Manager</strong>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-2">
-                                            <label class="form-label">Name</label>
-                                            <input type="text" name="lob_manager_name" class="form-control" value="{{ record.lob_manager_name|default:'' }}">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label">Approval (Y/N)</label>
-                                            <select name="lob_manager_approval" class="form-select">
-                                                <option value="" {% if not record.lob_manager_approval %}selected{% endif %}>-</option>
-                                                <option value="Y" {% if record.lob_manager_approval == 'Y' %}selected{% endif %}>Yes</option>
-                                                <option value="N" {% if record.lob_manager_approval == 'N' %}selected{% endif %}>No</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label">Review Date</label>
-                                            <input type="date" name="lob_manager_review_date" class="form-control" value="{{ record.lob_manager_review_date|date:'Y-m-d'|default:'' }}">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Comments</label>
-                                            <textarea name="lob_manager_comments" class="form-control" rows="2">{{ record.lob_manager_comments|default:'' }}</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- QE Engineer - 仅管理员可见 -->
-                            {% if user.is_staff or user.is_superuser %}
-                            <div class="col-md-4 mb-3">
-                                <div class="card border-info h-100">
-                                    <div class="card-header bg-info text-white">
-                                        <strong>QE Engineer</strong>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-2">
-                                            <label class="form-label">Name</label>
-                                            <input type="text" name="qe_engineer_name" class="form-control" value="{{ record.qe_engineer_name|default:'' }}">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label">Approval (Y/N)</label>
-                                            <select name="qe_engineer_approval" class="form-select">
-                                                <option value="" {% if not record.qe_engineer_approval %}selected{% endif %}>-</option>
-                                                <option value="Y" {% if record.qe_engineer_approval == 'Y' %}selected{% endif %}>Yes</option>
-                                                <option value="N" {% if record.qe_engineer_approval == 'N' %}selected{% endif %}>No</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label">Review Date</label>
-                                            <input type="date" name="qe_engineer_review_date" class="form-control" value="{{ record.qe_engineer_review_date|date:'Y-m-d'|default:'' }}">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Comments</label>
-                                            <textarea name="qe_engineer_comments" class="form-control" rows="2">{{ record.qe_engineer_comments|default:'' }}</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
-                            
-                            <!-- ME Engineer - 仅管理员可见 -->
-                            {% if user.is_staff or user.is_superuser %}
-                            <div class="col-md-4 mb-3">
-                                <div class="card border-success h-100">
-                                    <div class="card-header bg-success text-white">
-                                        <strong>ME Engineer</strong>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-2">
-                                            <label class="form-label">Name</label>
-                                            <input type="text" name="me_engineer_name" class="form-control" value="{{ record.me_engineer_name|default:'' }}">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label">Approval (Y/N)</label>
-                                            <select name="me_engineer_approval" class="form-select">
-                                                <option value="" {% if not record.me_engineer_approval %}selected{% endif %}>-</option>
-                                                <option value="Y" {% if record.me_engineer_approval == 'Y' %}selected{% endif %}>Yes</option>
-                                                <option value="N" {% if record.me_engineer_approval == 'N' %}selected{% endif %}>No</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label">Review Date</label>
-                                            <input type="date" name="me_engineer_review_date" class="form-control" value="{{ record.me_engineer_review_date|date:'Y-m-d'|default:'' }}">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Comments</label>
-                                            <textarea name="me_engineer_comments" class="form-control" rows="2">{{ record.me_engineer_comments|default:'' }}</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
                     </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> {% if record %}Update{% else %}Save{% endif %}
-                        </button>
-                        <a href="{% if record %}{% url 'ecr:ecr_detail' record.pk %}{% else %}{% url 'ecr:ecr_list' %}{% endif %}" class="btn btn-secondary">
-                            <i class="bi bi-x"></i> Cancel
-                        </a>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
+
+            <!-- Details Card -->
+            <div class="ecr-card mb-4">
+                <div class="ecr-card-header">
+                    <h6 class="ecr-title">
+                        <i class="bi bi-file-text" style="color: var(--ecr-blue);"></i>
+                        Details
+                    </h6>
+                </div>
+                <div class="ecr-card-body">
+                    <div class="ecr-form-grid">
+                        <div class="ecr-form-group full-width">
+                            <label class="ecr-form-label">Detail Description</label>
+                            <textarea name="detail_description" class="ecr-form-control ecr-textarea" rows="4">{{ record.detail_description|default:'' }}</textarea>
+                        </div>
+
+                        <div class="ecr-form-group full-width">
+                            <label class="ecr-form-label">Justification</label>
+                            <textarea name="justification" class="ecr-form-control ecr-textarea" rows="4">{{ record.justification|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Before/After Change Card -->
+            <div class="ecr-card mb-4">
+                <div class="ecr-card-header">
+                    <h6 class="ecr-title">
+                        <i class="bi bi-arrow-left-right" style="color: var(--ecr-blue);"></i>
+                        Before & After Change
+                    </h6>
+                </div>
+                <div class="ecr-card-body">
+                    <div class="ecr-form-grid">
+                        <!-- Before Change -->
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">Before Change</label>
+                            <textarea name="before_change" class="ecr-form-control ecr-textarea" rows="4">{{ record.before_change|default:'' }}</textarea>
+                            <label class="ecr-form-label mt-2">Before Change Image</label>
+                            <input type="file" name="before_change_image" class="ecr-form-control" accept="image/*">
+                            {% if record and record.before_change_image %}
+                            <div class="image-preview">
+                                <div class="image-preview-label">Current image:</div>
+                                <img src="{{ record.before_change_image.url }}" alt="Before Change" class="img-thumbnail">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- After Change -->
+                        <div class="ecr-form-group">
+                            <label class="ecr-form-label">After Change</label>
+                            <textarea name="after_change" class="ecr-form-control ecr-textarea" rows="4">{{ record.after_change|default:'' }}</textarea>
+                            <label class="ecr-form-label mt-2">After Change Image</label>
+                            <input type="file" name="after_change_image" class="ecr-form-control" accept="image/*">
+                            {% if record and record.after_change_image %}
+                            <div class="image-preview">
+                                <div class="image-preview-label">Current image:</div>
+                                <img src="{{ record.after_change_image.url }}" alt="After Change" class="img-thumbnail">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approval Information -->
+            <div class="ecr-section">
+                <h6 class="ecr-section-title">
+                    <i class="bi bi-check-circle"></i>
+                    Approval Information
+                </h6>
+
+                <div class="approval-grid">
+                    <!-- LOB Manager -->
+                    <div class="approval-card">
+                        <div class="approval-card-header lob">LOB Manager</div>
+                        <div class="approval-card-body">
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Name</label>
+                                <input type="text" name="lob_manager_name" class="approval-form-control" value="{{ record.lob_manager_name|default:'' }}">
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Approval</label>
+                                <select name="lob_manager_approval" class="approval-form-control">
+                                    <option value="" {% if not record.lob_manager_approval %}selected{% endif %}>-</option>
+                                    <option value="Y" {% if record.lob_manager_approval == 'Y' %}selected{% endif %}>Yes</option>
+                                    <option value="N" {% if record.lob_manager_approval == 'N' %}selected{% endif %}>No</option>
+                                </select>
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Review Date</label>
+                                <input type="date" name="lob_manager_review_date" class="approval-form-control" value="{{ record.lob_manager_review_date|date:'Y-m-d'|default:'' }}">
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Comments</label>
+                                <textarea name="lob_manager_comments" class="approval-form-control" rows="2">{{ record.lob_manager_comments|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QE Engineer -->
+                    {% if user.is_staff or user.is_superuser %}
+                    <div class="approval-card">
+                        <div class="approval-card-header qe">QE Engineer</div>
+                        <div class="approval-card-body">
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Name</label>
+                                <input type="text" name="qe_engineer_name" class="approval-form-control" value="{{ record.qe_engineer_name|default:'' }}">
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Approval</label>
+                                <select name="qe_engineer_approval" class="approval-form-control">
+                                    <option value="" {% if not record.qe_engineer_approval %}selected{% endif %}>-</option>
+                                    <option value="Y" {% if record.qe_engineer_approval == 'Y' %}selected{% endif %}>Yes</option>
+                                    <option value="N" {% if record.qe_engineer_approval == 'N' %}selected{% endif %}>No</option>
+                                </select>
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Review Date</label>
+                                <input type="date" name="qe_engineer_review_date" class="approval-form-control" value="{{ record.qe_engineer_review_date|date:'Y-m-d'|default:'' }}">
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Comments</label>
+                                <textarea name="qe_engineer_comments" class="approval-form-control" rows="2">{{ record.qe_engineer_comments|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- ME Engineer -->
+                    {% if user.is_staff or user.is_superuser %}
+                    <div class="approval-card">
+                        <div class="approval-card-header me">ME Engineer</div>
+                        <div class="approval-card-body">
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Name</label>
+                                <input type="text" name="me_engineer_name" class="approval-form-control" value="{{ record.me_engineer_name|default:'' }}">
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Approval</label>
+                                <select name="me_engineer_approval" class="approval-form-control">
+                                    <option value="" {% if not record.me_engineer_approval %}selected{% endif %}>-</option>
+                                    <option value="Y" {% if record.me_engineer_approval == 'Y' %}selected{% endif %}>Yes</option>
+                                    <option value="N" {% if record.me_engineer_approval == 'N' %}selected{% endif %}>No</option>
+                                </select>
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Review Date</label>
+                                <input type="date" name="me_engineer_review_date" class="approval-form-control" value="{{ record.me_engineer_review_date|date:'Y-m-d'|default:'' }}">
+                            </div>
+                            <div class="approval-form-group">
+                                <label class="approval-form-label">Comments</label>
+                                <textarea name="me_engineer_comments" class="approval-form-control" rows="2">{{ record.me_engineer_comments|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="ecr-form-actions">
+                <button type="submit" class="ecr-btn-primary">
+                    <i class="bi bi-save"></i> {% if record %}Update{% else %}Save{% endif %}
+                </button>
+                <a href="{% if record %}{% url 'ecr:ecr_detail' record.pk %}{% else %}{% url 'ecr:ecr_list' %}{% endif %}" class="ecr-btn-secondary">
+                    <i class="bi bi-x"></i> Cancel
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

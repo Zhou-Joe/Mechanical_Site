@@ -9,234 +9,605 @@
 <li class="breadcrumb-item active">#{{ record.form_number }}</li>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --ecr-bg: linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #fef3c7 100%);
+        --ecr-card: rgba(255, 255, 255, 0.88);
+        --ecr-border: rgba(15, 23, 42, 0.09);
+        --ecr-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --ecr-ink: #0f172a;
+        --ecr-muted: #475569;
+        --ecr-blue: #1d4ed8;
+        --ecr-green: #15803d;
+        --ecr-red: #dc2626;
+        --ecr-amber: #d97706;
+        --ecr-purple: #7c3aed;
+    }
+
+    .ecr-page {
+        background: var(--ecr-bg);
+        min-height: calc(100vh - 3rem);
+        padding: 1.25rem 0;
+    }
+
+    .ecr-card {
+        background: var(--ecr-card);
+        border: 1px solid var(--ecr-border);
+        border-radius: 18px;
+        box-shadow: var(--ecr-shadow);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .ecr-card-header {
+        padding: 0.95rem 1.1rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .ecr-card-body {
+        padding: 1rem 1.1rem 1.1rem;
+    }
+
+    .ecr-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ecr-ink);
+        margin: 0;
+    }
+
+    .ecr-subtitle {
+        color: var(--ecr-muted);
+        font-size: 0.9rem;
+    }
+
+    .ecr-btn-chip {
+        border: 1px solid rgba(29, 78, 216, 0.18);
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ecr-blue);
+        border-radius: 999px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.16s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ecr-btn-chip:hover {
+        background: #ffffff !important;
+        color: var(--ecr-red) !important;
+        border-color: var(--ecr-red) !important;
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.14);
+    }
+
+    .ecr-btn-primary {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.65rem 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(37, 99, 246, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .ecr-btn-primary:hover {
+        filter: brightness(1.05);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 99, 246, 0.4);
+        color: #fff;
+    }
+
+    .ecr-btn-success {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.65rem 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .ecr-btn-success:hover {
+        filter: brightness(1.05);
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
+    .ecr-btn-secondary {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ecr-muted);
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 12px;
+        padding: 0.65rem 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .ecr-btn-secondary:hover {
+        border-color: var(--ecr-blue);
+        color: var(--ecr-blue);
+    }
+
+    /* Info Sections */
+    .ecr-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .ecr-section-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--ecr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ecr-section-title i {
+        color: var(--ecr-blue);
+    }
+
+    .ecr-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .ecr-info-item {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        border-radius: 12px;
+        padding: 12px 14px;
+    }
+
+    .ecr-info-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--ecr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+
+    .ecr-info-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--ecr-ink);
+    }
+
+    .ecr-info-value.mono {
+        font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Content Boxes */
+    .ecr-content-box {
+        background: rgba(248, 250, 252, 0.7);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 8px;
+    }
+
+    .ecr-content-box pre {
+        white-space: pre-wrap;
+        margin: 0;
+        color: var(--ecr-muted);
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .ecr-image-box {
+        margin-top: 12px;
+    }
+
+    .ecr-image-box img {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 12px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    /* Approval Cards */
+    .approval-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .approval-card {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .approval-card-header {
+        padding: 12px 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: white;
+    }
+
+    .approval-card-header.lob {
+        background: linear-gradient(135deg, var(--ecr-blue), var(--ecr-purple));
+    }
+
+    .approval-card-header.qe {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+    }
+
+    .approval-card-header.me {
+        background: linear-gradient(135deg, var(--ecr-green), #047857);
+    }
+
+    .approval-card-body {
+        padding: 14px;
+    }
+
+    .approval-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.04);
+    }
+
+    .approval-row:last-child {
+        border-bottom: none;
+    }
+
+    .approval-label {
+        font-size: 0.8rem;
+        color: var(--ecr-muted);
+        font-weight: 500;
+    }
+
+    .approval-value {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--ecr-ink);
+    }
+
+    /* Badges */
+    .badge-approved {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--ecr-green);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-rejected {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--ecr-red);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-pending {
+        background: rgba(148, 163, 184, 0.1);
+        color: var(--ecr-muted);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{{ record.title|default:'Untitled' }}</h5>
+<div class="ecr-page">
+    <div class="container-fluid">
+        <!-- Header Card -->
+        <div class="ecr-card mb-4">
+            <div class="ecr-card-header">
+                <h5 class="ecr-title">
+                    <i class="bi bi-file-earmark-text" style="color: var(--ecr-blue);"></i>
+                    ECR #{{ record.form_number }}
+                </h5>
                 <div class="d-flex gap-2">
-                    <a href="{% url 'ecr:ecr_edit' record.pk %}" class="btn btn-primary btn-sm">
+                    <a href="{% url 'ecr:ecr_edit' record.pk %}" class="ecr-btn-chip">
                         <i class="bi bi-pencil"></i> Edit
                     </a>
-                    <a href="{% url 'ecr:ecr_export' record.pk %}" class="btn btn-success btn-sm">
-                        <i class="bi bi-download"></i> Export to Excel
+                    <a href="{% url 'ecr:ecr_export' record.pk %}" class="ecr-btn-primary">
+                        <i class="bi bi-download"></i> Export
+                    </a>
+                    <a href="{% url 'ecr:ecr_list' %}" class="ecr-btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back
                     </a>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <!-- 基本信息 -->
-                    <div class="col-md-6">
-                        <h6 class="text-muted mb-3">Basic Information</h6>
-                        <table class="table table-borderless">
-                            <tr>
-                                <td width="40%"><strong>Form Number:</strong></td>
-                                <td>{{ record.form_number }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Progress:</strong></td>
-                                <td>{{ record.progress|default:'-' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Completion Date:</strong></td>
-                                <td>{{ record.completion_date|default:'-' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Requestor:</strong></td>
-                                <td>{{ record.requestor|default:'-' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Contact:</strong></td>
-                                <td>{{ record.contact|default:'-' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <!-- 文档信息 -->
-                    <div class="col-md-6">
-                        <h6 class="text-muted mb-3">Document Information</h6>
-                        <table class="table table-borderless">
-                            <tr>
-                                <td width="40%"><strong>Doc Number:</strong></td>
-                                <td>{{ record.doc_number|default:'-' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Rev Number:</strong></td>
-                                <td>{{ record.rev_number|default:'-' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Request Date:</strong></td>
-                                <td>{{ record.request_date|default:'-' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Expected Completion:</strong></td>
-                                <td>{{ record.expected_completion_date|default:'-' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Change Type:</strong></td>
-                                <td>{{ record.engineering_change_type|default:'-' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <hr>
-
-                <!-- 位置信息 -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-muted mb-3">Location</h6>
-                        <p>{{ record.attraction_or_location|default:'-' }}</p>
-                    </div>
-                </div>
-
-                <!-- 详细描述 -->
-                {% if record.detail_description %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-muted mb-3">Detail Description</h6>
-                        <div class="p-3 bg-light rounded">
-                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.detail_description }}</pre>
-                        </div>
-                    </div>
+            <div class="ecr-card-body">
+                <h4 style="margin: 0; color: var(--ecr-ink);">{{ record.title|default:'Untitled' }}</h4>
+                {% if record.progress %}
+                <div class="mt-2">
+                    <span class="progress-badge {{ record.progress|lower }}">
+                        {{ record.progress }}
+                    </span>
                 </div>
                 {% endif %}
+            </div>
+        </div>
 
-                <!-- 变更前 -->
-                {% if record.before_change or record.before_change_image %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-muted mb-3">Before Change</h6>
-                        {% if record.before_change %}
-                        <div class="p-3 bg-light rounded mb-3">
-                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.before_change }}</pre>
-                        </div>
-                        {% endif %}
-                        {% if record.before_change_image %}
-                        <div class="mt-2">
-                            <img src="{{ record.before_change_image.url }}" alt="Before Change" class="img-fluid rounded" style="max-width: 100%; max-height: 500px;">
-                        </div>
-                        {% endif %}
+        <!-- Basic Information -->
+        <div class="ecr-card mb-4">
+            <div class="ecr-card-header">
+                <h6 class="ecr-section-title" style="margin: 0;">
+                    <i class="bi bi-info-circle"></i>
+                    Basic Information
+                </h6>
+            </div>
+            <div class="ecr-card-body">
+                <div class="ecr-info-grid">
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Form Number</div>
+                        <div class="ecr-info-value mono">{{ record.form_number }}</div>
+                    </div>
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Doc Number</div>
+                        <div class="ecr-info-value">{{ record.doc_number|default:'-' }}</div>
+                    </div>
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Rev Number</div>
+                        <div class="ecr-info-value">{{ record.rev_number|default:'-' }}</div>
+                    </div>
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Change Type</div>
+                        <div class="ecr-info-value">{{ record.engineering_change_type|default:'-' }}</div>
+                    </div>
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Request Date</div>
+                        <div class="ecr-info-value mono">{{ record.request_date|default:'-' }}</div>
+                    </div>
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Expected Completion</div>
+                        <div class="ecr-info-value mono">{{ record.expected_completion_date|default:'-' }}</div>
+                    </div>
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Requestor</div>
+                        <div class="ecr-info-value">{{ record.requestor|default:'-' }}</div>
+                    </div>
+                    <div class="ecr-info-item">
+                        <div class="ecr-info-label">Contact</div>
+                        <div class="ecr-info-value">{{ record.contact|default:'-' }}</div>
                     </div>
                 </div>
-                {% endif %}
+            </div>
+        </div>
 
-                <!-- 变更后 -->
-                {% if record.after_change or record.after_change_image %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-muted mb-3">After Change</h6>
-                        {% if record.after_change %}
-                        <div class="p-3 bg-light rounded mb-3">
-                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.after_change }}</pre>
-                        </div>
-                        {% endif %}
-                        {% if record.after_change_image %}
-                        <div class="mt-2">
-                            <img src="{{ record.after_change_image.url }}" alt="After Change" class="img-fluid rounded" style="max-width: 100%; max-height: 500px;">
-                        </div>
-                        {% endif %}
-                    </div>
+        <!-- Location -->
+        <div class="ecr-card mb-4">
+            <div class="ecr-card-header">
+                <h6 class="ecr-section-title" style="margin: 0;">
+                    <i class="bi bi-geo-alt"></i>
+                    Location
+                </h6>
+            </div>
+            <div class="ecr-card-body">
+                <div class="ecr-info-value" style="font-size: 1rem; color: var(--ecr-ink);">
+                    {{ record.attraction_or_location|default:'-' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        {% if record.detail_description %}
+        <div class="ecr-card mb-4">
+            <div class="ecr-card-header">
+                <h6 class="ecr-section-title" style="margin: 0;">
+                    <i class="bi bi-file-text"></i>
+                    Description
+                </h6>
+            </div>
+            <div class="ecr-card-body">
+                <div class="ecr-content-box">
+                    <pre>{{ record.detail_description }}</pre>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Before Change -->
+        {% if record.before_change or record.before_change_image %}
+        <div class="ecr-card mb-4">
+            <div class="ecr-card-header">
+                <h6 class="ecr-section-title" style="margin: 0;">
+                    <i class="bi bi-arrow-left-circle"></i>
+                    Before Change
+                </h6>
+            </div>
+            <div class="ecr-card-body">
+                {% if record.before_change %}
+                <div class="ecr-content-box">
+                    <pre>{{ record.before_change }}</pre>
                 </div>
                 {% endif %}
-
-                <!-- 变更理由 -->
-                {% if record.justification %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-muted mb-3">Justification</h6>
-                        <div class="p-3 bg-light rounded">
-                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.justification }}</pre>
-                        </div>
-                    </div>
+                {% if record.before_change_image %}
+                <div class="ecr-image-box">
+                    <img src="{{ record.before_change_image.url }}" alt="Before Change">
                 </div>
                 {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
-                <!-- 审批信息 -->
-                <hr>
-                <h6 class="text-muted mb-3">Approval Information</h6>
-                <div class="row">
+        <!-- After Change -->
+        {% if record.after_change or record.after_change_image %}
+        <div class="ecr-card mb-4">
+            <div class="ecr-card-header">
+                <h6 class="ecr-section-title" style="margin: 0;">
+                    <i class="bi bi-arrow-right-circle"></i>
+                    After Change
+                </h6>
+            </div>
+            <div class="ecr-card-body">
+                {% if record.after_change %}
+                <div class="ecr-content-box">
+                    <pre>{{ record.after_change }}</pre>
+                </div>
+                {% endif %}
+                {% if record.after_change_image %}
+                <div class="ecr-image-box">
+                    <img src="{{ record.after_change_image.url }}" alt="After Change">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Justification -->
+        {% if record.justification %}
+        <div class="ecr-card mb-4">
+            <div class="ecr-card-header">
+                <h6 class="ecr-section-title" style="margin: 0;">
+                    <i class="bi bi-lightbulb"></i>
+                    Justification
+                </h6>
+            </div>
+            <div class="ecr-card-body">
+                <div class="ecr-content-box">
+                    <pre>{{ record.justification }}</pre>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Approval Information -->
+        <div class="ecr-card">
+            <div class="ecr-card-header">
+                <h6 class="ecr-section-title" style="margin: 0;">
+                    <i class="bi bi-check-circle"></i>
+                    Approval Information
+                </h6>
+            </div>
+            <div class="ecr-card-body">
+                <div class="approval-grid">
                     <!-- LOB Manager -->
-                    <div class="col-md-4 mb-3">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <strong>LOB Manager</strong>
+                    <div class="approval-card">
+                        <div class="approval-card-header lob">LOB Manager</div>
+                        <div class="approval-card-body">
+                            <div class="approval-row">
+                                <span class="approval-label">Name</span>
+                                <span class="approval-value">{{ record.lob_manager_name|default:'-' }}</span>
                             </div>
-                            <div class="card-body">
-                                <p class="mb-1"><strong>Name:</strong> {{ record.lob_manager_name|default:'-' }}</p>
-                                <p class="mb-1"><strong>Approval:</strong> 
+                            <div class="approval-row">
+                                <span class="approval-label">Approval</span>
+                                <span class="approval-value">
                                     {% if record.lob_manager_approval == 'Y' %}
-                                        <span class="badge bg-success">Approved</span>
+                                        <span class="badge-approved">Approved</span>
                                     {% elif record.lob_manager_approval == 'N' %}
-                                        <span class="badge bg-danger">Rejected</span>
+                                        <span class="badge-rejected">Rejected</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">-</span>
+                                        <span class="badge-pending">-</span>
                                     {% endif %}
-                                </p>
-                                <p class="mb-1"><strong>Review Date:</strong> {{ record.lob_manager_review_date|default:'-' }}</p>
-                                {% if record.lob_manager_comments %}
-                                <p class="mb-0"><strong>Comments:</strong> {{ record.lob_manager_comments }}</p>
-                                {% endif %}
+                                </span>
                             </div>
+                            <div class="approval-row">
+                                <span class="approval-label">Review Date</span>
+                                <span class="approval-value mono">{{ record.lob_manager_review_date|default:'-' }}</span>
+                            </div>
+                            {% if record.lob_manager_comments %}
+                            <div class="approval-row" style="display: block;">
+                                <span class="approval-label">Comments</span>
+                                <div style="margin-top: 4px; color: var(--ecr-muted); font-size: 0.85rem;">{{ record.lob_manager_comments }}</div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <!-- QE Engineer -->
-                    <div class="col-md-4 mb-3">
-                        <div class="card">
-                            <div class="card-header bg-info text-white">
-                                <strong>QE Engineer</strong>
+                    <div class="approval-card">
+                        <div class="approval-card-header qe">QE Engineer</div>
+                        <div class="approval-card-body">
+                            <div class="approval-row">
+                                <span class="approval-label">Name</span>
+                                <span class="approval-value">{{ record.qe_engineer_name|default:'-' }}</span>
                             </div>
-                            <div class="card-body">
-                                <p class="mb-1"><strong>Name:</strong> {{ record.qe_engineer_name|default:'-' }}</p>
-                                <p class="mb-1"><strong>Approval:</strong> 
+                            <div class="approval-row">
+                                <span class="approval-label">Approval</span>
+                                <span class="approval-value">
                                     {% if record.qe_engineer_approval == 'Y' %}
-                                        <span class="badge bg-success">Approved</span>
+                                        <span class="badge-approved">Approved</span>
                                     {% elif record.qe_engineer_approval == 'N' %}
-                                        <span class="badge bg-danger">Rejected</span>
+                                        <span class="badge-rejected">Rejected</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">-</span>
+                                        <span class="badge-pending">-</span>
                                     {% endif %}
-                                </p>
-                                <p class="mb-1"><strong>Review Date:</strong> {{ record.qe_engineer_review_date|default:'-' }}</p>
-                                {% if record.qe_engineer_comments %}
-                                <p class="mb-0"><strong>Comments:</strong> {{ record.qe_engineer_comments }}</p>
-                                {% endif %}
+                                </span>
                             </div>
+                            <div class="approval-row">
+                                <span class="approval-label">Review Date</span>
+                                <span class="approval-value mono">{{ record.qe_engineer_review_date|default:'-' }}</span>
+                            </div>
+                            {% if record.qe_engineer_comments %}
+                            <div class="approval-row" style="display: block;">
+                                <span class="approval-label">Comments</span>
+                                <div style="margin-top: 4px; color: var(--ecr-muted); font-size: 0.85rem;">{{ record.qe_engineer_comments }}</div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <!-- ME Engineer -->
-                    <div class="col-md-4 mb-3">
-                        <div class="card">
-                            <div class="card-header bg-success text-white">
-                                <strong>ME Engineer</strong>
+                    <div class="approval-card">
+                        <div class="approval-card-header me">ME Engineer</div>
+                        <div class="approval-card-body">
+                            <div class="approval-row">
+                                <span class="approval-label">Name</span>
+                                <span class="approval-value">{{ record.me_engineer_name|default:'-' }}</span>
                             </div>
-                            <div class="card-body">
-                                <p class="mb-1"><strong>Name:</strong> {{ record.me_engineer_name|default:'-' }}</p>
-                                <p class="mb-1"><strong>Approval:</strong> 
+                            <div class="approval-row">
+                                <span class="approval-label">Approval</span>
+                                <span class="approval-value">
                                     {% if record.me_engineer_approval == 'Y' %}
-                                        <span class="badge bg-success">Approved</span>
+                                        <span class="badge-approved">Approved</span>
                                     {% elif record.me_engineer_approval == 'N' %}
-                                        <span class="badge bg-danger">Rejected</span>
+                                        <span class="badge-rejected">Rejected</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">-</span>
+                                        <span class="badge-pending">-</span>
                                     {% endif %}
-                                </p>
-                                <p class="mb-1"><strong>Review Date:</strong> {{ record.me_engineer_review_date|default:'-' }}</p>
-                                {% if record.me_engineer_comments %}
-                                <p class="mb-0"><strong>Comments:</strong> {{ record.me_engineer_comments }}</p>
-                                {% endif %}
+                                </span>
                             </div>
+                            <div class="approval-row">
+                                <span class="approval-label">Review Date</span>
+                                <span class="approval-value mono">{{ record.me_engineer_review_date|default:'-' }}</span>
+                            </div>
+                            {% if record.me_engineer_comments %}
+                            <div class="approval-row" style="display: block;">
+                                <span class="approval-label">Comments</span>
+                                <div style="margin-top: 4px; color: var(--ecr-muted); font-size: 0.85rem;">{{ record.me_engineer_comments }}</div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
-                </div>
-
-                <div class="mt-4">
-                    <a href="{% url 'ecr:ecr_list' %}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to List
-                    </a>
                 </div>
             </div>
         </div>

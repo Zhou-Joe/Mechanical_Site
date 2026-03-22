@@ -10,66 +10,143 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --ecr-bg: linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #fef3c7 100%);
+        --ecr-card: rgba(255, 255, 255, 0.88);
+        --ecr-border: rgba(15, 23, 42, 0.09);
+        --ecr-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --ecr-ink: #0f172a;
+        --ecr-muted: #475569;
+        --ecr-blue: #1d4ed8;
+        --ecr-green: #15803d;
+        --ecr-red: #dc2626;
+        --ecr-amber: #d97706;
+        --ecr-purple: #7c3aed;
+    }
+
+    .ecr-page {
+        background: var(--ecr-bg);
+        min-height: calc(100vh - 3rem);
+        padding: 1.25rem 0;
+    }
+
+    .ecr-card {
+        background: var(--ecr-card);
+        border: 1px solid var(--ecr-border);
+        border-radius: 18px;
+        box-shadow: var(--ecr-shadow);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .ecr-card-header {
+        padding: 0.95rem 1.1rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .ecr-card-body {
+        padding: 1rem 1.1rem 1.1rem;
+    }
+
+    .ecr-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ecr-ink);
+        margin: 0;
+    }
+
+    /* Toolbar */
     .ecr-toolbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 16px;
-        margin-bottom: 24px;
+        gap: 12px;
+        margin-bottom: 20px;
     }
 
     .ecr-actions {
         display: flex;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
     }
 
-    .btn-create {
-        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-violet) 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 10px;
+    .ecr-btn-chip {
+        border: 1px solid rgba(29, 78, 216, 0.18);
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ecr-blue);
+        border-radius: 999px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        text-decoration: none;
-    }
-
-    .btn-create:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-        color: white;
-    }
-
-    .btn-import {
-        background: linear-gradient(135deg, var(--accent-emerald) 0%, #059669 100%);
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 10px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         cursor: pointer;
+        transition: all 0.16s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .btn-import:hover {
+    .ecr-btn-chip:hover {
+        background: #ffffff !important;
+        color: var(--ecr-red) !important;
+        border-color: var(--ecr-red) !important;
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.14);
+    }
+
+    .ecr-btn-primary {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.65rem 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(37, 99, 246, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .ecr-btn-primary:hover {
+        filter: brightness(1.05);
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 8px 20px rgba(37, 99, 246, 0.4);
+        color: #fff;
     }
 
-    .btn-import input[type="file"] {
+    .ecr-btn-success {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.65rem 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .ecr-btn-success:hover {
+        filter: brightness(1.05);
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
+    .ecr-btn-success input[type="file"] {
         display: none;
     }
 
+    /* Search */
     .search-form {
         display: flex;
         gap: 8px;
@@ -77,92 +154,60 @@
 
     .search-input {
         padding: 10px 16px;
-        border: 2px solid var(--border-color);
-        border-radius: 10px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 12px;
         font-size: 0.9rem;
         min-width: 240px;
-        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.95);
+        transition: all 0.2s ease;
     }
 
     .search-input:focus {
         outline: none;
-        border-color: var(--accent-blue);
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        border-color: var(--ecr-blue);
+        box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
     }
 
-    .btn-search {
-        background: var(--bg-secondary);
-        border: 2px solid var(--border-color);
-        color: var(--text-secondary);
-        padding: 10px 20px;
-        border-radius: 10px;
+    .ecr-btn-ghost {
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ecr-ink);
+        border-radius: 12px;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.88rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
         gap: 6px;
     }
 
-    .btn-search:hover {
-        border-color: var(--accent-blue);
-        color: var(--accent-blue);
+    .ecr-btn-ghost:hover {
+        border-color: rgba(29, 78, 216, 0.35);
+        color: var(--ecr-blue);
     }
 
-    /* ECR Table Card */
-    .ecr-card {
-        background: var(--bg-secondary);
-        border-radius: 16px;
-        border: 1px solid var(--border-color);
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .ecr-card-header {
-        background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .ecr-card-header h5 {
-        margin: 0;
-        font-weight: 700;
-        color: var(--text-primary);
-        font-size: 1.1rem;
-    }
-
-    .ecr-card-header i {
-        color: var(--accent-blue);
-        font-size: 1.25rem;
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-    }
-
+    /* Table */
     .ecr-table {
         width: 100%;
         border-collapse: collapse;
     }
 
     .ecr-table thead th {
-        background: var(--bg-tertiary);
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 0.8rem;
+        background: rgba(248, 250, 252, 0.98);
+        color: var(--ecr-muted);
+        font-weight: 700;
+        font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        padding: 16px 20px;
-        border-bottom: 2px solid var(--border-color);
-        white-space: nowrap;
+        padding: 14px 18px;
+        border-bottom: 2px solid rgba(15, 23, 42, 0.08);
     }
 
     .ecr-table tbody td {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border-color);
+        padding: 14px 18px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
         vertical-align: middle;
     }
 
@@ -171,23 +216,18 @@
     }
 
     .ecr-table tbody tr:hover {
-        background: var(--bg-tertiary);
+        background: rgba(248, 250, 252, 0.6);
     }
 
-    .ecr-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Table Cell Styles */
     .form-number {
         font-weight: 700;
-        color: var(--text-primary);
-        font-family: 'JetBrains Mono', monospace;
+        color: var(--ecr-ink);
+        font-family: 'IBM Plex Mono', monospace;
         font-size: 0.9rem;
     }
 
-    .ecr-title {
-        color: var(--text-secondary);
+    .ecr-title-cell {
+        color: var(--ecr-muted);
         font-weight: 500;
         max-width: 300px;
         overflow: hidden;
@@ -205,7 +245,7 @@
         width: 32px;
         height: 32px;
         border-radius: 8px;
-        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-violet) 100%);
+        background: linear-gradient(135deg, var(--ecr-blue), var(--ecr-purple));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -214,12 +254,7 @@
         font-size: 0.8rem;
     }
 
-    .requestor-name {
-        font-weight: 500;
-        color: var(--text-primary);
-    }
-
-    /* Progress Badge */
+    /* Progress Badges */
     .progress-badge {
         display: inline-flex;
         align-items: center;
@@ -233,67 +268,61 @@
 
     .progress-badge.draft {
         background: rgba(148, 163, 184, 0.1);
-        color: var(--text-muted);
+        color: var(--ecr-muted);
     }
 
     .progress-badge.pending {
         background: rgba(245, 158, 11, 0.1);
-        color: var(--accent-amber);
+        color: var(--ecr-amber);
     }
 
     .progress-badge.approved {
         background: rgba(16, 185, 129, 0.1);
-        color: var(--accent-emerald);
+        color: var(--ecr-green);
     }
 
     .progress-badge.rejected {
         background: rgba(244, 63, 94, 0.1);
-        color: var(--accent-rose);
+        color: var(--ecr-red);
     }
 
     .progress-badge.in-progress {
         background: rgba(59, 130, 246, 0.1);
-        color: var(--accent-blue);
+        color: var(--ecr-blue);
     }
 
     /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-    }
-
-    .btn-action {
-        padding: 8px 14px;
-        border-radius: 8px;
+    .ecr-action-btn {
+        padding: 6px 14px;
+        border-radius: 999px;
         font-size: 0.8rem;
         font-weight: 600;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(29, 78, 216, 0.2);
+        background: rgba(29, 78, 216, 0.05);
+        color: var(--ecr-blue);
     }
 
-    .btn-view {
-        background: rgba(59, 130, 246, 0.1);
-        color: var(--accent-blue);
-    }
-
-    .btn-view:hover {
-        background: var(--accent-blue);
+    .ecr-action-btn:hover {
+        background: var(--ecr-blue);
         color: white;
+        border-color: var(--ecr-blue);
     }
 
-    .btn-export {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--accent-emerald);
+    .ecr-action-btn.export {
+        border-color: rgba(21, 128, 61, 0.2);
+        background: rgba(21, 128, 61, 0.05);
+        color: var(--ecr-green);
     }
 
-    .btn-export:hover {
-        background: var(--accent-emerald);
+    .ecr-action-btn.export:hover {
+        background: var(--ecr-green);
         color: white;
+        border-color: var(--ecr-green);
     }
 
     /* Empty State */
@@ -304,199 +333,206 @@
 
     .empty-state i {
         font-size: 4rem;
-        color: var(--text-muted);
+        color: var(--ecr-muted);
+        opacity: 0.4;
         margin-bottom: 16px;
     }
 
     .empty-state p {
-        color: var(--text-secondary);
-        font-size: 1rem;
+        color: var(--ecr-muted);
+        font-size: 0.95rem;
     }
 
     /* Pagination */
     .pagination-container {
-        padding: 20px 24px;
-        border-top: 1px solid var(--border-color);
-        background: var(--bg-tertiary);
+        padding: 16px 20px;
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(248, 250, 252, 0.6);
     }
 
     .pagination {
-        gap: 4px;
+        gap: 6px;
         margin: 0;
     }
 
     .page-item .page-link {
         border: none;
-        background: var(--bg-secondary);
-        color: var(--text-secondary);
-        padding: 10px 14px;
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--ecr-muted);
+        padding: 8px 12px;
+        border-radius: 10px;
         font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        margin: 0 2px;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
     }
 
     .page-item:hover .page-link {
-        background: var(--bg-tertiary);
-        color: var(--accent-blue);
+        background: #ffffff;
+        color: var(--ecr-blue);
     }
 
     .page-item.active .page-link {
-        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-violet) 100%);
+        background: linear-gradient(135deg, var(--ecr-blue), var(--ecr-purple));
         color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 12px rgba(37, 99, 246, 0.3);
     }
 
     .page-item.disabled .page-link {
-        background: var(--bg-secondary);
-        color: var(--text-muted);
+        background: rgba(248, 250, 252, 0.6);
+        color: var(--ecr-muted);
         cursor: not-allowed;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Toolbar -->
-<div class="ecr-toolbar">
-    <div class="ecr-actions">
-        <a href="{% url 'ecr:ecr_create' %}" class="btn-create">
-            <i class="bi bi-plus-lg"></i>
-            Create New ECR
-        </a>
-        <label class="btn-import">
-            <form method="post" action="{% url 'ecr:ecr_import' %}" enctype="multipart/form-data" style="display: contents;">
-                {% csrf_token %}
-                <input type="file" name="excel_file" accept=".xlsx,.xls" required onchange="this.form.submit()">
-                <i class="bi bi-upload"></i>
-                Import Excel
+<div class="ecr-page">
+    <div class="container-fluid">
+        <!-- Toolbar -->
+        <div class="ecr-toolbar">
+            <div class="ecr-actions">
+                <a href="{% url 'ecr:ecr_create' %}" class="ecr-btn-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    Create New ECR
+                </a>
+                <label class="ecr-btn-success">
+                    <form method="post" action="{% url 'ecr:ecr_import' %}" enctype="multipart/form-data" style="display: contents;">
+                        {% csrf_token %}
+                        <input type="file" name="excel_file" accept=".xlsx,.xls" required onchange="this.form.submit()">
+                        <i class="bi bi-upload"></i>
+                        Import Excel
+                    </form>
+                </label>
+            </div>
+
+            <form class="search-form" method="get" action="">
+                <input type="text" name="q" class="search-input" placeholder="Search ECR records..." value="{{ search_query|default:'' }}">
+                <button type="submit" class="ecr-btn-ghost">
+                    <i class="bi bi-search"></i>
+                    Search
+                </button>
             </form>
-        </label>
-    </div>
-    
-    <form class="search-form" method="get" action="">
-        <input type="text" name="q" class="search-input" placeholder="Search ECR records..." value="{{ search_query|default:'' }}">
-        <button type="submit" class="btn-search">
-            <i class="bi bi-search"></i>
-            Search
-        </button>
-    </form>
-</div>
+        </div>
 
-<!-- ECR Table Card -->
-<div class="ecr-card">
-    <div class="ecr-card-header">
-        <i class="bi bi-file-earmark-text"></i>
-        <h5>Engineering Change Request Records</h5>
-    </div>
-    
-    <div class="table-responsive">
-        <table class="ecr-table">
-            <thead>
-                <tr>
-                    <th>Form #</th>
-                    <th>Title</th>
-                    <th>Requestor</th>
-                    <th>Progress</th>
-                    <th>Request Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in page_obj %}
-                <tr>
-                    <td>
-                        <span class="form-number">{{ record.form_number }}</span>
-                    </td>
-                    <td>
-                        <span class="ecr-title" title="{{ record.title }}">{{ record.title|default:'Untitled'|truncatechars:50 }}</span>
-                    </td>
-                    <td>
-                        <div class="requestor">
-                            <div class="requestor-avatar">{{ record.requestor|default:'?'|first|upper }}</div>
-                            <span class="requestor-name">{{ record.requestor|default:'Unknown' }}</span>
-                        </div>
-                    </td>
-                    <td>
-                        {% if record.progress %}
-                            {% with progress_class=record.progress|lower %}
-                            <span class="progress-badge {{ progress_class }}">
-                                {% if 'pending' in progress_class|lower %}<i class="bi bi-clock"></i>
-                                {% elif 'approved' in progress_class|lower %}<i class="bi bi-check-circle"></i>
-                                {% elif 'rejected' in progress_class|lower %}<i class="bi bi-x-circle"></i>
-                                {% elif 'progress' in progress_class|lower %}<i class="bi bi-arrow-repeat"></i>
-                                {% else %}<i class="bi bi-circle"></i>{% endif %}
-                                {{ record.progress }}
-                            </span>
-                            {% endwith %}
-                        {% else %}
-                            <span class="progress-badge draft">
-                                <i class="bi bi-circle"></i>
-                                Draft
-                            </span>
+        <!-- ECR Table Card -->
+        <div class="ecr-card">
+            <div class="ecr-card-header">
+                <h5 class="ecr-title">
+                    <i class="bi bi-file-earmark-text" style="color: var(--ecr-blue);"></i>
+                    Engineering Change Request Records
+                </h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="ecr-table">
+                    <thead>
+                        <tr>
+                            <th>Form #</th>
+                            <th>Title</th>
+                            <th>Requestor</th>
+                            <th>Progress</th>
+                            <th>Request Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in page_obj %}
+                        <tr>
+                            <td>
+                                <span class="form-number">{{ record.form_number }}</span>
+                            </td>
+                            <td>
+                                <span class="ecr-title-cell" title="{{ record.title }}">{{ record.title|default:'Untitled'|truncatechars:50 }}</span>
+                            </td>
+                            <td>
+                                <div class="requestor">
+                                    <div class="requestor-avatar">{{ record.requestor|default:'?'|first|upper }}</div>
+                                    <span>{{ record.requestor|default:'Unknown' }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if record.progress %}
+                                    {% with progress_class=record.progress|lower %}
+                                    <span class="progress-badge {{ progress_class }}">
+                                        {% if 'pending' in progress_class|lower %}<i class="bi bi-clock"></i>
+                                        {% elif 'approved' in progress_class|lower %}<i class="bi bi-check-circle"></i>
+                                        {% elif 'rejected' in progress_class|lower %}<i class="bi bi-x-circle"></i>
+                                        {% elif 'progress' in progress_class|lower %}<i class="bi bi-arrow-repeat"></i>
+                                        {% else %}<i class="bi bi-circle"></i>{% endif %}
+                                        {{ record.progress }}
+                                    </span>
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="progress-badge draft">
+                                        <i class="bi bi-circle"></i>
+                                        Draft
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span style="color: var(--ecr-muted); font-weight: 500;">
+                                    {{ record.request_date|default:'-' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'ecr:ecr_detail' record.pk %}" class="ecr-action-btn">
+                                        <i class="bi bi-eye"></i>
+                                        View
+                                    </a>
+                                    <a href="{% url 'ecr:ecr_export' record.pk %}" class="ecr-action-btn export">
+                                        <i class="bi bi-download"></i>
+                                        Export
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <p>No ECR records found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i> Previous
+                            </a>
+                        </li>
                         {% endif %}
-                    </td>
-                    <td>
-                        <span style="color: var(--text-muted); font-weight: 500;">
-                            {{ record.request_date|default:'-' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="{% url 'ecr:ecr_detail' record.pk %}" class="btn-action btn-view">
-                                <i class="bi bi-eye"></i>
-                                View
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                                Next <i class="bi bi-chevron-right"></i>
                             </a>
-                            <a href="{% url 'ecr:ecr_export' record.pk %}" class="btn-action btn-export">
-                                <i class="bi bi-download"></i>
-                                Export
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="empty-state">
-                        <i class="bi bi-inbox"></i>
-                        <p>No ECR records found</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
     </div>
-
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <div class="pagination-container">
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
-                        <i class="bi bi-chevron-left"></i> Previous
-                    </a>
-                </li>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a></li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
-                        Next <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
