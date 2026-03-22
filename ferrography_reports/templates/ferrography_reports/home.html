@@ -1,19 +1,74 @@
-{% extends 'ferrography_reports/base.html' %}
+{% extends 'oil_records/base_me.html' %}
 
 {% block title %}Ferrography Analysis - Home{% endblock %}
-{% block ferrography_breadcrumb %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item">Ferrography</li>
     <li class="breadcrumb-item active">Home</li>
 {% endblock %}
 
 {% block extra_css %}
 <style>
+    :root {
+        --ferro-bg: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #fef3c7 100%);
+        --ferro-card: rgba(255, 255, 255, 0.92);
+        --ferro-border: rgba(15, 23, 42, 0.08);
+        --ferro-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --ferro-ink: #0f172a;
+        --ferro-muted: #475569;
+        --ferro-blue: #1d4ed8;
+        --ferro-green: #15803d;
+        --ferro-red: #dc2626;
+        --ferro-amber: #d97706;
+    }
+
+    .ferro-page {
+        background: var(--ferro-bg);
+        min-height: calc(100vh - 3rem);
+        padding: 1.25rem 0;
+    }
+
+    .ferro-card {
+        background: var(--ferro-card);
+        border: 1px solid var(--ferro-border);
+        border-radius: 18px;
+        box-shadow: var(--ferro-shadow);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .ferro-card-header {
+        padding: 0.95rem 1.1rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .ferro-card-body {
+        padding: 1rem 1.1rem 1.1rem;
+    }
+
+    .ferro-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ferro-ink);
+        margin: 0;
+    }
+
+    .ferro-subtitle {
+        font-size: 0.85rem;
+        color: var(--ferro-muted);
+    }
+
     /* Sub-navigation tabs */
     .sub-nav {
-        background: var(--bg-primary);
+        background: rgba(255, 255, 255, 0.95);
         border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 24px;
-        border: 1px solid var(--border-primary);
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid var(--ferro-border);
+        box-shadow: var(--ferro-shadow);
     }
 
     .sub-nav-tabs {
@@ -25,113 +80,97 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 12px 20px;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-primary);
-        border-radius: 8px;
+        padding: 10px 18px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(29, 78, 216, 0.15);
+        border-radius: 999px;
         text-decoration: none;
-        color: var(--text-secondary);
-        font-weight: 500;
-        transition: all 0.2s ease;
+        color: var(--ferro-muted);
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.16s ease;
     }
 
     .sub-nav-tab:hover {
-        border-color: var(--accent-blue);
-        color: var(--text-primary);
+        border-color: var(--ferro-blue);
+        color: var(--ferro-blue);
+        background: #ffffff;
     }
 
     .sub-nav-tab.active {
-        background: var(--accent-blue);
-        border-color: var(--accent-blue);
-        color: white;
+        background: #ffffff !important;
+        color: var(--ferro-red) !important;
+        border-color: var(--ferro-red) !important;
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.14);
     }
 
     .sub-nav-tab i {
         font-size: 1rem;
     }
 
-    /* Overview Stats Cards */
-    .overview-stats {
+    /* Stats Grid */
+    .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 24px;
-        margin-bottom: 32px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
     .stat-card {
-        background: var(--bg-secondary);
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid var(--ferro-border);
         border-radius: 16px;
-        padding: 28px;
-        border: 1px solid var(--border-color);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, var(--accent-emerald) 0%, var(--accent-cyan) 100%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        padding: 24px;
+        box-shadow: var(--ferro-shadow);
+        transition: all 0.2s ease;
     }
 
     .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .stat-card:hover::before {
-        opacity: 1;
-    }
-
-    .stat-card.primary {
-        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-violet) 100%);
-    }
-
-    .stat-card.primary .stat-icon,
-    .stat-card.primary .stat-value,
-    .stat-card.primary .stat-label {
-        color: white;
-    }
-
-    .stat-card.primary::before {
-        opacity: 1;
-        background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
     }
 
     .stat-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 16px;
+        font-size: 1.4rem;
+        margin-bottom: 14px;
     }
 
-    .stat-card:not(.primary) .stat-icon {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-        color: var(--accent-emerald);
+    .stat-icon.blue {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .stat-icon.green {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+    }
+
+    .stat-icon.amber {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
     }
 
     .stat-value {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: 800;
-        color: var(--text-primary);
+        color: var(--ferro-ink);
+        font-family: 'IBM Plex Mono', monospace;
         letter-spacing: -0.02em;
-        margin-bottom: 4px;
     }
 
     .stat-label {
-        font-size: 0.95rem;
-        color: var(--text-muted);
-        font-weight: 500;
+        font-size: 0.8rem;
+        color: var(--ferro-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 4px;
     }
 
     /* Quick Actions */
@@ -139,7 +178,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 
     .action-btn {
@@ -147,86 +186,86 @@
         align-items: center;
         justify-content: center;
         gap: 12px;
-        padding: 20px 24px;
+        padding: 16px 24px;
         border-radius: 14px;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.95rem;
         text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
         border: none;
         cursor: pointer;
     }
 
     .action-btn.primary {
-        background: linear-gradient(135deg, var(--accent-emerald) 0%, #059669 100%);
+        background: linear-gradient(135deg, #16a34a, #15803d);
         color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 14px rgba(21, 128, 61, 0.25);
     }
 
     .action-btn.primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 8px 24px rgba(21, 128, 61, 0.35);
         color: white;
     }
 
     .action-btn.secondary {
-        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%);
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
         color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
     }
 
     .action-btn.secondary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        box-shadow: 0 8px 24px rgba(29, 78, 216, 0.35);
         color: white;
     }
 
     .action-btn i {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
     }
 
-    /* Recent Reports Table */
+    /* Reports Table */
     .reports-card {
-        background: var(--bg-secondary);
-        border-radius: 16px;
-        border: 1px solid var(--border-color);
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 18px;
+        border: 1px solid var(--ferro-border);
         overflow: hidden;
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--ferro-shadow);
     }
 
     .reports-card-header {
-        background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--border-color);
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--ferro-border);
         display: flex;
         align-items: center;
         justify-content: space-between;
+        background: rgba(248, 250, 252, 0.6);
     }
 
     .reports-card-title {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         font-weight: 700;
-        font-size: 1.1rem;
-        color: var(--text-primary);
+        font-size: 1rem;
+        color: var(--ferro-ink);
         margin: 0;
     }
 
     .reports-card-title i {
-        color: var(--accent-emerald);
-        font-size: 1.25rem;
+        color: var(--ferro-green);
+        font-size: 1.1rem;
     }
 
     .view-all-link {
-        color: var(--accent-blue);
+        color: var(--ferro-blue);
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: gap 0.3s ease;
+        transition: gap 0.2s ease;
     }
 
     .view-all-link:hover {
@@ -243,19 +282,19 @@
     }
 
     .reports-table thead th {
-        background: var(--bg-tertiary);
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 0.8rem;
+        background: rgba(248, 250, 252, 0.98);
+        color: var(--ferro-muted);
+        font-weight: 700;
+        font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        padding: 16px 20px;
-        border-bottom: 2px solid var(--border-color);
+        padding: 14px 18px;
+        border-bottom: 2px solid var(--ferro-border);
     }
 
     .reports-table tbody td {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border-color);
+        padding: 14px 18px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
         vertical-align: middle;
     }
 
@@ -264,7 +303,7 @@
     }
 
     .reports-table tbody tr:hover {
-        background: var(--bg-tertiary);
+        background: rgba(248, 250, 252, 0.6);
     }
 
     .equipment-cell {
@@ -277,11 +316,11 @@
         width: 40px;
         height: 40px;
         border-radius: 10px;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--accent-blue);
+        color: var(--ferro-blue);
         font-size: 1.1rem;
     }
 
@@ -292,38 +331,41 @@
 
     .equipment-name {
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--ferro-ink);
+        font-size: 0.92rem;
     }
 
     .equipment-location {
-        font-size: 0.85rem;
-        color: var(--text-muted);
+        font-size: 0.8rem;
+        color: var(--ferro-muted);
     }
 
     .date-cell {
         font-weight: 500;
-        color: var(--text-secondary);
+        color: var(--ferro-ink);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.88rem;
     }
 
     .btn-view-report {
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 0.85rem;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.8rem;
         font-weight: 600;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        background: rgba(59, 130, 246, 0.1);
-        color: var(--accent-blue);
+        transition: all 0.2s ease;
+        border: 1px solid rgba(29, 78, 216, 0.2);
+        background: rgba(29, 78, 216, 0.05);
+        color: var(--ferro-blue);
     }
 
     .btn-view-report:hover {
-        background: var(--accent-blue);
+        background: var(--ferro-blue);
         color: white;
+        border-color: var(--ferro-blue);
     }
 
     /* Empty State */
@@ -334,154 +376,156 @@
 
     .empty-state i {
         font-size: 4rem;
-        color: var(--text-muted);
+        color: var(--ferro-muted);
+        opacity: 0.4;
         margin-bottom: 16px;
     }
 
     .empty-state p {
-        color: var(--text-secondary);
-        font-size: 1rem;
-    }
-
-    .empty-state .btn-action {
-        margin-top: 16px;
+        color: var(--ferro-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Sub-navigation -->
-<div class="sub-nav">
-    <div class="sub-nav-tabs">
-        <a href="{% url 'oil_records:dashboard' %}" class="sub-nav-tab">
-            <i class="bi bi-droplet-fill"></i>
-            Oil Inspection
-        </a>
-        <a href="{% url 'ferrography_reports:home' %}" class="sub-nav-tab active">
-            <i class="bi bi-microscope"></i>
-            Ferrography Analysis
-        </a>
-    </div>
-</div>
+<div class="ferro-page">
+    <div class="container-fluid">
+        <!-- Sub-navigation -->
+        <div class="sub-nav">
+            <div class="sub-nav-tabs">
+                <a href="{% url 'oil_records:dashboard' %}" class="sub-nav-tab">
+                    <i class="bi bi-droplet-fill"></i>
+                    Oil Inspection
+                </a>
+                <a href="{% url 'ferrography_reports:home' %}" class="sub-nav-tab active">
+                    <i class="bi bi-microscope"></i>
+                    Ferrography Analysis
+                </a>
+            </div>
+        </div>
 
-<!-- Overview Stats -->
-<div class="overview-stats">
-    <div class="stat-card primary">
-        <div class="stat-icon">
-            <i class="bi bi-file-earmark-text"></i>
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="stat-value">{{ report_count }}</div>
+                <div class="stat-label">Total Reports</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="stat-value">
+                    {% if recent_reports %}
+                        {{ recent_reports|length }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </div>
+                <div class="stat-label">Recent Uploads</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon amber">
+                    <i class="bi bi-microscope"></i>
+                </div>
+                <div class="stat-value">
+                    {% if recent_reports %}
+                        {{ recent_reports|length }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </div>
+                <div class="stat-label">Pending Analysis</div>
+            </div>
         </div>
-        <div class="stat-value">{{ report_count }}</div>
-        <div class="stat-label">Total Ferrography Reports</div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon">
-            <i class="bi bi-calendar-check"></i>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{% url 'ferrography_reports:upload' %}" class="action-btn primary">
+                <i class="bi bi-upload"></i>
+                Upload Report
+            </a>
+            <a href="{% url 'ferrography_reports:list' %}" class="action-btn secondary">
+                <i class="bi bi-list-ul"></i>
+                View All Reports
+            </a>
         </div>
-        <div class="stat-value">
+
+        <!-- Recent Reports -->
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h5 class="reports-card-title">
+                    <i class="bi bi-clock-history"></i>
+                    Recent Reports
+                </h5>
+                <a href="{% url 'ferrography_reports:list' %}" class="view-all-link">
+                    View All <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
             {% if recent_reports %}
-                {{ recent_reports|length }}
+            <div class="table-responsive">
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>Equipment</th>
+                            <th>Attraction</th>
+                            <th>Report Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in recent_reports %}
+                        <tr>
+                            <td>
+                                <div class="equipment-cell">
+                                    <div class="equipment-icon">
+                                        <i class="bi bi-gear"></i>
+                                    </div>
+                                    <div class="equipment-info">
+                                        <span class="equipment-name">{{ report.equipment.name }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="equipment-location">
+                                    {{ report.equipment.attraction.name }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="date-cell">
+                                    <i class="bi bi-calendar-event me-2" style="color: var(--ferro-blue);"></i>
+                                    {{ report.report_date }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'ferrography_reports:detail' report.id %}" class="btn-view-report">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                0
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p class="mb-3">No reports yet</p>
+                <a href="{% url 'ferrography_reports:upload' %}" class="btn-view-report">
+                    <i class="bi bi-upload"></i>
+                    Upload First Report
+                </a>
+            </div>
             {% endif %}
         </div>
-        <div class="stat-label">Recently Uploaded</div>
     </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon">
-            <i class="bi bi-microscope"></i>
-        </div>
-        <div class="stat-value">
-            {% if recent_reports %}
-                {{ recent_reports|length }}
-            {% else %}
-                0
-            {% endif %}
-        </div>
-        <div class="stat-label">Pending Analysis</div>
-    </div>
-</div>
-
-<!-- Quick Actions -->
-<div class="quick-actions">
-    <a href="{% url 'ferrography_reports:upload' %}" class="action-btn primary">
-        <i class="bi bi-upload"></i>
-        Upload Ferrography Report
-    </a>
-    <a href="{% url 'ferrography_reports:list' %}" class="action-btn secondary">
-        <i class="bi bi-list-ul"></i>
-        View Report List
-    </a>
-</div>
-
-<!-- Recent Reports -->
-<div class="reports-card">
-    <div class="reports-card-header">
-        <h5 class="reports-card-title">
-            <i class="bi bi-clock-history"></i>
-            Recently Uploaded Reports
-        </h5>
-        <a href="{% url 'ferrography_reports:list' %}" class="view-all-link">
-            View All <i class="bi bi-arrow-right"></i>
-        </a>
-    </div>
-    
-    {% if recent_reports %}
-    <div class="table-responsive">
-        <table class="reports-table">
-            <thead>
-                <tr>
-                    <th>Equipment</th>
-                    <th>Attraction</th>
-                    <th>Report Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for report in recent_reports %}
-                <tr>
-                    <td>
-                        <div class="equipment-cell">
-                            <div class="equipment-icon">
-                                <i class="bi bi-gear"></i>
-                            </div>
-                            <div class="equipment-info">
-                                <span class="equipment-name">{{ report.equipment.name }}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span style="color: var(--text-secondary);">
-                            {{ report.equipment.attraction.name }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="date-cell">
-                            <i class="bi bi-calendar-event me-2" style="color: var(--accent-blue);"></i>
-                            {{ report.report_date }}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{% url 'ferrography_reports:detail' report.id %}" class="btn-view-report">
-                            <i class="bi bi-eye"></i>
-                            View
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <i class="bi bi-inbox"></i>
-        <p class="mb-3">No reports yet</p>
-        <a href="{% url 'ferrography_reports:upload' %}" class="btn-view-report btn-action">
-            <i class="bi bi-upload"></i>
-            Upload First Report
-        </a>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
